@@ -1,5 +1,5 @@
 import pytest
-from sekhmet.config import AppConfig, GameConfig, ScoringWeights, app_config
+from sekhmet.config import GameConfig, ScoringWeights
 
 
 @pytest.fixture
