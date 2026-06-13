@@ -1,0 +1,24 @@
+# Superpowers brainstorm artifacts
+.superpowers/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Superpowers docs (brainstorm artifacts, not for commit)
+docs/superpowers/
+
+# OS
+.DS_Store
+Thumbs.db
