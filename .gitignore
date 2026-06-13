@@ -16,6 +16,9 @@ dist/
 .vscode/
 *.swp
 
+# Superpowers docs (brainstorm artifacts, not for commit)
+docs/superpowers/
+
 # OS
 .DS_Store
 Thumbs.db
