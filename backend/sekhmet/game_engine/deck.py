@@ -47,6 +47,8 @@ class Deck:
         random.shuffle(self.cards)
 
     def deal(self, n: int) -> list[Card]:
+        if n < 0:
+            raise ValueError(f"Cannot deal a negative number of cards: {n}")
         if n > len(self.cards):
             raise ValueError(
                 f"Cannot deal {n} cards, only {len(self.cards)} remain"

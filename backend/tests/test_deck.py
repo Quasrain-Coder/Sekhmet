@@ -28,8 +28,13 @@ def test_shuffle_changes_order():
     deck1 = Deck()
     deck2 = Deck()
     deck2.shuffle()
-    # Extremely unlikely to be same order after shuffle
-    assert deck1.cards != deck2.cards or deck1.cards == deck2.cards
+    assert deck1.cards != deck2.cards
+
+
+def test_deal_negative_raises():
+    deck = Deck()
+    with pytest.raises(ValueError, match="negative"):
+        deck.deal(-1)
 
 
 def test_deal_removes_cards_from_deck():

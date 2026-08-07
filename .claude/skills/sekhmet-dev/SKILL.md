@@ -17,27 +17,55 @@ Sekhmet 是一个**个人德州扑克学习平台**，核心由三个子系统�
 - **训练器是引擎的只读消费者**：场景冻结游戏状态在某个决策点，玩家提交决策后由 `Scorer` 和 `Analyzer` 评估。
 - **模块化单体架构**：单进程内按清晰边界拆分为 `game_engine/`、`ai_engine/`、`trainer/` 独立包，通过接口通信，将来可抽离为微服务。
 
-## 分支策略
+## 分支策略与 PR 规范
 
-- **`main`** — 主要开发分支，日常开发在此分支上进行
-- **`release`** — 发布分支，稳定版本从这里发布
-- **新功能** — 必须从 `main` 拉出新分支开发，不允许直接在 `main` 或 `release` 上提交
-- **合入规则** — 向 `main` 或 `release` 合入代码必须通过 Pull Request，**由用户确认后才能合入**，不允许直接 push 或 merge
+### 核心规则（对齐 Fortuna 标准）
+
+1. **禁止直接向 `main` 提交或推送代码，没有任何例外**（包括文档、配置、Claude 自己的提交）。所有改动必须：新建分支 → 提交 → push 分支 → 开 PR → 合并进 `main`。
+2. **新增或修改模块时，必须同步更新 CI 的 test/coverage 步骤**，不得遗漏。
+3. **PR 合并前 CI 必须通过**，由用户确认后才能合入，不允许自行 merge。
+
+### 分支命名
+
+- `feat/...` — 新功能
+- `fix/...` — 修复 bug
+- `docs/...` — 文档更新
+- `refactor/...` — 重构（不改变功能）
+- `test/...` — 测试补充
+
+### Commit 规范
+
+- commit message 中英文均可
+- Claude 参与的提交必须带 `Co-Authored-By: Claude <noreply@anthropic.com>` 尾注
+- 示例：
+  ```
+  feat: add hand_evaluator module
+
+  Implement 7→5 card enumeration with Trevor lookup method.
+  All 9 poker hand categories supported with tie-breaking.
+
+  Co-Authored-By: Claude <noreply@anthropic.com>
+  ```
 
 ### 开发流程
 
 ```
-main ─── feature/xxx ─── PR ──→ main ─── PR ──→ release
-  │                            │
-  └── 日常开发基础               └── 需用户审批
+main ─── feat/xxx ─── commit ─── push ─── PR ──→ main
+  │                                              │
+  └── 所有开发从此分支                              └── CI 绿 + 用户审批
 ```
 
-1. 从 `main` 创建 feature 分支：`git checkout -b feature/xxx main`
+1. 从 `main` 创建 feature 分支：`git checkout -b feat/xxx main`
 2. 在 feature 分支上开发和提交
-3. 开发完成后，向 `main` 发起 PR，等用户审批合入
-4. 准备发布时，从 `main` 向 `release` 发起 PR，等用户审批合入
+3. Push 分支并创建 PR
+4. CI 通过后，等用户审批合入
 
-**重要**：除非用户明确指示，否则**不要自行合并任何 PR**。所有合入操作必须等待用户确认。
+### 禁止事项
+
+- ❌ 直接 push 到 `main`
+- ❌ 自行 merge PR（未经用户确认）
+- ❌ 在 `main` 上直接 commit
+- ❌ 使用 `git push --force` 到共享分支
 
 ## 架构速览
 
