@@ -64,7 +64,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                     broadcast_msg = await tm.start_hand(table_id)
                     await tm.broadcast(table_id, broadcast_msg)
 
-                    # Send private hole cards to each player
+                    # Send private hole cards to each human player
                     session = await tm.get_table(table_id)
                     if session:
                         for p in session.game_state.players:
@@ -73,6 +73,10 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                                     "type": "hole_cards",
                                     "cards": [str(c) for c in p.hole_cards],
                                 })
+                        # Auto-play bots until human's turn
+                        bot_msgs = await tm.auto_bot_actions(table_id)
+                        for msg in bot_msgs:
+                            await tm.broadcast(table_id, msg)
 
                 elif msg_type == "player_action":
                     if my_seat is None:
@@ -85,6 +89,11 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         table_id, my_seat, action_type, amount,
                     )
                     await tm.broadcast(table_id, state_msg)
+
+                    # Auto-play bots until next human turn
+                    bot_msgs = await tm.auto_bot_actions(table_id)
+                    for msg in bot_msgs:
+                        await tm.broadcast(table_id, msg)
 
                 else:
                     await websocket.send_json({
