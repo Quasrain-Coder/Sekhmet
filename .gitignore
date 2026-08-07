@@ -6,6 +6,7 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+*.egg-info/
 
 # Node
 node_modules/
@@ -16,8 +17,6 @@ dist/
 .vscode/
 *.swp
 
-# Superpowers docs (brainstorm artifacts, not for commit)
-docs/superpowers/
 
 # OS
 .DS_Store
