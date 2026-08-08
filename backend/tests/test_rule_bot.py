@@ -225,3 +225,80 @@ def test_bot_all_three_levels_return_valid_actions():
         a2 = bot.decide(state2, 0)
         assert a2.player_idx == 0
         assert isinstance(a2.type, ActionType)
+
+
+# ---------------------------------------------------------------------------
+# Legality fuzz — bot decisions must pass engine validation
+# ---------------------------------------------------------------------------
+
+
+def _bb_option_state(bot_hole):
+    """BB's option: limped pot, to_call=0 but current_bet=big_blind."""
+    hero = Player(name="Hero", seat_idx=0, stack=190,
+                  hole_cards=(), current_bet=10, total_bet=10, is_human=True)
+    bot = Player(name="Bot", seat_idx=1, stack=190,
+                 hole_cards=tuple(bot_hole), current_bet=10, total_bet=10)
+    from sekhmet.game_engine.game_state import PotState
+    return GameState(
+        phase=GamePhase.PREFLOP,
+        players=(hero, bot),
+        dealer_idx=0,  # HU: hero is SB/dealer and has limped
+        current_player_idx=1,
+        current_bet=10,
+        min_raise=10,
+        small_blind=5,
+        big_blind=10,
+        pot=PotState(main_pot=20),
+        acted_seats=(0,),
+    )
+
+
+def test_bb_option_produces_legal_actions():
+    """Bot facing its big-blind option must not BET into the existing bet
+    or CALL zero — every decision must pass engine validation."""
+    import random
+    from sekhmet.game_engine.deck import Deck
+    from sekhmet.game_engine.action_processor import validate
+
+    rng = random.Random(20260808)
+    for level in (1, 2, 3):
+        bot = RuleBot(level=level)
+        for _ in range(100):
+            cards = Deck().cards[:]
+            rng.shuffle(cards)
+            state = _bb_option_state(cards[:2])
+            action = bot.decide(state, 1)
+            validate(state, action)  # raises if the bot's choice is illegal
+
+
+def test_postflop_unopened_pot_produces_legal_actions():
+    """Unopened postflop pot (current_bet=0): bot must never RAISE."""
+    import random
+    from sekhmet.game_engine.deck import Deck
+    from sekhmet.game_engine.action_processor import validate
+    from sekhmet.game_engine.game_state import PotState
+
+    rng = random.Random(20260808)
+    for level in (1, 2, 3):
+        bot = RuleBot(level=level)
+        for _ in range(150):
+            cards = Deck().cards[:]
+            rng.shuffle(cards)
+            hero = Player(name="Hero", seat_idx=0, stack=200,
+                          hole_cards=tuple(cards[2:4]), is_human=True)
+            botp = Player(name="Bot", seat_idx=1, stack=200,
+                          hole_cards=tuple(cards[:2]))
+            state = GameState(
+                phase=GamePhase.FLOP,
+                players=(hero, botp),
+                community_cards=tuple(cards[4:7]),
+                dealer_idx=0,
+                current_player_idx=1,
+                current_bet=0,
+                min_raise=10,
+                small_blind=5,
+                big_blind=10,
+                pot=PotState(main_pot=20),
+            )
+            action = bot.decide(state, 1)
+            validate(state, action)  # raises if the bot's choice is illegal

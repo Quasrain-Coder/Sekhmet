@@ -14,11 +14,14 @@ broadcasts results.
 from __future__ import annotations
 
 import asyncio
+import logging
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
 from fastapi import WebSocket
+
+logger = logging.getLogger(__name__)
 
 from ..config import app_config
 from ..game_engine import (
@@ -252,13 +255,26 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
         if player.is_human:
             break  # it's a human's turn — stop auto-play
 
-        # Bot's turn — decide and execute
+        # Bot's turn — decide and execute.  A bot that produces an illegal
+        # action must never freeze the game: fall back to check (free) or
+        # fold (facing a bet) and carry on.
         bot_name = session.player_names.get(cur_idx, f"Bot{cur_idx}")
         # Default to rule_lv2 for bots
         bot = create_bot("rule_lv2")
-        action = bot.decide(gs, cur_idx)
-
-        gs = execute(gs, action)
+        try:
+            action = bot.decide(gs, cur_idx)
+            gs = execute(gs, action)
+        except GameError:
+            logger.warning(
+                "Bot %s produced an illegal action at table %s — falling back",
+                bot_name, table_id, exc_info=True,
+            )
+            to_call = gs.current_bet - player.current_bet
+            fallback = Action(
+                cur_idx,
+                ActionType.CHECK if to_call == 0 else ActionType.FOLD,
+            )
+            gs = execute(gs, fallback)
         session.game_state = gs
 
         result = None

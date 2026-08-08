@@ -175,14 +175,20 @@ class RuleBot(BaseBot):
                 return Action(player_idx, ActionType.ALL_IN)
             return Action(player_idx, ActionType.RAISE, amount=sizing)
 
-        # Medium: call or small raise
+        # Medium: call a bet, open-bet an unopened pot, or check the BB option.
+        # Note: to_call == 0 does NOT mean unopened — the big blind faces
+        # to_call == 0 with current_bet > 0, where BET/CALL are illegal.
         if strength > threshold + 0.15:
-            if to_call == 0:
+            if to_call > 0:
+                return Action(player_idx, ActionType.CALL)
+            if state.current_bet == 0:
                 sizing = self._bet_size(state, strength, is_preflop=True)
                 return Action(player_idx, ActionType.BET, amount=sizing)
-            return Action(player_idx, ActionType.CALL)
+            return Action(player_idx, ActionType.CHECK)
 
-        # Marginal: call if cheap, fold otherwise
+        # Marginal: check if free, call if cheap, fold otherwise
+        if to_call == 0:
+            return Action(player_idx, ActionType.CHECK)
         if to_call <= state.big_blind * 3:
             return Action(player_idx, ActionType.CALL)
         return Action(player_idx, ActionType.FOLD)
@@ -216,6 +222,9 @@ class RuleBot(BaseBot):
                 sizing = self._bet_size(state, 0.5, is_preflop=False)
                 if sizing >= state.player(player_idx).stack:  # type: ignore[operator]
                     return Action(player_idx, ActionType.ALL_IN)
+                # BET into an unopened pot; RAISE only an existing bet
+                if state.current_bet == 0:
+                    return Action(player_idx, ActionType.BET, amount=sizing)
                 return Action(player_idx, ActionType.RAISE, amount=sizing)
 
         if category == "strong":
