@@ -10,7 +10,7 @@ import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from ..game_engine import GameError
+from ..game_engine import GameError, GamePhase
 from . import table_manager as tm
 
 logger = logging.getLogger(__name__)
@@ -42,11 +42,20 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                     name = str(msg.get("name", f"Player{seat_idx}"))
                     buyin = msg.get("buyin")
                     is_human = bool(msg.get("is_human", True))
+                    bot_level = msg.get("bot_level")
 
                     session = await tm.get_table(table_id)
                     if session is None:
                         await websocket.send_json({"type": "error", "message": "Table not found"})
                         continue
+
+                    # Validate first: a rejected sit_down (seat occupied /
+                    # mid-hand) must NOT touch the clients map — otherwise the
+                    # loser's socket hijacks the real occupant's broadcasts.
+                    summary = await tm.sit_down(
+                        table_id, seat_idx, name, buyin, is_human,
+                        bot_level=bot_level,
+                    )
 
                     # Only human seats claim the connection.  A bot seated
                     # through the same connection (solo-play auto-add) must
@@ -56,14 +65,37 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         session.clients[seat_idx] = websocket
                         my_seat = seat_idx
 
-                    summary = await tm.sit_down(table_id, seat_idx, name, buyin, is_human)
                     await tm.broadcast(table_id, summary)
 
                 elif msg_type == "stand_up":
-                    if my_seat is not None:
+                    target = msg.get("seat_idx", my_seat)
+                    if target is None:
+                        continue
+                    target = int(target)
+                    if target == my_seat:
                         summary = await tm.stand_up(table_id, my_seat)
-                        await tm.broadcast(table_id, summary)
                         my_seat = None
+                        await tm.broadcast(table_id, summary)
+                    else:
+                        session = await tm.get_table(table_id)
+                        p = session.game_state.player(target) if session else None
+                        mid_hand = session is not None and session.game_state.phase not in (
+                            GamePhase.WAITING, GamePhase.SHOWDOWN,
+                        )
+                        if p is None or p.is_human:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": "Can only remove bot seats",
+                            })
+                            continue
+                        if mid_hand:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": "Cannot remove players mid-hand",
+                            })
+                            continue
+                        summary = await tm.stand_up(table_id, target)
+                        await tm.broadcast(table_id, summary)
 
                 elif msg_type == "start_hand":
                     broadcast_msg = await tm.start_hand(table_id)

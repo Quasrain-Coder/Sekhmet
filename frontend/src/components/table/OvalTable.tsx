@@ -1,52 +1,110 @@
-import type { PlayerInfo } from '../../hooks/useGameState';
+import { useEffect, useState } from 'react';
+import type { PlayerInfo, SeatInfo } from '../../hooks/useGameState';
 import PlayerSeat from './PlayerSeat';
 import CommunityCards from './CommunityCards';
 import PotDisplay from './PotDisplay';
 
 interface Props {
+  seats: SeatInfo[];
   players: PlayerInfo[];
+  maxSeats: number;
   communityCards: string[];
   pot: number;
   currentPlayerIdx: number | null;
   mySeat: number | null;
   holeCards: string[];
   phase: string;
+  onAddBot: (seatIdx: number, level: number) => void;
+  onKickBot: (seatIdx: number) => void;
 }
 
-/** Map a player's seat index to an oval display slot, rotating so
- *  *mySeat* is always at position 0 (bottom center). */
+/** Map a seat index to an oval display slot, rotating so *mySeat* is at
+ *  position 0 (bottom center). */
 function displaySlot(seatIdx: number, total: number, mySeat: number | null): number {
-  if (mySeat === null) return seatIdx % 8;
+  if (mySeat === null) return seatIdx % total;
   const rel = (seatIdx - mySeat + total) % total;
-  // Spread evenly: position 0 = bottom center, rest clockwise
-  const SLOTS = total <= 2 ? [0, 4] : [0, 2, 3, 4, 5, 6, 7, 1];
-  if (total <= 8) return SLOTS[rel % SLOTS.length];
-  return rel % 8;
+  if (total <= 2) return [0, 4][rel % 2];
+  // 9-handed needs the 9th visual slot (.seat-8, between top-left and
+  // top-center) — folding it into slot 0 would stack it on my seat.
+  if (total === 9) return [0, 2, 3, 4, 8, 5, 6, 7, 1][rel];
+  const SLOTS = [0, 2, 3, 4, 5, 6, 7, 1];
+  return SLOTS[rel % SLOTS.length];
 }
 
-export default function OvalTable({ players, communityCards, pot, currentPlayerIdx, mySeat, holeCards, phase }: Props) {
+export default function OvalTable({
+  seats, players, maxSeats, communityCards, pot, currentPlayerIdx,
+  mySeat, holeCards, phase, onAddBot, onKickBot,
+}: Props) {
   const showCommunity = phase !== 'WAITING' && phase !== 'PREFLOP' && phase !== 'DEALING';
-  const n = players.length;
+  // Mid-hand seating changes corrupt the engine — only offer bot seats
+  // between hands (the server enforces this too; this is the UI half).
+  const canAddBot = phase === 'WAITING' || phase === 'SHOWDOWN';
+  const [pendingSeat, setPendingSeat] = useState<number | null>(null);
+  // Close a stale level picker when a hand starts — it must not
+  // resurrect on its own when bot seats unlock again at SHOWDOWN.
+  useEffect(() => {
+    if (!canAddBot) setPendingSeat(null);
+  }, [canAddBot]);
+  const total = Math.min(Math.max(maxSeats, 2), 9);
+  const occupied = new Map(seats.map(s => [s.seat_idx, s]));
 
   return (
     <div className="table-felt">
       {showCommunity && <CommunityCards cards={communityCards} />}
       <PotDisplay amount={pot} />
 
-      {players.map((p) => {
-        const slot = displaySlot(p.seat_idx, n, mySeat);
-        const isMe = mySeat === p.seat_idx;
+      {seats.map((seat) => {
+        const p = players.find(pl => pl.seat_idx === seat.seat_idx);
+        const isMe = mySeat === seat.seat_idx;
+        const slot = displaySlot(seat.seat_idx, total, mySeat);
+        // Merge lobby-level seat info with in-hand player info
+        const merged: PlayerInfo = p ?? {
+          seat_idx: seat.seat_idx,
+          name: seat.name,
+          stack: seat.stack,
+          current_bet: 0,
+          is_active: true,
+          is_all_in: false,
+          is_human: seat.is_human,
+        };
         return (
-          <PlayerSeat
-            key={p.seat_idx}
-            player={p}
-            seatIndex={slot}
-            isCurrent={currentPlayerIdx === p.seat_idx}
-            holeCards={isMe ? holeCards : undefined}
-            showCards={phase === 'SHOWDOWN' || isMe}
-          />
+          <div key={seat.seat_idx} className={`seat-wrap seat-${slot}`}>
+            <PlayerSeat
+              player={merged}
+              seatIndex={slot}
+              isCurrent={currentPlayerIdx === seat.seat_idx}
+              holeCards={isMe ? holeCards : undefined}
+              showCards={phase === 'SHOWDOWN' || isMe}
+            />
+            {!seat.is_human && (
+              <span className="bot-badge">
+                L{seat.bot_level ?? 2}
+                <button className="kick-btn" title="Remove bot"
+                        onClick={() => onKickBot(seat.seat_idx)}>×</button>
+              </span>
+            )}
+          </div>
         );
       })}
+
+      {canAddBot && Array.from({ length: maxSeats }, (_, i) => i)
+        .filter(i => !occupied.has(i))
+        .map(i => (
+          <div key={`empty-${i}`} className={`empty-seat seat-${displaySlot(i, total, mySeat)}`}>
+            {pendingSeat === i ? (
+              <span className="bot-level-picker">
+                {[1, 2, 3].map(lv => (
+                  <button key={lv} className="btn btn-sm"
+                          onClick={() => { onAddBot(i, lv); setPendingSeat(null); }}>
+                    L{lv}
+                  </button>
+                ))}
+              </span>
+            ) : (
+              <button className="add-bot-btn" onClick={() => setPendingSeat(i)}>+ Bot</button>
+            )}
+          </div>
+        ))}
     </div>
   );
 }
