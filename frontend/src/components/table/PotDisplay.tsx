@@ -5,7 +5,7 @@ interface Props {
 export default function PotDisplay({ amount }: Props) {
   return (
     <div className="pot-display">
-      <span className="pot-amount">Pot: {amount}</span>
+      <span className="pot-amount">◈ POT {amount}</span>
     </div>
   );
 }

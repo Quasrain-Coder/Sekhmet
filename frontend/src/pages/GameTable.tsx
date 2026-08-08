@@ -139,12 +139,13 @@ export default function GameTablePage() {
 
   return (
     <div className="game-table">
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+      <div className="table-head">
         <button className="btn btn-sm" onClick={() => navigate('/')}>← Lobby</button>
+        <span className="logo">♠ Sekhmet</span>
         <span className="phase-label">
           {tableId} · {state.phase}{!connected && ' (disconnected)'}
         </span>
-        <button className="btn btn-sm" onClick={() => send({ type: 'start_hand' })}
+        <button className="btn btn-sm gold" onClick={() => send({ type: 'start_hand' })}
                 disabled={state.phase !== 'WAITING' && state.phase !== 'SHOWDOWN'}>
           Deal
         </button>
