@@ -329,11 +329,13 @@ def _hand_start_broadcast(session: TableSession) -> dict[str, Any]:
         "table_id": session.table_id,
         "phase": session.game_state.phase.name,
         "dealer_idx": session.game_state.dealer_idx,
+        "current_player_idx": session.game_state.current_player_idx,
         "players": [
             {
                 "seat_idx": p.seat_idx,
                 "name": p.name,
                 "stack": p.stack,
+                "current_bet": p.current_bet,
                 "is_human": p.is_human,
             }
             for p in session.game_state.players
