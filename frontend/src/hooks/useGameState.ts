@@ -25,6 +25,7 @@ interface HandStartData {
   phase: string;
   dealer_idx: number;
   current_player_idx: number | null;
+  current_bet: number;
   players: PlayerInfo[];
   small_blind: number;
   big_blind: number;
@@ -102,7 +103,7 @@ function reducer(state: AppState, action: Action): AppState {
         holeCards: [],
         showdown: null,
         roundHistory: [],
-        currentBet: 0,
+        currentBet: action.data.current_bet ?? 0,
         currentPlayerIdx: action.data.current_player_idx ?? null,
       };
     case 'HOLE_CARDS':

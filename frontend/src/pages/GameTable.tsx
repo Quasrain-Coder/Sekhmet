@@ -41,6 +41,9 @@ export default function GameTablePage({ tableId, name, seatIdx, buyin, onBack }:
     if (connected) {
       send({ type: 'sit_down', seat_idx: seatIdx, name, buyin });
       dispatch({ type: 'SET_MY_SEAT', seat: seatIdx });
+      // Auto-add a bot opponent for solo play
+      const botSeat = seatIdx === 0 ? 1 : 0;
+      send({ type: 'sit_down', seat_idx: botSeat, name: 'Bot', buyin: 200, is_human: false });
     }
   }, [connected, send, seatIdx, name, buyin, dispatch]);
 
