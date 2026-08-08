@@ -48,8 +48,13 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await websocket.send_json({"type": "error", "message": "Table not found"})
                         continue
 
-                    session.clients[seat_idx] = websocket
-                    my_seat = seat_idx
+                    # Only human seats claim the connection.  A bot seated
+                    # through the same connection (solo-play auto-add) must
+                    # NOT overwrite my_seat — otherwise every player_action
+                    # would execute as the bot and fail with NotYourTurnError.
+                    if is_human:
+                        session.clients[seat_idx] = websocket
+                        my_seat = seat_idx
 
                     summary = await tm.sit_down(table_id, seat_idx, name, buyin, is_human)
                     await tm.broadcast(table_id, summary)

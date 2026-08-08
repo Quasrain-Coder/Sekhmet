@@ -269,3 +269,58 @@ async def test_complete_hand_through_table_manager():
     session = await tm.get_table(tid)
     assert session is not None
     assert sum(p.stack for p in session.game_state.players) == 400
+
+
+async def test_illegal_bot_action_falls_back_without_stalling(monkeypatch):
+    """A bot that returns an illegal action must not freeze the game —
+    auto_bot_actions falls back (check if free, else fold) and continues."""
+    from sekhmet.game_engine.game_state import Action, ActionType
+
+    class BrokenBot:
+        def decide(self, state, player_idx):
+            # Illegal: there is already a bet (BB=10), cannot open
+            return Action(player_idx, ActionType.BET, 30)
+
+    monkeypatch.setattr(
+        "sekhmet.ai_engine.bot_registry.create", lambda name: BrokenBot()
+    )
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+
+    # Bot is SB/dealer on hand 1 and acts first; its illegal BET must
+    # trigger the fallback (fold — facing 5 to call), ending the hand.
+    msgs = await tm.auto_bot_actions(tid)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    gs = session.game_state
+    assert gs.phase == GamePhase.SHOWDOWN
+    assert any(m.get("type") == "hand_result" for m in msgs)
+
+
+async def test_second_hand_can_start_after_showdown():
+    """A hand ends in SHOWDOWN; the next hand must be dealable from there
+    (state machine: SHOWDOWN → WAITING → DEALING)."""
+    tid = await _make_two_player_table()
+    session = await tm.get_table(tid)
+    assert session is not None
+    sb_seat = session.game_state.current_player_idx
+
+    await tm.handle_player_action(tid, sb_seat, "FOLD")  # hand 1 ends
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert session.game_state.phase == GamePhase.SHOWDOWN
+
+    msg = await tm.start_hand(tid)  # hand 2 must start cleanly
+    assert msg["type"] == "hand_start"
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    gs = session.game_state
+    assert gs.phase == GamePhase.PREFLOP
+    # Folded player from hand 1 is back in, stacks carried over
+    assert all(p.is_active for p in gs.players)
+    assert sum(p.stack for p in gs.players) + gs.pot.total == 400

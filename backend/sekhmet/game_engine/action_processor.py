@@ -483,15 +483,19 @@ def deal_new_hand(
     Parameters
     ----------
     state : GameState
-        Must be in WAITING phase with at least 2 players seated.
+        Must be in WAITING phase (fresh table) or SHOWDOWN (previous hand
+        complete — the state machine's SHOWDOWN → WAITING edge), with at
+        least 2 players seated.
     deck_cards : list[Card]
         A shuffled deck (will be consumed via ``.pop()``).
     dealer_idx : int
         Which seat holds the dealer button.
     """
-    if state.phase != GamePhase.WAITING:
-        raise PhaseError(f"Cannot deal — expected WAITING, got {state.phase.name}")
-    if state.n_active < 2:
+    if state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+        raise PhaseError(f"Cannot deal — expected WAITING or SHOWDOWN, got {state.phase.name}")
+    # Count seated players, not active ones: after a fold-out the loser has
+    # is_active=False but is still seated for the next hand.
+    if len(state.players) < 2:
         raise InvalidActionError("Need at least 2 players to deal")
 
     n = len(state.players)

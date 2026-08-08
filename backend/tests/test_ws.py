@@ -141,3 +141,41 @@ def test_websocket_action_before_sit():
 def _drain(ws, n: int) -> None:
     for _ in range(n):
         ws.receive_json()
+
+
+def test_bot_sitdown_does_not_hijack_human_seat():
+    """Auto-added bot (same connection) must not steal the connection's seat.
+
+    Regression: the frontend seats the human and a bot over one WebSocket.
+    ``my_seat`` was overwritten by the bot's sit_down, so every
+    player_action executed as the bot and failed with NotYourTurnError —
+    the game looked frozen when the human clicked anything.
+    """
+    import random
+    random.seed(7)  # deterministic deal: bot calls preflop, human gets a turn
+
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        ws.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot", "buyin": 200,
+                      "is_human": False})
+        ws.send_json({"type": "start_hand"})
+
+        saw_error = None
+        acted = False
+        for _ in range(30):
+            msg = ws.receive_json()
+            if msg["type"] == "error":
+                saw_error = msg["message"]
+                break
+            if msg["type"] == "hand_result":
+                break
+            if msg["type"] == "game_state_update" and msg.get("current_player_idx") == 0:
+                if not acted:
+                    ws.send_json({"type": "player_action", "action": "FOLD"})
+                    acted = True
+
+        assert saw_error is None, f"server error: {saw_error}"
+        assert acted, "human never got a turn"
