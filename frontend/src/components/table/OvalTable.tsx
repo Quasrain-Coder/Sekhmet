@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { PlayerInfo, SeatInfo } from '../../hooks/useGameState';
 import PlayerSeat from './PlayerSeat';
 import CommunityCards from './CommunityCards';
@@ -37,6 +37,11 @@ export default function OvalTable({
   // between hands (the server enforces this too; this is the UI half).
   const canAddBot = phase === 'WAITING' || phase === 'SHOWDOWN';
   const [pendingSeat, setPendingSeat] = useState<number | null>(null);
+  // Close a stale level picker when a hand starts — it must not
+  // resurrect on its own when bot seats unlock again at SHOWDOWN.
+  useEffect(() => {
+    if (!canAddBot) setPendingSeat(null);
+  }, [canAddBot]);
   const total = Math.min(Math.max(maxSeats, 2), 8);
   const occupied = new Map(seats.map(s => [s.seat_idx, s]));
 
@@ -60,7 +65,7 @@ export default function OvalTable({
           is_human: seat.is_human,
         };
         return (
-          <div key={seat.seat_idx} className="seat-wrap">
+          <div key={seat.seat_idx} className={`seat-wrap seat-${slot}`}>
             <PlayerSeat
               player={merged}
               seatIndex={slot}

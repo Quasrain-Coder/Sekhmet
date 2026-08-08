@@ -168,7 +168,11 @@ body {
 }
 .add-bot-btn:hover { background: rgba(255,255,255,0.16); }
 .bot-level-picker { display: flex; gap: 4px; }
-.seat-wrap { position: relative; display: contents; }
+.seat-wrap { position: absolute; }
+/* PlayerSeat still emits its own seat-N class, but inside a wrap the
+   wrapper owns positioning — keep the inner seat static and strip the
+   centering transform that seat-0/seat-4 would otherwise re-apply. */
+.seat-wrap .player-seat { position: static; transform: none; }
 .bot-badge {
   position: absolute; top: -8px; right: -8px;
   background: #2a4a2a; color: #8fd48f; font-size: 11px;
