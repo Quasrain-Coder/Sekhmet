@@ -23,7 +23,6 @@ from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
 
-from ..config import app_config
 from ..game_engine import (
     Action,
     ActionType,
@@ -39,6 +38,38 @@ from ..game_engine import (
     evaluate_7_cards,
 )
 from ..game_engine.pot_manager import PotAward, create_side_pots, award_pot
+
+
+@dataclass(frozen=True)
+class TableConfig:
+    """Per-table room configuration, fixed at creation time."""
+
+    small_blind: int = 5
+    big_blind: int = 10
+    default_buyin: int = 200
+    max_seats: int = 9
+
+    def __post_init__(self):
+        if not (0 < self.small_blind < self.big_blind):
+            raise ValueError(
+                f"Require 0 < small_blind < big_blind, "
+                f"got {self.small_blind}/{self.big_blind}"
+            )
+        if not (2 <= self.max_seats <= 9):
+            raise ValueError(f"max_seats must be 2-9, got {self.max_seats}")
+        if self.default_buyin < 20 * self.big_blind:
+            raise ValueError(
+                f"default_buyin must be >= 20 big blinds "
+                f"({20 * self.big_blind}), got {self.default_buyin}"
+            )
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "TableConfig":
+        known = {"small_blind", "big_blind", "default_buyin", "max_seats"}
+        unknown = set(d) - known
+        if unknown:
+            raise ValueError(f"Unknown config keys: {sorted(unknown)}")
+        return cls(**{k: int(v) for k, v in d.items()})
 
 
 def _short_id() -> str:
@@ -57,11 +88,11 @@ class TableSession:
     deck: Deck
     clients: dict[int, WebSocket] = field(default_factory=dict)  # seat_idx → ws
     player_names: dict[int, str] = field(default_factory=dict)    # seat_idx → name
-    config: Any = field(default_factory=lambda: app_config.game)
+    config: TableConfig = field(default_factory=TableConfig)
 
     @property
     def n_seats(self) -> int:
-        return self.config.max_seats_per_table
+        return self.config.max_seats
 
     def player_seats(self) -> list[int]:
         """Return sorted list of occupied seats."""
@@ -77,16 +108,18 @@ _tables: dict[str, TableSession] = {}
 _lock = asyncio.Lock()
 
 
-async def create_table() -> str:
-    """Create a new empty table and return its ID."""
+async def create_table(config: TableConfig | None = None) -> str:
+    """Create a new table with the given room config (defaults if None)."""
+    cfg = config or TableConfig()
     tid = _short_id()
     session = TableSession(
         table_id=tid,
         game_state=GameState(
-            small_blind=app_config.game.default_small_blind,
-            big_blind=app_config.game.default_big_blind,
+            small_blind=cfg.small_blind,
+            big_blind=cfg.big_blind,
         ),
         deck=Deck(),
+        config=cfg,
     )
     async with _lock:
         _tables[tid] = session
@@ -126,7 +159,7 @@ async def sit_down(
     if seat_idx in session.player_names:
         raise GameError(f"Seat {seat_idx} is already occupied")
 
-    stack = buyin if buyin is not None else session.config.default_stack
+    stack = buyin if buyin is not None else session.config.default_buyin
     player = Player(
         name=name,
         seat_idx=seat_idx,

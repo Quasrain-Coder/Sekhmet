@@ -1,6 +1,6 @@
 """REST endpoints for game table management."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from . import table_manager as tm
 
@@ -8,9 +8,13 @@ router = APIRouter(prefix="/api/game", tags=["game"])
 
 
 @router.post("/tables")
-async def create_table():
-    """Create a new poker table and return its ID."""
-    tid = await tm.create_table()
+async def create_table(body: dict | None = None):
+    """Create a new poker table, optionally with a room config."""
+    try:
+        cfg = tm.TableConfig.from_dict(body or {})
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    tid = await tm.create_table(cfg)
     return {"table_id": tid}
 
 
