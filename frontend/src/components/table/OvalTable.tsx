@@ -13,15 +13,20 @@ interface Props {
   phase: string;
 }
 
-/** Map a player's seat index to a display position slot (0-7). */
-function displaySlot(seatIdx: number, totalSeats: number): number {
-  // Spread seats evenly around the oval
-  if (totalSeats <= 2) return seatIdx === 0 ? 0 : 4;
-  return seatIdx % 8;
+/** Map a player's seat index to an oval display slot, rotating so
+ *  *mySeat* is always at position 0 (bottom center). */
+function displaySlot(seatIdx: number, total: number, mySeat: number | null): number {
+  if (mySeat === null) return seatIdx % 8;
+  const rel = (seatIdx - mySeat + total) % total;
+  // Spread evenly: position 0 = bottom center, rest clockwise
+  const SLOTS = total <= 2 ? [0, 4] : [0, 2, 3, 4, 5, 6, 7, 1];
+  if (total <= 8) return SLOTS[rel % SLOTS.length];
+  return rel % 8;
 }
 
 export default function OvalTable({ players, communityCards, pot, currentPlayerIdx, mySeat, holeCards, phase }: Props) {
   const showCommunity = phase !== 'WAITING' && phase !== 'PREFLOP' && phase !== 'DEALING';
+  const n = players.length;
 
   return (
     <div className="table-felt">
@@ -29,7 +34,7 @@ export default function OvalTable({ players, communityCards, pot, currentPlayerI
       <PotDisplay amount={pot} />
 
       {players.map((p) => {
-        const slot = displaySlot(p.seat_idx, players.length);
+        const slot = displaySlot(p.seat_idx, n, mySeat);
         const isMe = mySeat === p.seat_idx;
         return (
           <PlayerSeat
