@@ -9,7 +9,7 @@ Start with::
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import game, ws
+from .api import game, trainer, ws
 
 app = FastAPI(
     title="Sekhmet",
@@ -28,6 +28,7 @@ app.add_middleware(
 
 # Routes
 app.include_router(game.router)
+app.include_router(trainer.router)
 app.include_router(ws.router)
 
 
