@@ -1,0 +1,157 @@
+/* ---- Casino Dark Theme ---- */
+:root {
+  --felt: #1a5c2a;
+  --felt-dark: #0d3316;
+  --gold: #c9a84c;
+  --gold-dim: #8b7330;
+  --chip-white: #f0f0f0;
+  --chip-red: #d4443c;
+  --chip-blue: #3b6fb6;
+  --chip-green: #388e3c;
+  --chip-black: #2a2a2a;
+  --text: #e8e0d0;
+  --text-dim: #a09080;
+  --bg: #1a1410;
+  --surface: #261e16;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ---- Layout ---- */
+.app { max-width: 900px; margin: 0 auto; padding: 16px; }
+.page-title { font-size: 1.4rem; color: var(--gold); margin-bottom: 16px; }
+
+/* ---- Lobby ---- */
+.lobby { display: flex; flex-direction: column; gap: 16px; }
+.lobby-actions { display: flex; gap: 12px; }
+.btn {
+  background: var(--gold); color: #1a1410; border: none;
+  padding: 10px 20px; border-radius: 6px; font-size: 0.95rem;
+  font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.85; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-sm { padding: 6px 14px; font-size: 0.85rem; }
+.input {
+  background: var(--surface); border: 1px solid var(--gold-dim); color: var(--text);
+  padding: 8px 12px; border-radius: 6px; font-size: 0.95rem; width: 180px;
+}
+
+.table-list { display: flex; flex-direction: column; gap: 8px; }
+.table-card {
+  background: var(--surface); border: 1px solid var(--gold-dim);
+  border-radius: 8px; padding: 12px 16px; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: border-color 0.15s;
+}
+.table-card:hover { border-color: var(--gold); }
+.table-card .id { font-family: monospace; font-size: 0.9rem; }
+.table-card .info { font-size: 0.85rem; color: var(--text-dim); }
+
+/* ---- Game Table ---- */
+.game-table {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.table-felt {
+  position: relative; width: 100%; max-width: 700px; aspect-ratio: 2 / 1;
+  background: radial-gradient(ellipse at center, var(--felt) 0%, var(--felt-dark) 100%);
+  border-radius: 50%; border: 12px solid #3d2817;
+  box-shadow: 0 0 40px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.3);
+}
+.table-felt::after {
+  content: ''; position: absolute; top: 14px; left: 14px; right: 14px; bottom: 14px;
+  border-radius: 50%; border: 2px solid rgba(201, 168, 76, 0.2);
+}
+
+/* ---- Community Cards ---- */
+.community-cards {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  display: flex; gap: 8px;
+}
+
+/* ---- Card ---- */
+.card {
+  width: 44px; height: 62px; border-radius: 6px; font-weight: 700;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 1rem; line-height: 1;
+  box-shadow: 1px 2px 6px rgba(0,0,0,0.4);
+}
+.card-red { background: #1a1a2e; color: #e04040; border: 2px solid #e04040; }
+.card-black { background: #1a1a2e; color: #d0d0d0; border: 2px solid #888; }
+.card-back { background: #152; border: 2px solid #264; color: transparent; }
+.card-back::after { content: '🂠'; font-size: 1.4rem; opacity: 0.5; }
+
+/* ---- Player Seat ---- */
+.player-seat {
+  position: absolute; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; min-width: 80px;
+}
+.player-seat .cards { display: flex; gap: 2px; }
+.player-seat .name { font-size: 0.8rem; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-seat .stack { font-size: 0.75rem; color: var(--gold); }
+.player-seat .bet { font-size: 0.7rem; color: var(--text-dim); }
+.player-seat.active { }
+.player-seat.active .name { color: var(--gold); }
+.player-seat.folded .name { color: #666; text-decoration: line-through; }
+.player-seat.folded .cards .card { opacity: 0.4; }
+
+/* Seat positions on oval */
+.seat-0 { bottom: 5%; left: 50%; transform: translateX(-50%); }
+.seat-1 { bottom: 18%; right: 8%; }
+.seat-2 { top: 35%; right: 2%; }
+.seat-3 { top: 8%; right: 20%; }
+.seat-4 { top: 5%; left: 50%; transform: translateX(-50%); }
+.seat-5 { top: 8%; left: 20%; }
+.seat-6 { top: 35%; left: 2%; }
+.seat-7 { bottom: 18%; left: 8%; }
+
+/* ---- Pot ---- */
+.pot-display {
+  position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%);
+  display: flex; align-items: center; gap: 4px;
+}
+.pot-amount {
+  color: var(--gold); font-weight: 700; font-size: 0.9rem;
+  background: rgba(0,0,0,0.5); padding: 2px 10px; border-radius: 10px;
+}
+
+/* ---- Action Bar ---- */
+.action-bar {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  justify-content: center; padding: 8px 0;
+}
+.action-bar .btn { min-width: 60px; }
+.action-bar .btn.fold { background: #6b3a3a; color: #f0d0d0; }
+.action-bar .btn.check { background: #3a5a3a; color: #d0f0d0; }
+.action-bar .btn.allin { background: #8b2020; color: #ffd0d0; }
+.raise-input { width: 60px; }
+
+/* ---- Status ---- */
+.phase-label {
+  font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.waiting-text { color: var(--text-dim); font-style: italic; }
+
+/* ---- Hand Result ---- */
+.hand-result {
+  background: var(--surface); border: 1px solid var(--gold);
+  border-radius: 8px; padding: 12px 16px; max-width: 400px;
+}
+.hand-result h3 { color: var(--gold); margin-bottom: 8px; }
+.award { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 2px 0; }
+.award .winner { color: var(--gold); }
+
+/* ---- History ---- */
+.history {
+  font-size: 0.75rem; color: var(--text-dim);
+  max-height: 80px; overflow-y: auto;
+}
