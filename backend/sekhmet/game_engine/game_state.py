@@ -184,6 +184,12 @@ class GameState:
     # History (append-only log for replay)
     round_history: tuple[Action, ...] = ()
 
+    # Seats that have acted in the current betting round.
+    # Reset to ``()`` on every street change.  A betting round closes only
+    # when every player who can still act appears here AND has matched
+    # ``current_bet`` — this is what gives the big blind their option.
+    acted_seats: tuple[int, ...] = ()
+
     # ------------------------------------------------------------------
     # Derived properties
     # ------------------------------------------------------------------
@@ -229,6 +235,7 @@ class GameState:
             small_blind=self.small_blind,
             big_blind=self.big_blind,
             round_history=self.round_history,
+            acted_seats=self.acted_seats,
         )
 
     def with_phase(self, phase: GamePhase) -> GameState:
@@ -247,6 +254,7 @@ class GameState:
             small_blind=self.small_blind,
             big_blind=self.big_blind,
             round_history=self.round_history,
+            acted_seats=(),
         )
 
 

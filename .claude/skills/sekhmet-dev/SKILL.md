@@ -527,12 +527,19 @@ services:
 
 ## 当前状态
 
-项目目前处于**设计完成、待实现**阶段。主要代码尚未开始编写。以下为建议的实现顺序：
+核心链路已打通并可玩（PR #2–#7 已合入 main）：
 
-1. **game_engine** — 先建德州扑克核心：deck → hand_evaluator → game_state → action_processor → pot_manager
-2. **api + ws** — 基础 WebSocket 通道 + 简单终端可玩
-3. **ai_engine (rule_bot)** — 最简可对战 AI
-4. **frontend GameTable** — 可视化牌桌
-5. **trainer** — 训练器（依赖 game_engine 稳定）
-6. **ai_engine (GTO/RL)** — 高级 AI
-7. **history + replay** — 对局记录和回放
+- **game_engine**：完整实现——不可变状态机、公共牌发放（flop 3 / turn 1 / river 1）、大盲 option（`acted_seats` 追踪）、all-in 自动 runout、分池。164 个测试全绿。
+- **api + ws**：REST 建桌/入座 + WebSocket 动作通道，`table_manager` 管理会话与广播。
+- **ai_engine**：RuleBot L1–L3 + BotRegistry 可用；GTOBot / RLBot 未实现（接口预留）。
+- **frontend**：大厅 + 牌桌界面，可对 bot 对战。
+- **trainer**：场景库 / 执行 / 评分 / 分析 / 场景生成。
+
+尚未实现：ORM 持久化（`models/`）、对局回放、GTO/RL bot、docker 部署。注意上文的"项目结构"是目标布局，其中 `models/`、`data/`、`gto_bot.py` 等尚不存在。
+
+下一步建议（按依赖顺序）：
+
+1. **models + history** — 对局记录入库（SQLAlchemy + SQLite）
+2. **回放** — 依赖对局记录
+3. **GTO 范围表 bot** — `data/gto_tables/`
+4. **docker-compose 部署**

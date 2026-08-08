@@ -46,16 +46,16 @@ Sekhmet/
 │   ├── game_engine/        # 德州扑克核心引擎
 │   │   ├── deck.py         # 牌组管理
 │   │   ├── hand_evaluator.py  # 手牌强度评估
-│   │   ├── game_state.py   # 游戏状态机
-│   │   ├── action_processor.py  # 动作校验与执行
-│   │   ├── pot_manager.py  # 底池管理
+│   │   ├── game_state.py   # 游戏状态机（不可变快照 + acted_seats 行动追踪）
+│   │   ├── action_processor.py  # 动作校验与执行（发公共牌 / runout / 回合推进）
+│   │   ├── pot_manager.py  # 底池管理（分池算法）
 │   │   └── rules/          # 规则配置（盲注等）
-│   ├── ai_engine/          # AI 引擎（待实现）
-│   ├── trainer/            # 情景训练器（待实现）
-│   ├── api/                # FastAPI 路由（待实现）
+│   ├── ai_engine/          # AI 引擎（BaseBot + RuleBot L1-3 + BotRegistry；GTO/RL 预留）
+│   ├── trainer/            # 情景训练器（场景库 / 执行 / 评分 / 分析 / 生成）
+│   ├── api/                # FastAPI REST + WebSocket（table_manager 会话管理）
 │   ├── models/             # ORM 模型（待实现）
 │   └── config.py           # 全局配置
-├── frontend/               # React (Vite + TS)（待实现）
+├── frontend/               # React (Vite + TS)：大厅 + 牌桌界面
 ├── docs/superpowers/specs/  # 设计文档
 └── .claude/skills/         # Claude 开发技能
 ```
@@ -63,8 +63,8 @@ Sekhmet/
 ## 实现进度
 
 - [x] P1 游戏引擎核心（deck, hand_evaluator, game_state, action_processor, pot_manager）
-- [ ] P2 API + WebSocket 通道
-- [ ] P3 AI 引擎（rule_bot, bot_registry, gto_bot, rl_bot）
-- [ ] P4 前端（React 牌桌界面）
-- [ ] P5 训练器
-- [ ] P6 收尾（ORM, 回放, 部署）
+- [x] P2 API + WebSocket 通道
+- [x] P3 AI 引擎（rule_bot L1-3 + bot_registry；gto_bot / rl_bot 预留未实现）
+- [x] P4 前端（大厅 + React 牌桌界面）
+- [x] P5 训练器（场景库 / scorer / analyzer / generator）
+- [ ] P6 收尾（ORM 持久化, 回放, 部署）

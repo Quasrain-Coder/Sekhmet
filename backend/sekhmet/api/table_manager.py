@@ -35,7 +35,7 @@ from ..game_engine import (
     execute,
     evaluate_7_cards,
 )
-from ..game_engine.pot_manager import create_side_pots, award_pot
+from ..game_engine.pot_manager import PotAward, create_side_pots, award_pot
 
 
 def _short_id() -> str:
@@ -330,6 +330,7 @@ def _hand_start_broadcast(session: TableSession) -> dict[str, Any]:
         "phase": session.game_state.phase.name,
         "dealer_idx": session.game_state.dealer_idx,
         "current_player_idx": session.game_state.current_player_idx,
+        "current_bet": session.game_state.current_bet,
         "players": [
             {
                 "seat_idx": p.seat_idx,
@@ -390,18 +391,31 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
     """Evaluate hands, create side pots, and award to winners."""
     gs = session.game_state
 
-    # Gather hands for active (non-folded) players
-    hands: dict[int, Any] = {}
-    for p in gs.players:
-        if p.is_active and p.hole_cards is not None:
-            all_cards = list(p.hole_cards) + list(gs.community_cards)
-            hands[p.seat_idx] = evaluate_7_cards(all_cards)
+    active = [p for p in gs.players if p.is_active and p.hole_cards]
 
     # Create side pots from total bets
     pot = create_side_pots(gs.players)
 
-    # Award
-    awards_list = award_pot(pot, gs.players, hands)
+    if len(active) == 1:
+        # Fold-out: the last player standing wins without revealing cards.
+        # The board may be incomplete, so no hand evaluation is possible
+        # (or appropriate — the winner's hole cards stay hidden).
+        winner = active[0]
+        awards_list = (
+            [PotAward(amount=pot.total, winner_seat_idx=winner.seat_idx,
+                      hand_description="Won without showdown")]
+            if pot.total > 0 else []
+        )
+        hands: dict[int, Any] = {}
+    else:
+        # Gather hands for active (non-folded) players
+        hands = {}
+        for p in active:
+            all_cards = list(p.hole_cards) + list(gs.community_cards)
+            hands[p.seat_idx] = evaluate_7_cards(all_cards)
+
+        # Award
+        awards_list = award_pot(pot, gs.players, hands)
 
     # Update player stacks
     players_list = list(gs.players)
