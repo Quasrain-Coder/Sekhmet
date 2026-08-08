@@ -155,3 +155,26 @@ body {
   font-size: 0.75rem; color: var(--text-dim);
   max-height: 80px; overflow-y: auto;
 }
+
+/* Join panel */
+.join-panel { max-width: 480px; margin: 10vh auto; text-align: center; }
+.join-panel h2 { color: #e8c15a; }
+
+/* Empty seat + bot controls */
+.empty-seat { position: absolute; }
+.add-bot-btn {
+  background: rgba(255,255,255,0.08); color: #9db89d;
+  border: 1px dashed #4a6a4a; border-radius: 8px; padding: 8px 14px; cursor: pointer;
+}
+.add-bot-btn:hover { background: rgba(255,255,255,0.16); }
+.bot-level-picker { display: flex; gap: 4px; }
+.seat-wrap { position: relative; display: contents; }
+.bot-badge {
+  position: absolute; top: -8px; right: -8px;
+  background: #2a4a2a; color: #8fd48f; font-size: 11px;
+  border-radius: 8px; padding: 1px 5px;
+}
+.kick-btn {
+  background: none; border: none; color: #d48f8f; cursor: pointer;
+  font-size: 12px; margin-left: 3px; padding: 0;
+}

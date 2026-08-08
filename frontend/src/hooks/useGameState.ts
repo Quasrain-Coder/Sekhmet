@@ -10,6 +10,21 @@ export interface PlayerInfo {
   is_human: boolean;
 }
 
+export interface SeatInfo {
+  seat_idx: number;
+  name: string;
+  is_human: boolean;
+  bot_level: number | null;
+  stack: number;
+}
+
+export interface TableConfigData {
+  small_blind: number;
+  big_blind: number;
+  default_buyin: number;
+  max_seats: number;
+}
+
 export interface GameStateData {
   phase: string;
   community_cards: string[];
@@ -38,7 +53,8 @@ interface ShowdownData {
 }
 
 export type GameMsg =
-  | { type: 'table_state'; table_id: string; seats: Record<number, string>; phase: string; max_seats: number }
+  | { type: 'table_state'; table_id: string; seats: SeatInfo[]; phase: string;
+      max_seats: number; config: TableConfigData }
   | { type: 'hand_start' } & HandStartData
   | { type: 'hole_cards'; cards: string[] }
   | { type: 'game_state_update' } & GameStateData
@@ -59,6 +75,8 @@ interface AppState {
   tableId: string | null;
   maxSeats: number;
   connected: boolean;
+  seats: SeatInfo[];
+  config: TableConfigData | null;
 }
 
 type Action =
@@ -85,6 +103,8 @@ export const initialState: AppState = {
   tableId: null,
   maxSeats: 9,
   connected: false,
+  seats: [],
+  config: null,
 };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -92,7 +112,12 @@ function reducer(state: AppState, action: Action): AppState {
     case 'SET_TABLE':
       return { ...state, tableId: action.tableId };
     case 'TABLE_STATE':
-      return { ...state, maxSeats: action.data.max_seats };
+      return {
+        ...state,
+        seats: action.data.seats,
+        config: action.data.config,
+        maxSeats: action.data.max_seats,
+      };
     case 'HAND_START':
       return {
         ...state,
