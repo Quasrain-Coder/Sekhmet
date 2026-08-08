@@ -72,3 +72,93 @@ def test_rest_create_table_no_body_still_works():
     client = TestClient(app)
     resp = client.post("/api/game/tables")
     assert resp.status_code == 200
+
+
+from sekhmet.game_engine.game_state import GamePhase
+
+
+async def _table_with_bot(level: int) -> str:
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False, bot_level=level)
+    return tid
+
+
+async def test_bot_level_drives_registry(monkeypatch):
+    created: list[str] = []
+    monkeypatch.setattr(
+        "sekhmet.ai_engine.bot_registry.create",
+        lambda name: created.append(name) or __import__(
+            "sekhmet.ai_engine.rule_bot", fromlist=["RuleBot"]
+        ).RuleBot(level=int(name[-1])),
+    )
+    tid = await _table_with_bot(3)
+    await tm.start_hand(tid)
+    await tm.auto_bot_actions(tid)
+    assert "rule_lv3" in created
+
+
+async def test_bot_level_default_is_2():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "B", is_human=False)  # no level given
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert session.bot_levels[0] == 2
+
+
+async def test_bot_level_out_of_range_rejected():
+    tid = await tm.create_table()
+    from sekhmet.game_engine import GameError
+    with pytest.raises(GameError, match="bot_level"):
+        await tm.sit_down(tid, 0, "B", is_human=False, bot_level=9)
+
+
+async def test_table_info_shape():
+    tid = await _table_with_bot(1)
+    session = await tm.get_table(tid)
+    info = tm.table_info(session)
+    assert info["config"]["big_blind"] == 10
+    seats = {s["seat_idx"]: s for s in info["seats"]}
+    assert seats[0]["is_human"] is True and seats[0]["bot_level"] is None
+    assert seats[1]["is_human"] is False and seats[1]["bot_level"] == 1
+    assert seats[1]["stack"] == 200
+
+
+def test_ws_kick_bot_and_reject_kicking_human():
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with (
+        client.websocket_connect(f"/ws/{tid}") as ws1,
+        client.websocket_connect(f"/ws/{tid}") as ws2,
+    ):
+        ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero"})
+        ws1.receive_json()                      # ws1's join broadcast
+        ws2.send_json({"type": "sit_down", "seat_idx": 1, "name": "Friend"})
+        ws2.receive_json()                      # ws2's join broadcast
+        ws1.receive_json()                      # ws2's join, echoed to ws1
+
+        # ws1 adds a bot, then kicks it
+        ws1.send_json({"type": "sit_down", "seat_idx": 2, "name": "Bot",
+                       "is_human": False, "bot_level": 3})
+        ws1.receive_json(); ws2.receive_json()  # bot join broadcast
+        ws1.send_json({"type": "stand_up", "seat_idx": 2})
+        msg = ws1.receive_json()
+        assert msg["type"] == "table_state"
+        assert all(s["seat_idx"] != 2 for s in msg["seats"])
+        ws2.receive_json()                      # drain kick broadcast on ws2
+
+        # ws2 tries to kick the human at seat 0 — rejected
+        ws2.send_json({"type": "stand_up", "seat_idx": 0})
+        msg = ws2.receive_json()
+        assert msg["type"] == "error"
+
+
+async def test_sit_down_rejected_mid_hand():
+    """Joining mid-hand would corrupt the round-close logic — reject it."""
+    from sekhmet.game_engine import GameError
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "A", buyin=200)
+    await tm.sit_down(tid, 1, "B", buyin=200)
+    await tm.start_hand(tid)
+    with pytest.raises(GameError, match="mid-hand"):
+        await tm.sit_down(tid, 2, "Late", buyin=200)

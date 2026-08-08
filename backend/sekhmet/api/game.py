@@ -27,18 +27,7 @@ async def get_table(table_id: str):
     if session is None:
         return JSONResponse(status_code=404, content={"error": "Table not found"})
 
-    gs = session.game_state
-    return {
-        "table_id": table_id,
-        "phase": gs.phase.name,
-        "players": [
-            {"seat_idx": p.seat_idx, "name": p.name, "stack": p.stack}
-            for p in gs.players
-        ],
-        "max_seats": session.n_seats,
-        "small_blind": gs.small_blind,
-        "big_blind": gs.big_blind,
-    }
+    return tm.table_info(session)
 
 
 @router.get("/tables")
@@ -49,10 +38,5 @@ async def list_tables():
     for tid in tm._tables:
         session = await tm.get_table(tid)
         if session:
-            tables.append({
-                "table_id": tid,
-                "phase": session.game_state.phase.name,
-                "n_players": len(session.player_names),
-                "max_seats": session.n_seats,
-            })
+            tables.append(tm.table_info(session))
     return {"tables": tables}

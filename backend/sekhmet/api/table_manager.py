@@ -89,6 +89,7 @@ class TableSession:
     clients: dict[int, WebSocket] = field(default_factory=dict)  # seat_idx → ws
     player_names: dict[int, str] = field(default_factory=dict)    # seat_idx → name
     config: TableConfig = field(default_factory=TableConfig)
+    bot_levels: dict[int, int] = field(default_factory=dict)  # seat_idx → 1-3
 
     @property
     def n_seats(self) -> int:
@@ -147,6 +148,7 @@ async def sit_down(
     name: str,
     buyin: int | None = None,
     is_human: bool = True,
+    bot_level: int | None = None,
 ) -> dict[str, Any]:
     """Seat a player at *table_id*.  Returns the updated table summary."""
     session = await get_table(table_id)
@@ -158,6 +160,17 @@ async def sit_down(
 
     if seat_idx in session.player_names:
         raise GameError(f"Seat {seat_idx} is already occupied")
+
+    # Mid-hand joins corrupt the betting round (a fresh player has matched
+    # no bets and holds no cards) — only allow seating between hands.
+    if session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+        raise GameError("Table is mid-hand — wait for the next hand")
+
+    if not is_human:
+        level = 2 if bot_level is None else int(bot_level)
+        if level not in (1, 2, 3):
+            raise GameError(f"bot_level must be 1-3, got {bot_level}")
+        session.bot_levels[seat_idx] = level
 
     stack = buyin if buyin is not None else session.config.default_buyin
     player = Player(
@@ -184,6 +197,7 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
 
     session.player_names.pop(seat_idx, None)
     session.clients.pop(seat_idx, None)
+    session.bot_levels.pop(seat_idx, None)
 
     players = tuple(p for p in session.game_state.players if p.seat_idx != seat_idx)
     session.game_state = session.game_state.with_players(players)
@@ -292,8 +306,8 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
         # action must never freeze the game: fall back to check (free) or
         # fold (facing a bet) and carry on.
         bot_name = session.player_names.get(cur_idx, f"Bot{cur_idx}")
-        # Default to rule_lv2 for bots
-        bot = create_bot("rule_lv2")
+        level = session.bot_levels.get(cur_idx, 2)
+        bot = create_bot(f"rule_lv{level}")
         try:
             action = bot.decide(gs, cur_idx)
             gs = execute(gs, action)
@@ -360,16 +374,34 @@ async def send_to_player(table_id: str, seat_idx: int, message: dict[str, Any]) 
 # ---------------------------------------------------------------------------
 
 
-def _table_summary(session: TableSession) -> dict[str, Any]:
+def table_info(session: TableSession) -> dict[str, Any]:
+    """Serializable public table info — shared by REST and ws summary."""
+    seats = []
+    for seat, name in sorted(session.player_names.items()):
+        p = session.game_state.player(seat)
+        seats.append({
+            "seat_idx": seat,
+            "name": name,
+            "is_human": p.is_human if p is not None else True,
+            "bot_level": session.bot_levels.get(seat),
+            "stack": p.stack if p is not None else 0,
+        })
     return {
-        "type": "table_state",
         "table_id": session.table_id,
-        "seats": {
-            seat: name for seat, name in session.player_names.items()
-        },
         "phase": session.game_state.phase.name,
         "max_seats": session.n_seats,
+        "config": {
+            "small_blind": session.config.small_blind,
+            "big_blind": session.config.big_blind,
+            "default_buyin": session.config.default_buyin,
+            "max_seats": session.config.max_seats,
+        },
+        "seats": seats,
     }
+
+
+def _table_summary(session: TableSession) -> dict[str, Any]:
+    return {"type": "table_state", **table_info(session)}
 
 
 def _hand_start_broadcast(session: TableSession) -> dict[str, Any]:
