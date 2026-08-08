@@ -3,18 +3,19 @@ import type { PlayerInfo } from '../../hooks/useGameState';
 
 interface Props {
   player: PlayerInfo;
-  seatIndex: number;
   isCurrent: boolean;
   holeCards?: string[];   // only ever set for the hero
   avatarLabel: string;
   isMe: boolean;
 }
 
-export default function PlayerSeat({ player, seatIndex, isCurrent, holeCards, avatarLabel, isMe }: Props) {
+export default function PlayerSeat({ player, isCurrent, holeCards, avatarLabel, isMe }: Props) {
   const folded = !player.is_active;
+  // NOTE: no seat-N class here — absolute placement is owned by the outer
+  // .seat-wrap (PR #10). player-seat is position:relative (containing block
+  // for the .bet capsule); an inner seat-N would re-apply top/left offsets.
   const cls = [
     'player-seat',
-    `seat-${seatIndex}`,
     isCurrent ? 'active' : '',
     folded ? 'folded' : '',
     isMe ? 'me' : '',

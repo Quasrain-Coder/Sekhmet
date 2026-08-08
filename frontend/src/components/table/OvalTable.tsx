@@ -75,7 +75,6 @@ export default function OvalTable({
           <div key={seat.seat_idx} className={`seat-wrap seat-${slot}`}>
             <PlayerSeat
               player={merged}
-              seatIndex={slot}
               isCurrent={currentPlayerIdx === seat.seat_idx}
               holeCards={isMe ? holeCards : undefined}
               avatarLabel={
