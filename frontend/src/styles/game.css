@@ -183,7 +183,7 @@ select.input { width: auto; }
 .card.small .corner { font-size: 0.5rem; }
 
 /* ---- Player seat (头像式) ---- */
-.player-seat { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.player-seat { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .player-seat .avatar {
   width: 42px; height: 42px; border-radius: 50%;
   background: var(--surface); border: 1.5px solid var(--cyan); color: var(--cyan-text);
@@ -207,6 +207,7 @@ select.input { width: auto; }
 .player-seat.folded .name { color: #555; text-decoration: line-through; }
 .player-seat.folded .avatar { opacity: 0.4; box-shadow: none; }
 .player-seat .bet {
+  position: absolute; top: -14px;
   font-size: 0.6rem; color: var(--gold-text);
   background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.35);
   padding: 1px 8px; border-radius: 8px; white-space: nowrap;
@@ -224,9 +225,10 @@ select.input { width: auto; }
 .seat-7 { bottom: 18%; left: 8%; }
 .seat-8 { top: 6%; left: 32%; }
 
-/* seat-wrap 锚定机制（PR #10 修复，勿动） */
+/* seat-wrap 锚定机制（PR #10 修复，勿动）：wrapper (seat-wrap + seat-N) 负责绝对定位；
+   内层 player-seat 仅 relative（保持在文档流，不做绝对定位），为 .bet 胶囊提供 containing block */
 .seat-wrap { position: absolute; }
-.seat-wrap .player-seat { position: static; transform: none; }
+.seat-wrap .player-seat { position: relative; transform: none; }
 .bot-badge {
   position: absolute; top: -6px; right: -8px;
   background: #1b1032; color: var(--purple); font-size: 11px;

@@ -109,12 +109,12 @@ export default function GameTablePage() {
     return (
       <div className="join-panel">
         <h2>Table {detail.table_id}</h2>
-        <p>Blinds {detail.config.small_blind}/{detail.config.big_blind}
+        <p className="room-meta">Blinds {detail.config.small_blind}/{detail.config.big_blind}
            {' '}· Buy-in {detail.config.default_buyin}
            {' '}· {detail.seats.length}/{detail.max_seats} players
            {' '}· {detail.phase}</p>
         {detail.seats.length > 0 && (
-          <p>Seated: {detail.seats.map(s => s.name).join(', ')}</p>
+          <p className="room-meta">Seated: {detail.seats.map(s => s.name).join(', ')}</p>
         )}
         <div className="lobby-actions">
           <input className="input" placeholder="Your name" value={name}
