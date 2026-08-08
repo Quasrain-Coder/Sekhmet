@@ -49,6 +49,14 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await websocket.send_json({"type": "error", "message": "Table not found"})
                         continue
 
+                    # Validate first: a rejected sit_down (seat occupied /
+                    # mid-hand) must NOT touch the clients map — otherwise the
+                    # loser's socket hijacks the real occupant's broadcasts.
+                    summary = await tm.sit_down(
+                        table_id, seat_idx, name, buyin, is_human,
+                        bot_level=bot_level,
+                    )
+
                     # Only human seats claim the connection.  A bot seated
                     # through the same connection (solo-play auto-add) must
                     # NOT overwrite my_seat — otherwise every player_action
@@ -57,10 +65,6 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         session.clients[seat_idx] = websocket
                         my_seat = seat_idx
 
-                    summary = await tm.sit_down(
-                        table_id, seat_idx, name, buyin, is_human,
-                        bot_level=bot_level,
-                    )
                     await tm.broadcast(table_id, summary)
 
                 elif msg_type == "stand_up":

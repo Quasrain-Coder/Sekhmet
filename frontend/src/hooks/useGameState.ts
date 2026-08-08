@@ -86,7 +86,7 @@ type Action =
   | { type: 'HOLE_CARDS'; cards: string[] }
   | { type: 'GAME_UPDATE'; data: GameMsg & { type: 'game_state_update' } }
   | { type: 'HAND_RESULT'; data: GameMsg & { type: 'hand_result' } }
-  | { type: 'SET_MY_SEAT'; seat: number }
+  | { type: 'SET_MY_SEAT'; seat: number | null }
   | { type: 'SET_CONNECTED'; connected: boolean };
 
 export const initialState: AppState = {

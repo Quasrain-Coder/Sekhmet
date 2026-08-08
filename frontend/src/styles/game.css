@@ -111,6 +111,8 @@ body {
 .seat-5 { top: 8%; left: 20%; }
 .seat-6 { top: 35%; left: 2%; }
 .seat-7 { bottom: 18%; left: 8%; }
+/* 9th slot (9-handed tables only) — between top-left and top-center */
+.seat-8 { top: 6%; left: 32%; }
 
 /* ---- Pot ---- */
 .pot-display {
@@ -159,6 +161,7 @@ body {
 /* Join panel */
 .join-panel { max-width: 480px; margin: 10vh auto; text-align: center; }
 .join-panel h2 { color: #e8c15a; }
+.join-hint { color: var(--text-dim); font-size: 0.9em; margin-top: 8px; }
 
 /* Empty seat + bot controls */
 .empty-seat { position: absolute; }

@@ -153,6 +153,33 @@ def test_ws_kick_bot_and_reject_kicking_human():
         assert msg["type"] == "error"
 
 
+def test_failed_sit_down_does_not_hijack_victim_broadcasts():
+    """A rejected sit_down (seat taken) must not overwrite the real
+    occupant's clients entry — the victim must keep receiving broadcasts."""
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with (
+        client.websocket_connect(f"/ws/{tid}") as ws1,
+        client.websocket_connect(f"/ws/{tid}") as ws2,
+    ):
+        # ws1 takes seat 0
+        ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero"})
+        ws1.receive_json()                      # ws1's join broadcast
+
+        # ws2 tries the same seat — rejected, must not touch clients
+        ws2.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hijacker"})
+        msg = ws2.receive_json()
+        assert msg["type"] == "error"
+
+        # ws1 seats a bot at seat 1 → table_state broadcast must still
+        # reach ws1 (pre-fix, clients[0] was hijacked by ws2's socket).
+        ws1.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot",
+                       "is_human": False})
+        msg = ws1.receive_json()
+        assert msg["type"] == "table_state"
+        assert any(s["seat_idx"] == 1 for s in msg["seats"])
+
+
 async def test_sit_down_rejected_mid_hand():
     """Joining mid-hand would corrupt the round-close logic — reject it."""
     from sekhmet.game_engine import GameError

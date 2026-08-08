@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useGameState } from '../hooks/useGameState';
@@ -22,6 +22,10 @@ export default function GameTablePage() {
   const [detail, setDetail] = useState<TableDetail | null | 'not-found'>(null);
   const [name, setName] = useState(() => localStorage.getItem('pokerName') || '');
   const [buyin, setBuyin] = useState(200);
+  // Seat we optimistically claimed via sit_down but the server has not yet
+  // confirmed (table_state echo).  An 'error' while pending means the sit
+  // was rejected — revert mySeat so the user is not stranded at the table.
+  const pendingSeat = useRef<number | null>(null);
 
   // Fetch room info for the join panel
   useEffect(() => {
@@ -36,12 +40,24 @@ export default function GameTablePage() {
     onMessage((msg) => {
       const m = msg as GameMsg;
       switch (m.type) {
-        case 'table_state': dispatch({ type: 'TABLE_STATE', data: m as any }); break;
+        case 'table_state':
+          if (pendingSeat.current !== null &&
+              m.seats.some(s => s.seat_idx === pendingSeat.current)) {
+            pendingSeat.current = null;  // sit confirmed
+          }
+          dispatch({ type: 'TABLE_STATE', data: m as any });
+          break;
         case 'hand_start': dispatch({ type: 'HAND_START', data: m as any }); break;
         case 'hole_cards': dispatch({ type: 'HOLE_CARDS', cards: m.cards }); break;
         case 'game_state_update': dispatch({ type: 'GAME_UPDATE', data: m as any }); break;
         case 'hand_result': dispatch({ type: 'HAND_RESULT', data: m as any }); break;
-        case 'error': alert(m.message); break;  // never fail silently
+        case 'error':
+          if (pendingSeat.current !== null) {
+            pendingSeat.current = null;
+            dispatch({ type: 'SET_MY_SEAT', seat: null });
+          }
+          alert(m.message);  // never fail silently
+          break;
       }
     });
   }, [onMessage, dispatch]);
@@ -60,6 +76,7 @@ export default function GameTablePage() {
       .find(i => !taken.has(i));
     if (free === undefined) { alert('Table is full'); return; }
     localStorage.setItem('pokerName', name);
+    pendingSeat.current = free;
     send({ type: 'sit_down', seat_idx: free, name, buyin });
     dispatch({ type: 'SET_MY_SEAT', seat: free });
   };
@@ -88,6 +105,7 @@ export default function GameTablePage() {
       );
     }
     if (!detail) return <div className="waiting-text">Loading…</div>;
+    const midHand = detail.phase !== 'WAITING' && detail.phase !== 'SHOWDOWN';
     return (
       <div className="join-panel">
         <h2>Table {detail.table_id}</h2>
@@ -103,11 +121,15 @@ export default function GameTablePage() {
                  onChange={e => setName(e.target.value)} />
           <input className="input" type="number" value={buyin} style={{ width: 110 }}
                  onChange={e => setBuyin(Number(e.target.value))} />
-          <button className="btn" onClick={joinTable} disabled={!name || !connected}>
+          <button className="btn" onClick={joinTable}
+                  disabled={!name || !connected || midHand}>
             Sit Down
           </button>
           <button className="btn btn-sm" onClick={() => navigate('/')}>← Lobby</button>
         </div>
+        {midHand && (
+          <p className="join-hint">Hand in progress — wait for it to finish</p>
+        )}
       </div>
     );
   }

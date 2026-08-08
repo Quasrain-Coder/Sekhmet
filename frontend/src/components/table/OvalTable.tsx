@@ -21,11 +21,14 @@ interface Props {
 /** Map a seat index to an oval display slot, rotating so *mySeat* is at
  *  position 0 (bottom center). */
 function displaySlot(seatIdx: number, total: number, mySeat: number | null): number {
-  if (mySeat === null) return seatIdx % 8;
+  if (mySeat === null) return seatIdx % total;
   const rel = (seatIdx - mySeat + total) % total;
-  const SLOTS = total <= 2 ? [0, 4] : [0, 2, 3, 4, 5, 6, 7, 1];
-  if (total <= 8) return SLOTS[rel % SLOTS.length];
-  return rel % 8;
+  if (total <= 2) return [0, 4][rel % 2];
+  // 9-handed needs the 9th visual slot (.seat-8, between top-left and
+  // top-center) — folding it into slot 0 would stack it on my seat.
+  if (total === 9) return [0, 2, 3, 4, 8, 5, 6, 7, 1][rel];
+  const SLOTS = [0, 2, 3, 4, 5, 6, 7, 1];
+  return SLOTS[rel % SLOTS.length];
 }
 
 export default function OvalTable({
@@ -42,7 +45,7 @@ export default function OvalTable({
   useEffect(() => {
     if (!canAddBot) setPendingSeat(null);
   }, [canAddBot]);
-  const total = Math.min(Math.max(maxSeats, 2), 8);
+  const total = Math.min(Math.max(maxSeats, 2), 9);
   const occupied = new Map(seats.map(s => [s.seat_idx, s]));
 
   return (
