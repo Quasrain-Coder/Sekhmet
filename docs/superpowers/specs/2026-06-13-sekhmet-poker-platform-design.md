@@ -98,6 +98,7 @@ class GameState:
     last_aggressor_idx: int | None      # 最后主动加注者
     current_bet: int                    # 当前轮次最大下注额
     round_history: list[Action]         # 本局所有动作
+    acted_seats: tuple[int, ...]        # 本轮已行动座位（回合结束判定依据，每街重置）
     blinds: tuple[int, int]             # (小盲, 大盲)
 ```
 
@@ -134,8 +135,10 @@ class Action:
 
 1. 合法性校验（轮次、金额合法性、最小加注）
 2. 执行动作（更新筹码、底池、推进回合）
-3. 回合推进判定（所有人行动完毕且金额一致？）
-4. 提前结束判定（只剩一人未弃牌？）
+3. 回合推进判定：所有可行动玩家（未弃牌且未 all-in）**均已行动**（在 `acted_seats` 中）且下注额一致 —— "已行动"追踪是大盲 option 的保障：翻前溜入底池时大盲必须获得一次行动机会
+4. 提前结束判定（只剩一人未弃牌 → 直接 SHOWDOWN，不发完牌面，胜者无需亮牌）
+5. 阶段推进时发放公共牌（flop 3 张 / turn 1 张 / river 1 张，无烧牌——数字牌堆烧牌无意义）
+6. 无人可再行动（其余玩家全部 all-in）→ 自动发完剩余公共牌直进 SHOWDOWN（runout），牌局不得停滞
 
 ## 4. AI 引擎
 

@@ -196,10 +196,10 @@ def test_execute_call_updates_stack_and_pot():
     p1 = make_player("A", 0, stack=100)
     p2 = make_player("B", 1, stack=100, current_bet=10)
     # Pot should already reflect B's 10-chip bet from a prior action.
-    # Since both players start with current_bet=10 at table current_bet=10,
-    # A's call will equalize all bets → phase advances immediately.
+    # B has already acted this round (acted_seats), so A's call both
+    # equalizes the bets and closes the round → phase advances.
     state = make_state(p1, p2, current_player_idx=0, current_bet=10,
-                       pot=PotState(main_pot=10))
+                       pot=PotState(main_pot=10), acted_seats=(1,))
     new_state = execute(state, Action(0, ActionType.CALL))
     p0_new = new_state.player(0)
     assert p0_new is not None
@@ -252,13 +252,14 @@ def test_last_player_folds_triggers_showdown():
 def test_both_call_advances_preflop_to_flop():
     """When remaining player checks (no bet to call), phase advances.
 
-    Scenario: 2 players, both have already matched the BB (current_bet=10).
-    Player A checks → no bet to call, phase should advance because all
-    bets are equal and action has gone around.
+    Scenario: 2 players, both have already matched the BB (current_bet=10)
+    and B has already acted this round.  Player A checks → all bets equal
+    and everyone has acted → phase advances.
     """
     p1 = make_player("A", 0, stack=100, current_bet=10)
     p2 = make_player("B", 1, stack=100, current_bet=10)
-    state = make_state(p1, p2, current_player_idx=0, current_bet=10, dealer_idx=0)
+    state = make_state(p1, p2, current_player_idx=0, current_bet=10, dealer_idx=0,
+                       acted_seats=(1,))
     state = execute(state, Action(0, ActionType.CHECK))
     # All bets equal at 10, phase advances
     assert state.phase == GamePhase.FLOP

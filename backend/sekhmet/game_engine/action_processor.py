@@ -210,12 +210,13 @@ def execute(state: GameState, action: Action) -> GameState:
                 new_min_raise = raise_amount
 
     # --- 5.  Track which players have acted this round ---
-    if at == ActionType.FOLD or is_fold:
-        # Folded players don't get to act again; don't add them to acted list
-        pass
+    # A betting round closes only when every player who can still act has
+    # acted AND matched the current bet (see ``_round_closed``).  This is
+    # what preserves the big blind's option in a limped pot.
+    if action.player_idx in state.acted_seats:
+        new_acted = state.acted_seats
     else:
-        # Mark that this player has acted (replace if already there)
-        pass  # we handle this via next_player logic below
+        new_acted = state.acted_seats + (action.player_idx,)
 
     # --- 6.  Record history ---
     recorded_action = Action(
@@ -240,6 +241,7 @@ def execute(state: GameState, action: Action) -> GameState:
         small_blind=state.small_blind,
         big_blind=state.big_blind,
         round_history=new_history,
+        acted_seats=new_acted,
     )
 
     # --- 8.  Determine next player & phase transition ---
@@ -275,11 +277,19 @@ def _count_players_who_can_act(players: tuple[Player, ...]) -> int:
     return sum(1 for p in players if p.is_active and not p.is_all_in)
 
 
-def _all_bets_equal(players: tuple[Player, ...], current_bet: int) -> bool:
-    """Check whether every active, non-all-in player has matched the current bet."""
-    for p in players:
+def _round_closed(state: GameState) -> bool:
+    """Whether the current betting round is complete.
+
+    A round closes only when **every** player who can still act (active and
+    not all-in) has both matched ``current_bet`` and taken at least one
+    action this round.  Checking ``acted_seats`` is what stops a limped pot
+    from skipping the big blind's option.
+    """
+    for p in state.players:
         if p.is_active and not p.is_all_in:
-            if p.current_bet != current_bet:
+            if p.current_bet != state.current_bet:
+                return False
+            if p.seat_idx not in state.acted_seats:
                 return False
     return True
 
@@ -288,22 +298,22 @@ def _advance(state: GameState, from_seat: int) -> GameState:
     """Figure out who acts next, or whether the phase needs to change."""
     n_seats = max((p.seat_idx + 1 for p in state.players), default=0)
 
-    # If only one active player left → showdown
-    if _count_players_who_can_act(state.players) <= 1 and state.n_active <= 1:
+    # Everyone folded except one player → hand over, no board needed
+    if state.n_active <= 1:
         return state.with_phase(GamePhase.SHOWDOWN)
 
-    # If all bets are matched, we may need to advance the phase.
-    # But first: has everyone had a chance to act?
-    # Simplification: if all active (non-all-in) players have equal bets,
-    # and the last aggressor has been answered, advance.
-    if _all_bets_equal(state.players, state.current_bet):
+    if _round_closed(state):
+        if _count_players_who_can_act(state.players) <= 1:
+            # No further betting is possible (everyone else is all-in) —
+            # deal out the remaining board and go straight to showdown.
+            return _runout(state)
         return _advance_phase(state)
 
     # Otherwise, pass to the next player
     next_seat = _next_active_seat(state.players, from_seat, n_seats)
     if next_seat is None:
-        # All remaining players are all-in → showdown
-        return state.with_phase(GamePhase.SHOWDOWN)
+        # No one left who can act — run out the board
+        return _runout(state)
 
     return GameState(
         phase=state.phase,
@@ -319,11 +329,76 @@ def _advance(state: GameState, from_seat: int) -> GameState:
         small_blind=state.small_blind,
         big_blind=state.big_blind,
         round_history=state.round_history,
+        acted_seats=state.acted_seats,
+    )
+
+
+# Community cards dealt when entering each street (no burn cards — the
+# deck is digital, burning adds nothing).
+_CARDS_PER_STREET: dict[GamePhase, int] = {
+    GamePhase.FLOP: 3,
+    GamePhase.TURN: 1,
+    GamePhase.RIVER: 1,
+}
+
+
+def _deal_community(
+    community: tuple[object, ...], deck: tuple[object, ...], n: int
+) -> tuple[tuple[object, ...], tuple[object, ...]]:
+    """Deal *n* cards off the top (end) of *deck* onto the board."""
+    n = min(n, len(deck))
+    if n == 0:
+        return community, deck
+    return community + deck[-n:], deck[:-n]
+
+
+def _runout(state: GameState) -> GameState:
+    """Deal the remaining community cards and go straight to showdown.
+
+    Used when no further betting is possible — e.g. every remaining player
+    is all-in.  Without this the hand would stall with no one able to act.
+    """
+    community = state.community_cards
+    deck = state.deck
+    while len(community) < 5 and deck:
+        n = 3 if len(community) == 0 else 1
+        community, deck = _deal_community(community, deck, n)
+
+    players = tuple(
+        Player(
+            name=p.name,
+            seat_idx=p.seat_idx,
+            stack=p.stack,
+            hole_cards=p.hole_cards,
+            is_active=p.is_active,
+            is_all_in=p.is_all_in,
+            current_bet=0,
+            total_bet=p.total_bet,
+            is_human=p.is_human,
+        )
+        for p in state.players
+    )
+
+    return GameState(
+        phase=GamePhase.SHOWDOWN,
+        players=players,
+        community_cards=community,
+        pot=state.pot,
+        deck=deck,
+        current_player_idx=None,
+        dealer_idx=state.dealer_idx,
+        current_bet=0,
+        min_raise=state.big_blind,
+        last_aggressor_idx=None,
+        small_blind=state.small_blind,
+        big_blind=state.big_blind,
+        round_history=state.round_history,
+        acted_seats=(),
     )
 
 
 def _advance_phase(state: GameState) -> GameState:
-    """Move to the next phase — deal community cards if applicable."""
+    """Move to the next phase — dealing community cards if applicable."""
     # Reset per-street bets
     players = tuple(
         Player(
@@ -340,22 +415,6 @@ def _advance_phase(state: GameState) -> GameState:
         for p in state.players
     )
 
-    base = GameState(
-        phase=state.phase,
-        players=players,
-        community_cards=state.community_cards,
-        pot=state.pot,
-        deck=state.deck,
-        current_player_idx=state.current_player_idx,
-        dealer_idx=state.dealer_idx,
-        current_bet=0,
-        min_raise=state.big_blind,
-        last_aggressor_idx=None,
-        small_blind=state.small_blind,
-        big_blind=state.big_blind,
-        round_history=state.round_history,
-    )
-
     next_phase_map = {
         GamePhase.PREFLOP: GamePhase.FLOP,
         GamePhase.FLOP: GamePhase.TURN,
@@ -365,27 +424,47 @@ def _advance_phase(state: GameState) -> GameState:
     next_phase = next_phase_map.get(state.phase, GamePhase.SHOWDOWN)
 
     if next_phase == GamePhase.SHOWDOWN:
-        return base.with_phase(GamePhase.SHOWDOWN)
+        return GameState(
+            phase=GamePhase.SHOWDOWN,
+            players=players,
+            community_cards=state.community_cards,
+            pot=state.pot,
+            deck=state.deck,
+            current_player_idx=None,
+            dealer_idx=state.dealer_idx,
+            current_bet=0,
+            min_raise=state.big_blind,
+            last_aggressor_idx=None,
+            small_blind=state.small_blind,
+            big_blind=state.big_blind,
+            round_history=state.round_history,
+            acted_seats=(),
+        )
 
-    # Find the first player to act in the new round:
-    # post-flop, action starts with the first active player left of the dealer
-    n_seats = max((p.seat_idx + 1 for p in base.players), default=0)
-    first_to_act = _next_active_seat(base.players, base.dealer_idx, n_seats)
+    # Deal this street's community cards
+    community, deck = _deal_community(
+        state.community_cards, state.deck, _CARDS_PER_STREET[next_phase]
+    )
+
+    # First to act post-flop: first active player left of the dealer
+    n_seats = max((p.seat_idx + 1 for p in players), default=0)
+    first_to_act = _next_active_seat(players, state.dealer_idx, n_seats)
 
     return GameState(
         phase=next_phase,
-        players=base.players,
-        community_cards=base.community_cards,
-        pot=base.pot,
-        deck=base.deck,
+        players=players,
+        community_cards=community,
+        pot=state.pot,
+        deck=deck,
         current_player_idx=first_to_act,
-        dealer_idx=base.dealer_idx,
-        current_bet=base.current_bet,
-        min_raise=base.min_raise,
-        last_aggressor_idx=base.last_aggressor_idx,
-        small_blind=base.small_blind,
-        big_blind=base.big_blind,
-        round_history=base.round_history,
+        dealer_idx=state.dealer_idx,
+        current_bet=0,
+        min_raise=state.big_blind,
+        last_aggressor_idx=None,
+        small_blind=state.small_blind,
+        big_blind=state.big_blind,
+        round_history=state.round_history,
+        acted_seats=(),
     )
 
 
