@@ -82,6 +82,13 @@ def _short_id() -> str:
 
 
 @dataclass
+class PlayerStats:
+    """Per-seat in-memory stats for the room leaderboard (resets on stand_up)."""
+    hands: int = 0
+    wins: int = 0
+
+
+@dataclass
 class TableSession:
     table_id: str
     game_state: GameState
@@ -90,6 +97,8 @@ class TableSession:
     player_names: dict[int, str] = field(default_factory=dict)    # seat_idx → name
     config: TableConfig = field(default_factory=TableConfig)
     bot_levels: dict[int, int] = field(default_factory=dict)  # seat_idx → 1-3
+    stats: dict[int, PlayerStats] = field(default_factory=dict)      # seat_idx → stats
+    total_buyin: dict[int, int] = field(default_factory=dict)        # seat_idx → chips bought
 
     @property
     def n_seats(self) -> int:
@@ -186,6 +195,9 @@ async def sit_down(
     current.append(player)
     session.game_state = session.game_state.with_players(tuple(current))
 
+    session.stats[seat_idx] = PlayerStats()
+    session.total_buyin[seat_idx] = stack
+
     return _table_summary(session)
 
 
@@ -198,6 +210,8 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
     session.player_names.pop(seat_idx, None)
     session.clients.pop(seat_idx, None)
     session.bot_levels.pop(seat_idx, None)
+    session.stats.pop(seat_idx, None)
+    session.total_buyin.pop(seat_idx, None)
 
     players = tuple(p for p in session.game_state.players if p.seat_idx != seat_idx)
     session.game_state = session.game_state.with_players(players)
@@ -239,6 +253,10 @@ async def start_hand(table_id: str) -> dict[str, Any]:
         dealer_idx=dealer,
     )
     session.deck.cards = list(session.game_state.deck)
+
+    for p in session.game_state.players:
+        if p.seat_idx in session.stats:
+            session.stats[p.seat_idx].hands += 1
 
     return _hand_start_broadcast(session)
 
@@ -379,12 +397,17 @@ def table_info(session: TableSession) -> dict[str, Any]:
     seats = []
     for seat, name in sorted(session.player_names.items()):
         p = session.game_state.player(seat)
+        st = session.stats.get(seat)
+        buyin = session.total_buyin.get(seat, p.stack if p is not None else 0)
         seats.append({
             "seat_idx": seat,
             "name": name,
             "is_human": p.is_human if p is not None else True,
             "bot_level": session.bot_levels.get(seat),
             "stack": p.stack if p is not None else 0,
+            "hands": st.hands if st else 0,
+            "wins": st.wins if st else 0,
+            "net_chips": (p.stack if p is not None else 0) - buyin,
         })
     return {
         "table_id": session.table_id,
@@ -497,6 +520,10 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
 
         # Award
         awards_list = award_pot(pot, gs.players, hands)
+
+    for seat in {a.winner_seat_idx for a in awards_list}:
+        if seat in session.stats:
+            session.stats[seat].wins += 1
 
     # Update player stacks
     players_list = list(gs.players)

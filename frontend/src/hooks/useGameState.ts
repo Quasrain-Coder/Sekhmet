@@ -16,6 +16,9 @@ export interface SeatInfo {
   is_human: boolean;
   bot_level: number | null;
   stack: number;
+  hands: number;
+  wins: number;
+  net_chips: number;
 }
 
 export interface TableConfigData {
