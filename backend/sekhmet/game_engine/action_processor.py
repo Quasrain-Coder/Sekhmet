@@ -485,7 +485,7 @@ def deal_new_hand(
     state : GameState
         Must be in WAITING phase (fresh table) or SHOWDOWN (previous hand
         complete — the state machine's SHOWDOWN → WAITING edge), with at
-        least 2 players seated.
+        least 2 players with chips.
     deck_cards : list[Card]
         A shuffled deck (will be consumed via ``.pop()``).
     dealer_idx : int

@@ -95,6 +95,21 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         continue
                     target = int(target)
                     if target == my_seat:
+                        # Mid-hand a manual stand_up would rip the player out
+                        # of game_state.players and wedge the hand (action
+                        # timer finds no player, bots stop).  The graceful
+                        # path is: close the tab → disconnect → grace expiry
+                        # folds them out.
+                        session = await tm.get_table(table_id)
+                        if session is not None and session.game_state.phase not in (
+                            GamePhase.WAITING, GamePhase.SHOWDOWN,
+                        ):
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": "Cannot leave mid-hand — close the "
+                                           "tab and you'll be folded out",
+                            })
+                            continue
                         summary = await tm.stand_up(table_id, my_seat)
                         my_seat = None
                         await tm.broadcast(table_id, summary)

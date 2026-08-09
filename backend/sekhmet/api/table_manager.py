@@ -147,7 +147,16 @@ async def get_table(table_id: str) -> TableSession | None:
 
 async def remove_table(table_id: str) -> None:
     async with _lock:
-        _tables.pop(table_id, None)
+        session = _tables.pop(table_id, None)
+    if session is not None:
+        # Don't leak pending tasks: cancel every grace timer and the
+        # action timer or they fire against a table that no longer exists.
+        for task in session.grace_timers.values():
+            task.cancel()
+        session.grace_timers.clear()
+        if session.action_timer is not None:
+            session.action_timer.cancel()
+            session.action_timer = None
 
 
 # ---------------------------------------------------------------------------
@@ -289,6 +298,13 @@ async def _expire_seat(table_id: str, seat_idx: int) -> None:
                     replace(pl, is_active=False) if pl.seat_idx == seat_idx else pl
                     for pl in gs.players
                 ))
+                # The replace surgery bypasses execute(), so the engine's
+                # fold-out check never runs.  If only one active player
+                # remains, force SHOWDOWN now so the fold-out branch below
+                # pays the survivor — otherwise the pot evaporates when the
+                # survivor later folds.
+                if gs.n_active <= 1:
+                    gs = gs.with_phase(GamePhase.SHOWDOWN)
             session.game_state = gs
 
         result = None
@@ -524,9 +540,15 @@ async def _action_timeout(table_id: str, seat_idx: int) -> None:
     action_type = "CHECK" if to_call == 0 else "FOLD"
     logger.info("action timeout: auto %s for seat %s at table %s",
                 action_type, seat_idx, table_id)
-    msg = await handle_player_action(table_id, seat_idx, action_type)
-    await broadcast(table_id, msg)
-    await after_action(table_id)
+    try:
+        msg = await handle_player_action(table_id, seat_idx, action_type)
+        await broadcast(table_id, msg)
+        await after_action(table_id)
+    except GameError:
+        # Lost a race (e.g. the player acted or the hand ended between the
+        # checks above and the execute) — nothing to do, and the task must
+        # not die with an unretrieved exception.
+        pass
 
 
 async def after_action(table_id: str) -> None:
