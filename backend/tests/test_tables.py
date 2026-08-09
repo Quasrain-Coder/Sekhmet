@@ -189,3 +189,84 @@ async def test_sit_down_rejected_mid_hand():
     await tm.start_hand(tid)
     with pytest.raises(GameError, match="mid-hand"):
         await tm.sit_down(tid, 2, "Late", buyin=200)
+
+
+async def test_stats_accumulate_over_a_hand():
+    """Hands/wins/net_chips tracked per seat and exposed via table_info."""
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    sb_seat = session.game_state.current_player_idx  # HU: SB acts first
+
+    # SB folds → BB wins the 15 pot (blinds 5+10)
+    await tm.handle_player_action(tid, sb_seat, "FOLD")
+
+    session = await tm.get_table(tid)
+    info = tm.table_info(session)
+    seats = {s["seat_idx"]: s for s in info["seats"]}
+    assert seats[0]["hands"] == 1 and seats[1]["hands"] == 1
+    winner = 1 - sb_seat
+    loser = sb_seat
+    assert seats[winner]["wins"] == 1 and seats[loser]["wins"] == 0
+    assert seats[winner]["net_chips"] == 5    # 205 - 200
+    assert seats[loser]["net_chips"] == -5    # 195 - 200
+
+
+async def test_stats_cleared_on_stand_up():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.stand_up(tid, 1)
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert 1 not in session.stats and 1 not in session.total_buyin
+
+
+async def test_wins_and_hands_accumulate_over_multiple_hands():
+    """Two fold-out hands: every seated player gains hands, winners gain wins."""
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    for _ in range(2):
+        await tm.start_hand(tid)
+        session = await tm.get_table(tid)
+        sb = session.game_state.current_player_idx
+        await tm.handle_player_action(tid, sb, "FOLD")
+    session = await tm.get_table(tid)
+    info = tm.table_info(session)
+    assert sum(s["wins"] for s in info["seats"]) == 2
+    assert sum(s["hands"] for s in info["seats"]) == 4
+
+
+def test_ws_table_state_broadcast_on_hand_end():
+    """Stats ride the table_state broadcast — it must follow hand_result,
+    or the leaderboard would only refresh on sit/stand."""
+    import random
+    random.seed(7)
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        ws.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot", "buyin": 200,
+                      "is_human": False})
+        ws.send_json({"type": "start_hand"})
+
+        saw_hand_result = False
+        for _ in range(40):
+            msg = ws.receive_json()
+            if msg["type"] == "hand_result":
+                saw_hand_result = True
+                continue
+            if saw_hand_result and msg["type"] == "table_state":
+                seats = {s["seat_idx"]: s for s in msg["seats"]}
+                assert sum(s["hands"] for s in seats.values()) == 2
+                assert sum(s["wins"] for s in seats.values()) == 1
+                return
+            cur = msg.get("current_player_idx")
+            if msg["type"] in ("game_state_update", "hand_start") and cur == 0:
+                ws.send_json({"type": "player_action", "action": "FOLD"})
+        raise AssertionError("no table_state followed the hand_result")

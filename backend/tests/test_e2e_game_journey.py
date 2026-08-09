@@ -64,6 +64,7 @@ def test_complete_game_journey():
         assert ts["seats"] == [{
             "seat_idx": 0, "name": "Hero", "is_human": True,
             "bot_level": None, "stack": 2000,
+            "hands": 0, "wins": 0, "net_chips": 0,
         }]
         assert ts["config"]["big_blind"] == 20
 
