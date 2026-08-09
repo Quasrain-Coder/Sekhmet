@@ -337,3 +337,19 @@ select.input { width: auto; }
   border-color: var(--gold); color: var(--gold-text);
   box-shadow: 0 0 12px rgba(251, 191, 36, 0.55);
 }
+
+/* ---- Rebuy ---- */
+.rebuy-panel {
+  display: flex; gap: 10px; align-items: center; justify-content: center;
+  background: rgba(251, 191, 36, 0.06); border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 8px; padding: 10px 16px;
+}
+.rebuy-panel .input { width: 110px; }
+.rebuy-label { color: var(--gold-text); font-size: 0.85rem; }
+
+/* ---- Offline seat ---- */
+.seat-wrap.offline .avatar { opacity: 0.4; border-style: dashed; box-shadow: none; }
+.seat-wrap.offline .name::after { content: ' (offline)'; color: var(--text-dim); }
+
+/* ---- Reclaimable seat in picker ---- */
+.picker-seat.reclaim { border-style: dashed; border-color: var(--gold); color: var(--gold-text); }
