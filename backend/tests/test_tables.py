@@ -472,6 +472,112 @@ async def test_grace_expiry_mid_hand_non_current_player(monkeypatch):
     assert target not in session.total_buyin
 
 
+async def test_grace_expiry_replace_surgery_pays_survivor(monkeypatch):
+    """非当前行动者掉线过期走 replace 手术，若此后只剩 1 名活跃玩家，
+    必须立即进入 SHOWDOWN 并把底池判给幸存者 —— 否则幸存者再弃牌时
+    n_active=0，底池蒸发。"""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "P0", buyin=200)
+    await tm.sit_down(tid, 1, "P1", buyin=200)
+    await tm.sit_down(tid, 2, "P2", buyin=200)
+    await tm.start_hand(tid)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    # 第一人 CALL 保持活跃，第二人 FOLD —— 之后活跃者 = {第一人, 第三人}
+    first = session.game_state.current_player_idx
+    await tm.handle_player_action(tid, first, "CALL")
+    session = await tm.get_table(tid)
+    second = session.game_state.current_player_idx
+    await tm.handle_player_action(tid, second, "FOLD")
+    session = await tm.get_table(tid)
+    survivor = session.game_state.current_player_idx
+    assert survivor != first and survivor != second
+    assert session.game_state.phase == GamePhase.PREFLOP  # 手牌仍在进行
+
+    # 掉线的是 first（非当前行动者）→ replace 手术分支
+    await tm.handle_disconnect(tid, first)
+    await asyncio.sleep(0.2)
+
+    session = await tm.get_table(tid)
+    gs = session.game_state
+    assert gs.phase == GamePhase.SHOWDOWN
+    # 底池守恒：三人总筹码不变（幸存者拿到了底池）
+    assert sum(p.stack for p in gs.players) == 600
+    assert gs.player(survivor).stack > 200 - session.config.big_blind
+
+
+def test_ws_stand_up_mid_hand_rejected():
+    """手牌进行中人类玩家 stand_up 自己的座位 → 报错且座位保留。
+    （想离桌应直接关标签页，走断线宽限被 fold 出去。）"""
+    import random
+    random.seed(7)
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        ws.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot", "buyin": 200,
+                      "is_human": False})
+        ws.send_json({"type": "start_hand"})
+        ws.send_json({"type": "stand_up"})  # 自己，手牌进行中
+        ws.send_json({"type": "__ping__"})  # 未知消息必回 error ⇒ stand_up 已处理完
+        saw_mid_hand_error = False
+        for _ in range(40):
+            msg = ws.receive_json()
+            if msg["type"] == "error" and "mid-hand" in msg["message"]:
+                saw_mid_hand_error = True
+            if msg["type"] == "error" and "Unknown message type" in msg["message"]:
+                break
+        assert saw_mid_hand_error, "mid-hand stand_up was not rejected"
+    # 座位仍在（未被从 game_state.players 中撕掉）
+    detail = client.get(f"/api/game/tables/{tid}").json()
+    assert any(s["seat_idx"] == 0 for s in detail["seats"])
+
+
+def test_action_timeout_auto_folds_facing_bet(monkeypatch):
+    """第二手牌人类是 SB/dealer，翻前第一个行动且面临下注
+    （to_call = BB − SB > 0）→ 超时必须自动 FOLD 而非 CHECK。"""
+    import random
+    monkeypatch.setattr(tm.app_config.game, "action_timeout_seconds", 0.1)
+    random.seed(7)
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        ws.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot", "buyin": 200,
+                      "is_human": False})
+        ws.send_json({"type": "start_hand"})
+
+        # 第一手正常打完：轮到自己时 CHECK（无注）或 FOLD（有注）
+        hand1_done = False
+        for _ in range(60):
+            msg = ws.receive_json()
+            if msg["type"] == "hand_result":
+                hand1_done = True
+                break
+            if msg["type"] in ("game_state_update", "hand_start") \
+                    and msg.get("current_player_idx") == 0:
+                me = next(p for p in msg["players"] if p["seat_idx"] == 0)
+                to_call = msg["current_bet"] - me["current_bet"]
+                ws.send_json({"type": "player_action",
+                              "action": "CHECK" if to_call == 0 else "FOLD"})
+        assert hand1_done, "hand 1 did not complete"
+
+        # 第二手：人类 SB/dealer 翻前先行动且面临下注 —— 什么都不发，等超时
+        ws.send_json({"type": "start_hand"})
+        for _ in range(40):
+            msg = ws.receive_json()
+            if msg["type"] in ("game_state_update", "hand_result"):
+                folds = [a for a in msg.get("round_history", [])
+                         if a["seat"] == 0 and a["action"] == "FOLD"]
+                if folds:
+                    return  # 超时自动 FOLD 生效
+            # 注意：绝不发送 player_action
+        raise AssertionError("no timeout FOLD within 40 messages")
+
+
 def test_action_timeout_auto_checks(monkeypatch):
     """轮到人类且迟迟不动 → 超时自动 CHECK（无注）/FOLD（有注）。"""
     import random
