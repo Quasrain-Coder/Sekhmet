@@ -219,6 +219,34 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
     return _table_summary(session)
 
 
+async def rebuy(table_id: str, seat_idx: int, amount: int) -> dict[str, Any]:
+    """Top up a busted player between hands. Only stack==0 may rebuy."""
+    session = await get_table(table_id)
+    if session is None:
+        raise GameError(f"Table {table_id} not found")
+    if session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+        raise GameError("Table is mid-hand — rebuy between hands")
+    player = session.game_state.player(seat_idx)
+    if player is None or seat_idx not in session.player_names:
+        raise GameError(f"Seat {seat_idx} is not occupied")
+    if player.stack > 0:
+        raise GameError("Only busted players (0 chips) can rebuy")
+    lo = 20 * session.config.big_blind
+    hi = 200 * session.config.big_blind
+    if not (lo <= amount <= hi):
+        raise GameError(f"Rebuy must be between 20bb ({lo}) and 200bb ({hi})")
+
+    session.game_state = session.game_state.with_players(tuple(
+        Player(name=p.name, seat_idx=p.seat_idx,
+               stack=p.stack + amount if p.seat_idx == seat_idx else p.stack,
+               hole_cards=p.hole_cards, is_active=p.is_active, is_all_in=p.is_all_in,
+               current_bet=p.current_bet, total_bet=p.total_bet, is_human=p.is_human)
+        for p in session.game_state.players
+    ))
+    session.total_buyin[seat_idx] = session.total_buyin.get(seat_idx, 0) + amount
+    return _table_summary(session)
+
+
 # ---------------------------------------------------------------------------
 # Hand lifecycle
 # ---------------------------------------------------------------------------

@@ -306,3 +306,67 @@ async def test_scooping_multiple_pots_counts_one_win():
     assert all(a["seat_idx"] == 1 for a in result["awards"])
     assert session.stats[1].wins == 1
     assert session.stats[0].wins == 0
+
+
+# ---------------------------------------------------------------------------
+# Rebuy (busted players top up between hands)
+# ---------------------------------------------------------------------------
+
+
+async def _bust_player(tid: str, seat: int) -> None:
+    """直接构造 0 筹码状态（比真打一手牌快且确定）。"""
+    session = await tm.get_table(tid)
+    assert session is not None
+    gs = session.game_state
+    session.game_state = gs.with_players(tuple(
+        type(p)(name=p.name, seat_idx=p.seat_idx, stack=0 if p.seat_idx == seat else p.stack,
+                hole_cards=p.hole_cards, is_active=p.is_active, is_all_in=p.is_all_in,
+                current_bet=p.current_bet, total_bet=p.total_bet, is_human=p.is_human)
+        for p in gs.players
+    ))
+
+
+async def test_rebuy_success_when_busted():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await _bust_player(tid, 0)
+
+    summary = await tm.rebuy(tid, 0, 500)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert session.game_state.player(0).stack == 500
+    assert session.total_buyin[0] == 700  # 200 + 500 → net_chips 语义保持
+    seat0 = next(s for s in summary["seats"] if s["seat_idx"] == 0)
+    assert seat0["stack"] == 500 and seat0["net_chips"] == -200
+
+
+async def test_rebuy_rejected_with_chips():
+    from sekhmet.game_engine import GameError
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    with pytest.raises(GameError, match="busted"):
+        await tm.rebuy(tid, 0, 500)
+
+
+async def test_rebuy_rejected_mid_hand():
+    from sekhmet.game_engine import GameError
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+    await _bust_player(tid, 0)
+    with pytest.raises(GameError, match="mid-hand"):
+        await tm.rebuy(tid, 0, 500)
+
+
+async def test_rebuy_amount_bounds():
+    from sekhmet.game_engine import GameError
+    tid = await tm.create_table()  # blinds 5/10 → bounds [200, 2000]
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await _bust_player(tid, 0)
+    with pytest.raises(GameError, match="20"):
+        await tm.rebuy(tid, 0, 100)   # < 20bb
+    with pytest.raises(GameError, match="200"):
+        await tm.rebuy(tid, 0, 5000)  # > 200bb

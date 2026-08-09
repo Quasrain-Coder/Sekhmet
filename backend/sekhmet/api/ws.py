@@ -123,6 +123,14 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         ):
                             await tm.broadcast(table_id, tm._table_summary(session))
 
+                elif msg_type == "rebuy":
+                    if my_seat is None:
+                        await websocket.send_json({"type": "error", "message": "Sit down first"})
+                        continue
+                    amount = int(msg.get("amount", 0))
+                    summary = await tm.rebuy(table_id, my_seat, amount)
+                    await tm.broadcast(table_id, summary)
+
                 elif msg_type == "player_action":
                     if my_seat is None:
                         await websocket.send_json({"type": "error", "message": "Sit down first"})
