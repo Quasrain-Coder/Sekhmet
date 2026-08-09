@@ -437,3 +437,36 @@ async def test_grace_expiry_mid_hand_force_folds(monkeypatch):
     # 手牌没有卡死：另一玩家筹码增加
     winner = 1 - cur
     assert gs.player(winner).stack > 200
+
+
+async def test_grace_expiry_mid_hand_non_current_player(monkeypatch):
+    """非当前行动者掉线过期：replace 手术标记 is_active=False，手牌继续。"""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "P0", buyin=200)
+    await tm.sit_down(tid, 1, "P1", buyin=200)
+    await tm.sit_down(tid, 2, "P2", buyin=200)
+    await tm.start_hand(tid)
+    session = await tm.get_table(tid)
+    assert session is not None
+    cur = session.game_state.current_player_idx
+    target = next(s for s in (0, 1, 2) if s != cur)
+
+    await tm.handle_disconnect(tid, target)
+    await asyncio.sleep(0.2)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    gs = session.game_state
+    # 手牌仍在下注轮，未被快进；行动位置不变（证明走的是 replace 分支而非
+    # 引擎 FOLD —— 后者会推进 current_player/phase）
+    assert gs.phase == GamePhase.PREFLOP
+    assert gs.current_player_idx == cur
+    assert gs.player(target).is_active is False
+    assert gs.player(target) in gs.players  # 壳留到手牌结束
+    assert gs.pot.main_pot >= 15            # 已投盲注留在池中
+    # 身份映射已清
+    assert target not in session.player_names
+    assert target not in session.stats
+    assert target not in session.total_buyin

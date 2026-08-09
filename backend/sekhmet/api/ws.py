@@ -63,6 +63,12 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                                 "type": "hole_cards",
                                 "cards": [str(c) for c in p.hole_cards],
                             })
+                        # Re-send the public game state (board, pot, bets,
+                        # current player) or a mid-hand reclaimer stays blind
+                        # until the next broadcast.
+                        await tm.send_to_player(
+                            table_id, reclaimed, tm._state_broadcast(session),
+                        )
                         continue
 
                     # Validate first: a rejected sit_down (seat occupied /

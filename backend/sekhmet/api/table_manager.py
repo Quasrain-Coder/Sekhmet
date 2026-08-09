@@ -238,6 +238,10 @@ async def handle_disconnect(table_id: str, seat_idx: int) -> None:
             return
         await _expire_seat(table_id, seat_idx)
 
+    # A repeated disconnect must not orphan the previous timer task.
+    old_timer = session.grace_timers.pop(seat_idx, None)
+    if old_timer is not None:
+        old_timer.cancel()
     session.grace_timers[seat_idx] = asyncio.create_task(_expire())
 
 
@@ -274,31 +278,39 @@ async def _expire_seat(table_id: str, seat_idx: int) -> None:
 
     # Mid-hand: force-fold (engine fold if it's their turn, else mark inactive —
     # the engine's round logic skips inactive players either way).
-    p = gs.player(seat_idx)
-    if p is not None and p.is_active and not p.is_all_in:
-        if gs.current_player_idx == seat_idx:
-            gs = execute(gs, Action(seat_idx, ActionType.FOLD))
-        else:
-            gs = gs.with_players(tuple(
-                replace(pl, is_active=False) if pl.seat_idx == seat_idx else pl
-                for pl in gs.players
-            ))
-        session.game_state = gs
+    try:
+        p = gs.player(seat_idx)
+        if p is not None and p.is_active and not p.is_all_in:
+            if gs.current_player_idx == seat_idx:
+                gs = execute(gs, Action(seat_idx, ActionType.FOLD))
+            else:
+                gs = gs.with_players(tuple(
+                    replace(pl, is_active=False) if pl.seat_idx == seat_idx else pl
+                    for pl in gs.players
+                ))
+            session.game_state = gs
 
-    # Identity mappings go now; the folded shell stays until the hand ends
-    # (start_hand purges it before the next deal).
-    session.player_names.pop(seat_idx, None)
-    session.stats.pop(seat_idx, None)
-    session.total_buyin.pop(seat_idx, None)
-    session.bot_levels.pop(seat_idx, None)
-
-    result = None
-    if session.game_state.phase == GamePhase.SHOWDOWN:
-        result = _resolve_showdown(session)
-    await broadcast(table_id, _state_broadcast(session, result))
-    for msg in await auto_bot_actions(table_id):
-        await broadcast(table_id, msg)
-    await broadcast(table_id, _table_summary(session))
+        result = None
+        if session.game_state.phase == GamePhase.SHOWDOWN:
+            result = _resolve_showdown(session)
+        await broadcast(table_id, _state_broadcast(session, result))
+        for msg in await auto_bot_actions(table_id):
+            await broadcast(table_id, msg)
+    except Exception:
+        logger.exception(
+            "Grace-expiry mid-hand removal failed for seat %s at table %s",
+            seat_idx, table_id,
+        )
+    finally:
+        # Identity mappings go now; the folded shell stays until the hand ends
+        # (start_hand purges it before the next deal).  This cleanup must run
+        # even if the engine calls above raised — otherwise the seat ends up
+        # neither reclaimable nor removable.
+        session.player_names.pop(seat_idx, None)
+        session.stats.pop(seat_idx, None)
+        session.total_buyin.pop(seat_idx, None)
+        session.bot_levels.pop(seat_idx, None)
+        await broadcast(table_id, _table_summary(session))
 
 
 async def rebuy(table_id: str, seat_idx: int, amount: int) -> dict[str, Any]:
