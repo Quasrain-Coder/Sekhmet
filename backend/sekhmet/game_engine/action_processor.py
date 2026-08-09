@@ -493,10 +493,10 @@ def deal_new_hand(
     """
     if state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
         raise PhaseError(f"Cannot deal — expected WAITING or SHOWDOWN, got {state.phase.name}")
-    # Count seated players, not active ones: after a fold-out the loser has
-    # is_active=False but is still seated for the next hand.
-    if len(state.players) < 2:
-        raise InvalidActionError("Need at least 2 players to deal")
+    # Only players with chips can be dealt in; busted players sit out.
+    live_count = sum(1 for p in state.players if p.stack > 0)
+    if live_count < 2:
+        raise InvalidActionError("Need at least 2 players with chips to deal")
 
     n = len(state.players)
 
@@ -511,6 +511,14 @@ def deal_new_hand(
 
     updated: list[Player] = []
     for p in state.players:
+        if p.stack == 0:
+            # Busted — sits out this hand (can rebuy between hands)
+            updated.append(Player(
+                name=p.name, seat_idx=p.seat_idx, stack=0,
+                hole_cards=(), is_active=False, is_all_in=False,
+                current_bet=0, total_bet=0, is_human=p.is_human,
+            ))
+            continue
         card1 = deck_cards.pop()
         card2 = deck_cards.pop()
         is_sb = p.seat_idx == sb_seat
