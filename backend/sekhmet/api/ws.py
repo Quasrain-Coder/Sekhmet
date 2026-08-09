@@ -49,6 +49,28 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await websocket.send_json({"type": "error", "message": "Table not found"})
                         continue
 
+                    # Reconnect path: a name matching a disconnected seat
+                    # reclaims it (works mid-hand — the player never left).
+                    reclaimed = await tm.try_reclaim(table_id, name)
+                    if reclaimed is not None:
+                        session.clients[reclaimed] = websocket
+                        my_seat = reclaimed
+                        await tm.broadcast(table_id, tm._table_summary(session))
+                        # Re-send private state so the reclaimer catches up
+                        p = session.game_state.player(reclaimed)
+                        if p is not None and p.hole_cards:
+                            await tm.send_to_player(table_id, reclaimed, {
+                                "type": "hole_cards",
+                                "cards": [str(c) for c in p.hole_cards],
+                            })
+                        # Re-send the public game state (board, pot, bets,
+                        # current player) or a mid-hand reclaimer stays blind
+                        # until the next broadcast.
+                        await tm.send_to_player(
+                            table_id, reclaimed, tm._state_broadcast(session),
+                        )
+                        continue
+
                     # Validate first: a rejected sit_down (seat occupied /
                     # mid-hand) must NOT touch the clients map — otherwise the
                     # loser's socket hijacks the real occupant's broadcasts.
@@ -73,6 +95,21 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         continue
                     target = int(target)
                     if target == my_seat:
+                        # Mid-hand a manual stand_up would rip the player out
+                        # of game_state.players and wedge the hand (action
+                        # timer finds no player, bots stop).  The graceful
+                        # path is: close the tab → disconnect → grace expiry
+                        # folds them out.
+                        session = await tm.get_table(table_id)
+                        if session is not None and session.game_state.phase not in (
+                            GamePhase.WAITING, GamePhase.SHOWDOWN,
+                        ):
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": "Cannot leave mid-hand — close the "
+                                           "tab and you'll be folded out",
+                            })
+                            continue
                         summary = await tm.stand_up(table_id, my_seat)
                         my_seat = None
                         await tm.broadcast(table_id, summary)
@@ -110,18 +147,16 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                                     "type": "hole_cards",
                                     "cards": [str(c) for c in p.hole_cards],
                                 })
-                        # Auto-play bots until human's turn
-                        bot_msgs = await tm.auto_bot_actions(table_id)
-                        for msg in bot_msgs:
-                            await tm.broadcast(table_id, msg)
+                        # Drive bots, push end-of-hand stats, re-arm timer
+                        await tm.after_action(table_id)
 
-                        # Leaderboard stats changed with the hand result —
-                        # push a fresh table_state so clients see them.
-                        session = await tm.get_table(table_id)
-                        if session and session.game_state.phase in (
-                            GamePhase.WAITING, GamePhase.SHOWDOWN,
-                        ):
-                            await tm.broadcast(table_id, tm._table_summary(session))
+                elif msg_type == "rebuy":
+                    if my_seat is None:
+                        await websocket.send_json({"type": "error", "message": "Sit down first"})
+                        continue
+                    amount = int(msg.get("amount", 0))
+                    summary = await tm.rebuy(table_id, my_seat, amount)
+                    await tm.broadcast(table_id, summary)
 
                 elif msg_type == "player_action":
                     if my_seat is None:
@@ -134,19 +169,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         table_id, my_seat, action_type, amount,
                     )
                     await tm.broadcast(table_id, state_msg)
-
-                    # Auto-play bots until next human turn
-                    bot_msgs = await tm.auto_bot_actions(table_id)
-                    for msg in bot_msgs:
-                        await tm.broadcast(table_id, msg)
-
-                    # Leaderboard stats changed with the hand result —
-                    # push a fresh table_state so clients see them.
-                    session = await tm.get_table(table_id)
-                    if session and session.game_state.phase in (
-                        GamePhase.WAITING, GamePhase.SHOWDOWN,
-                    ):
-                        await tm.broadcast(table_id, tm._table_summary(session))
+                    await tm.after_action(table_id)
 
                 else:
                     await websocket.send_json({
@@ -163,8 +186,8 @@ async def game_websocket(websocket: WebSocket, table_id: str):
         logger.info("WebSocket disconnected from table %s (seat %s)", table_id, my_seat)
         if my_seat is not None:
             try:
-                await tm.stand_up(table_id, my_seat)
+                await tm.handle_disconnect(table_id, my_seat)
             except Exception:
-                pass
+                logger.exception("handle_disconnect failed for seat %s", my_seat)
     except Exception:
         logger.exception("Unexpected error in WebSocket for table %s", table_id)

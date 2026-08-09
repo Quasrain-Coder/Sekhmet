@@ -306,3 +306,297 @@ async def test_scooping_multiple_pots_counts_one_win():
     assert all(a["seat_idx"] == 1 for a in result["awards"])
     assert session.stats[1].wins == 1
     assert session.stats[0].wins == 0
+
+
+# ---------------------------------------------------------------------------
+# Rebuy (busted players top up between hands)
+# ---------------------------------------------------------------------------
+
+
+async def _bust_player(tid: str, seat: int) -> None:
+    """直接构造 0 筹码状态（比真打一手牌快且确定）。"""
+    session = await tm.get_table(tid)
+    assert session is not None
+    gs = session.game_state
+    session.game_state = gs.with_players(tuple(
+        type(p)(name=p.name, seat_idx=p.seat_idx, stack=0 if p.seat_idx == seat else p.stack,
+                hole_cards=p.hole_cards, is_active=p.is_active, is_all_in=p.is_all_in,
+                current_bet=p.current_bet, total_bet=p.total_bet, is_human=p.is_human)
+        for p in gs.players
+    ))
+
+
+async def test_rebuy_success_when_busted():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await _bust_player(tid, 0)
+
+    summary = await tm.rebuy(tid, 0, 500)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert session.game_state.player(0).stack == 500
+    assert session.total_buyin[0] == 700  # 200 + 500 → net_chips 语义保持
+    seat0 = next(s for s in summary["seats"] if s["seat_idx"] == 0)
+    assert seat0["stack"] == 500 and seat0["net_chips"] == -200
+
+
+async def test_rebuy_rejected_with_chips():
+    from sekhmet.game_engine import GameError
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    with pytest.raises(GameError, match="busted"):
+        await tm.rebuy(tid, 0, 500)
+
+
+async def test_rebuy_rejected_mid_hand():
+    from sekhmet.game_engine import GameError
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+    await _bust_player(tid, 0)
+    with pytest.raises(GameError, match="mid-hand"):
+        await tm.rebuy(tid, 0, 500)
+
+
+async def test_rebuy_amount_bounds():
+    from sekhmet.game_engine import GameError
+    tid = await tm.create_table()  # blinds 5/10 → bounds [200, 2000]
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await _bust_player(tid, 0)
+    with pytest.raises(GameError, match="20"):
+        await tm.rebuy(tid, 0, 100)   # < 20bb
+    with pytest.raises(GameError, match="200"):
+        await tm.rebuy(tid, 0, 5000)  # > 200bb
+
+
+# ---------------------------------------------------------------------------
+# Disconnect grace + name-based reclaim + safe mid-hand removal
+# ---------------------------------------------------------------------------
+
+
+async def test_disconnect_marks_seat_and_keeps_player():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.handle_disconnect(tid, 0)
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert 0 in session.player_names  # 座位保留
+    info = tm.table_info(session)
+    assert info["seats"][0]["connected"] is False
+
+
+async def test_reclaim_by_name_restores_seat():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.handle_disconnect(tid, 0)
+    seat = await tm.try_reclaim(tid, "Hero")
+    assert seat == 0
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert tm.table_info(session)["seats"][0]["connected"] is True
+    assert await tm.try_reclaim(tid, "Stranger") is None
+
+
+async def test_grace_expiry_between_hands_removes_seat(monkeypatch):
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.handle_disconnect(tid, 0)
+    await asyncio.sleep(0.15)
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert 0 not in session.player_names
+
+
+async def test_grace_expiry_mid_hand_force_folds(monkeypatch):
+    """掉线者在手牌中且轮到TA：宽限期满 → 自动 FOLD，手牌继续。"""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+    session = await tm.get_table(tid)
+    assert session is not None
+    cur = session.game_state.current_player_idx  # HU: SB 先行动
+
+    await tm.handle_disconnect(tid, cur)
+    await asyncio.sleep(0.2)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    gs = session.game_state
+    # 掉线者已被强制弃牌 → 手牌结束（fold-out），对手赢得底池
+    assert gs.phase == GamePhase.SHOWDOWN
+    assert gs.player(cur).is_active is False
+    assert cur not in session.player_names  # 身份映射已清
+    # 手牌没有卡死：另一玩家筹码增加
+    winner = 1 - cur
+    assert gs.player(winner).stack > 200
+
+
+async def test_grace_expiry_mid_hand_non_current_player(monkeypatch):
+    """非当前行动者掉线过期：replace 手术标记 is_active=False，手牌继续。"""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "P0", buyin=200)
+    await tm.sit_down(tid, 1, "P1", buyin=200)
+    await tm.sit_down(tid, 2, "P2", buyin=200)
+    await tm.start_hand(tid)
+    session = await tm.get_table(tid)
+    assert session is not None
+    cur = session.game_state.current_player_idx
+    target = next(s for s in (0, 1, 2) if s != cur)
+
+    await tm.handle_disconnect(tid, target)
+    await asyncio.sleep(0.2)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    gs = session.game_state
+    # 手牌仍在下注轮，未被快进；行动位置不变（证明走的是 replace 分支而非
+    # 引擎 FOLD —— 后者会推进 current_player/phase）
+    assert gs.phase == GamePhase.PREFLOP
+    assert gs.current_player_idx == cur
+    assert gs.player(target).is_active is False
+    assert gs.player(target) in gs.players  # 壳留到手牌结束
+    assert gs.pot.main_pot >= 15            # 已投盲注留在池中
+    # 身份映射已清
+    assert target not in session.player_names
+    assert target not in session.stats
+    assert target not in session.total_buyin
+
+
+async def test_grace_expiry_replace_surgery_pays_survivor(monkeypatch):
+    """非当前行动者掉线过期走 replace 手术，若此后只剩 1 名活跃玩家，
+    必须立即进入 SHOWDOWN 并把底池判给幸存者 —— 否则幸存者再弃牌时
+    n_active=0，底池蒸发。"""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "P0", buyin=200)
+    await tm.sit_down(tid, 1, "P1", buyin=200)
+    await tm.sit_down(tid, 2, "P2", buyin=200)
+    await tm.start_hand(tid)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    # 第一人 CALL 保持活跃，第二人 FOLD —— 之后活跃者 = {第一人, 第三人}
+    first = session.game_state.current_player_idx
+    await tm.handle_player_action(tid, first, "CALL")
+    session = await tm.get_table(tid)
+    second = session.game_state.current_player_idx
+    await tm.handle_player_action(tid, second, "FOLD")
+    session = await tm.get_table(tid)
+    survivor = session.game_state.current_player_idx
+    assert survivor != first and survivor != second
+    assert session.game_state.phase == GamePhase.PREFLOP  # 手牌仍在进行
+
+    # 掉线的是 first（非当前行动者）→ replace 手术分支
+    await tm.handle_disconnect(tid, first)
+    await asyncio.sleep(0.2)
+
+    session = await tm.get_table(tid)
+    gs = session.game_state
+    assert gs.phase == GamePhase.SHOWDOWN
+    # 底池守恒：三人总筹码不变（幸存者拿到了底池）
+    assert sum(p.stack for p in gs.players) == 600
+    assert gs.player(survivor).stack > 200 - session.config.big_blind
+
+
+def test_ws_stand_up_mid_hand_rejected():
+    """手牌进行中人类玩家 stand_up 自己的座位 → 报错且座位保留。
+    （想离桌应直接关标签页，走断线宽限被 fold 出去。）"""
+    import random
+    random.seed(7)
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        ws.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot", "buyin": 200,
+                      "is_human": False})
+        ws.send_json({"type": "start_hand"})
+        ws.send_json({"type": "stand_up"})  # 自己，手牌进行中
+        ws.send_json({"type": "__ping__"})  # 未知消息必回 error ⇒ stand_up 已处理完
+        saw_mid_hand_error = False
+        for _ in range(40):
+            msg = ws.receive_json()
+            if msg["type"] == "error" and "mid-hand" in msg["message"]:
+                saw_mid_hand_error = True
+            if msg["type"] == "error" and "Unknown message type" in msg["message"]:
+                break
+        assert saw_mid_hand_error, "mid-hand stand_up was not rejected"
+    # 座位仍在（未被从 game_state.players 中撕掉）
+    detail = client.get(f"/api/game/tables/{tid}").json()
+    assert any(s["seat_idx"] == 0 for s in detail["seats"])
+
+
+def test_action_timeout_auto_folds_facing_bet(monkeypatch):
+    """第二手牌人类是 SB/dealer，翻前第一个行动且面临下注
+    （to_call = BB − SB > 0）→ 超时必须自动 FOLD 而非 CHECK。"""
+    import random
+    monkeypatch.setattr(tm.app_config.game, "action_timeout_seconds", 0.1)
+    random.seed(7)
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        ws.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot", "buyin": 200,
+                      "is_human": False})
+        ws.send_json({"type": "start_hand"})
+
+        # 第一手正常打完：轮到自己时 CHECK（无注）或 FOLD（有注）
+        hand1_done = False
+        for _ in range(60):
+            msg = ws.receive_json()
+            if msg["type"] == "hand_result":
+                hand1_done = True
+                break
+            if msg["type"] in ("game_state_update", "hand_start") \
+                    and msg.get("current_player_idx") == 0:
+                me = next(p for p in msg["players"] if p["seat_idx"] == 0)
+                to_call = msg["current_bet"] - me["current_bet"]
+                ws.send_json({"type": "player_action",
+                              "action": "CHECK" if to_call == 0 else "FOLD"})
+        assert hand1_done, "hand 1 did not complete"
+
+        # 第二手：人类 SB/dealer 翻前先行动且面临下注 —— 什么都不发，等超时
+        ws.send_json({"type": "start_hand"})
+        for _ in range(40):
+            msg = ws.receive_json()
+            if msg["type"] in ("game_state_update", "hand_result"):
+                folds = [a for a in msg.get("round_history", [])
+                         if a["seat"] == 0 and a["action"] == "FOLD"]
+                if folds:
+                    return  # 超时自动 FOLD 生效
+            # 注意：绝不发送 player_action
+        raise AssertionError("no timeout FOLD within 40 messages")
+
+
+def test_action_timeout_auto_checks(monkeypatch):
+    """轮到人类且迟迟不动 → 超时自动 CHECK（无注）/FOLD（有注）。"""
+    import random
+    monkeypatch.setattr(tm.app_config.game, "action_timeout_seconds", 0.1)
+    random.seed(7)  # bot SB 跟注，人类 BB 获得 option（无注）
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        ws.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot", "buyin": 200,
+                      "is_human": False})
+        ws.send_json({"type": "start_hand"})
+        # 人类不行动，等超时：应在若干消息内看到 seat 0 的自动行动
+        for _ in range(40):
+            msg = ws.receive_json()
+            if msg["type"] in ("game_state_update", "hand_result"):
+                auto = [a for a in msg.get("round_history", [])
+                        if a["seat"] == 0 and a["action"] in ("CHECK", "FOLD")]
+                if auto:
+                    return  # 超时自动行动生效
+            # 注意：绝不发送 player_action
+        raise AssertionError("no auto action within 40 messages")

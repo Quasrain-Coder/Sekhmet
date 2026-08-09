@@ -389,3 +389,37 @@ def test_heads_up_hand_flow():
     assert hero is not None and hero.is_active
     bot = state.player(1)
     assert bot is not None and not bot.is_active
+
+
+def test_deal_skips_zero_stack_player():
+    """Busted players sit out: no hole cards, no blinds, stays inactive."""
+    p1 = make_player("A", 0, stack=200)
+    p2 = make_player("B", 1, stack=0)    # busted — holds the SB seat
+    p3 = make_player("C", 2, stack=200)
+    state = GameState(
+        phase=GamePhase.WAITING,
+        players=(p1, p2, p3),
+        dealer_idx=0, small_blind=5, big_blind=10,
+    )
+    deck = Deck(); deck.shuffle()
+    new_state = deal_new_hand(state, deck.cards[:], dealer_idx=0)
+
+    busted = new_state.player(1)
+    assert busted is not None
+    assert busted.hole_cards in (None, ())
+    assert busted.is_active is False
+    assert busted.current_bet == 0 and busted.total_bet == 0
+    # SB 是爆掉玩家 → 死盲注不收（不重排），只有 BB 的 10 入池
+    assert new_state.pot.main_pot == 10
+    # 有筹码的玩家都拿到了底牌
+    for p in new_state.players:
+        if p.stack > 0:
+            assert p.hole_cards is not None and len(p.hole_cards) == 2
+
+
+def test_deal_requires_two_players_with_chips():
+    p1 = make_player("A", 0, stack=200)
+    p2 = make_player("B", 1, stack=0)
+    state = GameState(phase=GamePhase.WAITING, players=(p1, p2))
+    with pytest.raises(InvalidActionError, match="at least 2"):
+        deal_new_hand(state, Deck().cards[:], 0)

@@ -19,6 +19,7 @@ export interface SeatInfo {
   hands: number;
   wins: number;
   net_chips: number;
+  connected: boolean;
 }
 
 export interface TableConfigData {

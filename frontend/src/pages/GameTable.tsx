@@ -23,6 +23,7 @@ export default function GameTablePage() {
   const [detail, setDetail] = useState<TableDetail | null | 'not-found'>(null);
   const [name, setName] = useState(() => localStorage.getItem('pokerName') || '');
   const [buyin, setBuyin] = useState(200);
+  const [rebuyAmount, setRebuyAmount] = useState(200);
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
   // Seat we optimistically claimed via sit_down but the server has not yet
   // confirmed (table_state echo).  An 'error' while pending means the sit
@@ -36,6 +37,7 @@ export default function GameTablePage() {
       .then((d: TableDetail) => {
         setDetail(d);
         setBuyin(d.config.default_buyin);
+        setRebuyAmount(d.config.default_buyin);
         const taken = new Set(d.seats.map(s => s.seat_idx));
         const free = Array.from({ length: d.max_seats }, (_, i) => i).find(i => !taken.has(i));
         setSelectedSeat(free ?? null);
@@ -121,11 +123,14 @@ export default function GameTablePage() {
         <div className="seat-picker">
           {Array.from({ length: detail.max_seats }, (_, i) => {
             const occ = detail.seats.find(s => s.seat_idx === i);
+            // A disconnected seat whose name matches the typed name can be
+            // reclaimed — the server runs try_reclaim on same-name sit_down.
+            const reclaimable = occ && !occ.connected && occ.name === name;
             return (
               <button
                 key={i}
-                className={`picker-seat seat-${i}${occ ? ' taken' : ''}${selectedSeat === i ? ' selected' : ''}`}
-                disabled={!!occ}
+                className={`picker-seat seat-${i}${occ ? ' taken' : ''}${reclaimable ? ' reclaim' : ''}${selectedSeat === i ? ' selected' : ''}`}
+                disabled={!!occ && !reclaimable}
                 title={occ ? occ.name : `Seat ${i}`}
                 onClick={() => setSelectedSeat(i)}
               >
@@ -193,6 +198,18 @@ export default function GameTablePage() {
         bigBlind={state.config?.big_blind ?? 10}
         onAction={handleAction}
       />
+
+      {me && me.stack === 0 && (state.phase === 'WAITING' || state.phase === 'SHOWDOWN') && (
+        <div className="rebuy-panel">
+          <span className="rebuy-label">You're busted.</span>
+          <input className="input" type="number" value={rebuyAmount}
+                 onChange={e => setRebuyAmount(Number(e.target.value))} />
+          <button className="btn gold"
+                  onClick={() => send({ type: 'rebuy', amount: rebuyAmount })}>
+            Rebuy
+          </button>
+        </div>
+      )}
 
       {state.showdown && (
         <div className="hand-result">

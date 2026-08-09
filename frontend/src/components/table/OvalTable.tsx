@@ -72,7 +72,8 @@ export default function OvalTable({
           is_human: seat.is_human,
         };
         return (
-          <div key={seat.seat_idx} className={`seat-wrap seat-${slot}`}>
+          <div key={seat.seat_idx}
+               className={`seat-wrap seat-${slot}${seat.connected === false ? ' offline' : ''}`}>
             <PlayerSeat
               player={merged}
               isCurrent={currentPlayerIdx === seat.seat_idx}
