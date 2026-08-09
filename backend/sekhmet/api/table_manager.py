@@ -521,9 +521,9 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
         # Award
         awards_list = award_pot(pot, gs.players, hands)
 
-    for award in awards_list:
-        if award.winner_seat_idx in session.stats:
-            session.stats[award.winner_seat_idx].wins += 1
+    for seat in {a.winner_seat_idx for a in awards_list}:
+        if seat in session.stats:
+            session.stats[seat].wins += 1
 
     # Update player stacks
     players_list = list(gs.players)

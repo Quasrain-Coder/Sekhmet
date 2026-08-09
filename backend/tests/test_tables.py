@@ -270,3 +270,39 @@ def test_ws_table_state_broadcast_on_hand_end():
             if msg["type"] in ("game_state_update", "hand_start") and cur == 0:
                 ws.send_json({"type": "player_action", "action": "FOLD"})
         raise AssertionError("no table_state followed the hand_result")
+
+
+async def test_scooping_multiple_pots_counts_one_win():
+    """A player winning main + side pot in one hand gets wins += 1, not +2."""
+    from sekhmet.game_engine.deck import Card, Rank, Suit
+    from sekhmet.game_engine.game_state import GameState, GamePhase, PotState
+    from sekhmet.api.table_manager import PlayerStats, _resolve_showdown
+
+    # Seat 0 all-in for 50; seat 1 put in 200 and holds the royal flush, so
+    # the SAME player wins both the main pot (100) and the side pot (150).
+    community = (Card(Rank.ACE, Suit.SPADES), Card(Rank.KING, Suit.SPADES),
+                 Card(Rank.QUEEN, Suit.SPADES), Card(Rank.TWO, Suit.HEARTS),
+                 Card(Rank.THREE, Suit.CLUBS))
+    p0 = Player(name="Short", seat_idx=0, stack=0, is_all_in=True,
+                hole_cards=(Card(Rank.FOUR, Suit.HEARTS), Card(Rank.FIVE, Suit.HEARTS)),
+                current_bet=0, total_bet=50)
+    p1 = Player(name="Big", seat_idx=1, stack=0, is_all_in=True,
+                hole_cards=(Card(Rank.JACK, Suit.SPADES), Card(Rank.TEN, Suit.SPADES)),
+                current_bet=0, total_bet=200)
+    gs = GameState(phase=GamePhase.SHOWDOWN, players=(p0, p1),
+                   community_cards=community, pot=PotState(main_pot=250))
+    tid = await tm.create_table()
+    session = await tm.get_table(tid)
+    assert session is not None
+    session.game_state = gs
+    session.player_names = {0: "Short", 1: "Big"}
+    session.stats = {0: PlayerStats(hands=1), 1: PlayerStats(hands=1)}
+    session.total_buyin = {0: 50, 1: 200}
+
+    result = _resolve_showdown(session)
+
+    # seat 1 (royal flush) wins main 100 + side 150 → exactly ONE win recorded
+    assert len(result["awards"]) == 2
+    assert all(a["seat_idx"] == 1 for a in result["awards"])
+    assert session.stats[1].wins == 1
+    assert session.stats[0].wins == 0
