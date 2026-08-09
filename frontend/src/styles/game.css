@@ -319,3 +319,21 @@ select.input { width: auto; }
 }
 /* 给悬出的手牌留出页面空间 */
 .table-felt { margin-bottom: 70px; }
+
+/* ---- Seat picker (join panel) ---- */
+.seat-picker {
+  position: relative; aspect-ratio: 2.35 / 1; max-width: 420px; margin: 14px auto;
+  border: 1.5px dashed var(--cyan-dim); border-radius: 999px;
+}
+.picker-seat {
+  position: absolute; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--surface); border: 1.5px solid var(--cyan-dim); color: var(--cyan-text);
+  font-size: 0.7rem; font-weight: 600; cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.picker-seat:hover:not(:disabled) { border-color: var(--cyan); box-shadow: 0 0 10px rgba(34, 211, 238, 0.4); }
+.picker-seat.taken { opacity: 0.45; cursor: not-allowed; }
+.picker-seat.selected {
+  border-color: var(--gold); color: var(--gold-text);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.55);
+}

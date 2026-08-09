@@ -23,6 +23,7 @@ export default function GameTablePage() {
   const [detail, setDetail] = useState<TableDetail | null | 'not-found'>(null);
   const [name, setName] = useState(() => localStorage.getItem('pokerName') || '');
   const [buyin, setBuyin] = useState(200);
+  const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
   // Seat we optimistically claimed via sit_down but the server has not yet
   // confirmed (table_state echo).  An 'error' while pending means the sit
   // was rejected — revert mySeat so the user is not stranded at the table.
@@ -32,7 +33,13 @@ export default function GameTablePage() {
   useEffect(() => {
     fetch(`/api/game/tables/${tableId}`)
       .then(r => (r.ok ? r.json() : Promise.reject()))
-      .then((d: TableDetail) => { setDetail(d); setBuyin(d.config.default_buyin); })
+      .then((d: TableDetail) => {
+        setDetail(d);
+        setBuyin(d.config.default_buyin);
+        const taken = new Set(d.seats.map(s => s.seat_idx));
+        const free = Array.from({ length: d.max_seats }, (_, i) => i).find(i => !taken.has(i));
+        setSelectedSeat(free ?? null);
+      })
       .catch(() => setDetail('not-found'));
   }, [tableId]);
 
@@ -69,17 +76,11 @@ export default function GameTablePage() {
   }, [tableId, connected, dispatch]);
 
   const joinTable = () => {
-    if (!detail || detail === 'not-found') return;
-    // Use the freshly fetched REST detail for occupancy — the reducer's
-    // seats only populate on table_state broadcasts (sit/stand events).
-    const taken = new Set(detail.seats.map(s => s.seat_idx));
-    const free = Array.from({ length: detail.max_seats }, (_, i) => i)
-      .find(i => !taken.has(i));
-    if (free === undefined) { alert('Table is full'); return; }
+    if (!detail || detail === 'not-found' || selectedSeat === null) return;
     localStorage.setItem('pokerName', name);
-    pendingSeat.current = free;
-    send({ type: 'sit_down', seat_idx: free, name, buyin });
-    dispatch({ type: 'SET_MY_SEAT', seat: free });
+    pendingSeat.current = selectedSeat;
+    send({ type: 'sit_down', seat_idx: selectedSeat, name, buyin });
+    dispatch({ type: 'SET_MY_SEAT', seat: selectedSeat });
   };
 
   const addBot = useCallback((seatIdx: number, level: number) => {
@@ -117,13 +118,29 @@ export default function GameTablePage() {
         {detail.seats.length > 0 && (
           <p className="room-meta">Seated: {detail.seats.map(s => s.name).join(', ')}</p>
         )}
+        <div className="seat-picker">
+          {Array.from({ length: detail.max_seats }, (_, i) => {
+            const occ = detail.seats.find(s => s.seat_idx === i);
+            return (
+              <button
+                key={i}
+                className={`picker-seat seat-${i}${occ ? ' taken' : ''}${selectedSeat === i ? ' selected' : ''}`}
+                disabled={!!occ}
+                title={occ ? occ.name : `Seat ${i}`}
+                onClick={() => setSelectedSeat(i)}
+              >
+                {occ ? occ.name.charAt(0) : i}
+              </button>
+            );
+          })}
+        </div>
         <div className="lobby-actions">
           <input className="input" placeholder="Your name" value={name}
                  onChange={e => setName(e.target.value)} />
           <input className="input" type="number" value={buyin} style={{ width: 110 }}
                  onChange={e => setBuyin(Number(e.target.value))} />
           <button className="btn" onClick={joinTable}
-                  disabled={!name || !connected || midHand}>
+                  disabled={!name || !connected || midHand || selectedSeat === null}>
             Sit Down
           </button>
           <button className="btn btn-sm" onClick={() => navigate('/')}>← Lobby</button>
