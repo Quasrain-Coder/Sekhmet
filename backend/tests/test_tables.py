@@ -370,3 +370,70 @@ async def test_rebuy_amount_bounds():
         await tm.rebuy(tid, 0, 100)   # < 20bb
     with pytest.raises(GameError, match="200"):
         await tm.rebuy(tid, 0, 5000)  # > 200bb
+
+
+# ---------------------------------------------------------------------------
+# Disconnect grace + name-based reclaim + safe mid-hand removal
+# ---------------------------------------------------------------------------
+
+
+async def test_disconnect_marks_seat_and_keeps_player():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.handle_disconnect(tid, 0)
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert 0 in session.player_names  # 座位保留
+    info = tm.table_info(session)
+    assert info["seats"][0]["connected"] is False
+
+
+async def test_reclaim_by_name_restores_seat():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.handle_disconnect(tid, 0)
+    seat = await tm.try_reclaim(tid, "Hero")
+    assert seat == 0
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert tm.table_info(session)["seats"][0]["connected"] is True
+    assert await tm.try_reclaim(tid, "Stranger") is None
+
+
+async def test_grace_expiry_between_hands_removes_seat(monkeypatch):
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.handle_disconnect(tid, 0)
+    await asyncio.sleep(0.15)
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert 0 not in session.player_names
+
+
+async def test_grace_expiry_mid_hand_force_folds(monkeypatch):
+    """掉线者在手牌中且轮到TA：宽限期满 → 自动 FOLD，手牌继续。"""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+    session = await tm.get_table(tid)
+    assert session is not None
+    cur = session.game_state.current_player_idx  # HU: SB 先行动
+
+    await tm.handle_disconnect(tid, cur)
+    await asyncio.sleep(0.2)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    gs = session.game_state
+    # 掉线者已被强制弃牌 → 手牌结束（fold-out），对手赢得底池
+    assert gs.phase == GamePhase.SHOWDOWN
+    assert gs.player(cur).is_active is False
+    assert cur not in session.player_names  # 身份映射已清
+    # 手牌没有卡死：另一玩家筹码增加
+    winner = 1 - cur
+    assert gs.player(winner).stack > 200

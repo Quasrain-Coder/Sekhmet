@@ -49,6 +49,22 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await websocket.send_json({"type": "error", "message": "Table not found"})
                         continue
 
+                    # Reconnect path: a name matching a disconnected seat
+                    # reclaims it (works mid-hand — the player never left).
+                    reclaimed = await tm.try_reclaim(table_id, name)
+                    if reclaimed is not None:
+                        session.clients[reclaimed] = websocket
+                        my_seat = reclaimed
+                        await tm.broadcast(table_id, tm._table_summary(session))
+                        # Re-send private state so the reclaimer catches up
+                        p = session.game_state.player(reclaimed)
+                        if p is not None and p.hole_cards:
+                            await tm.send_to_player(table_id, reclaimed, {
+                                "type": "hole_cards",
+                                "cards": [str(c) for c in p.hole_cards],
+                            })
+                        continue
+
                     # Validate first: a rejected sit_down (seat occupied /
                     # mid-hand) must NOT touch the clients map — otherwise the
                     # loser's socket hijacks the real occupant's broadcasts.
@@ -171,8 +187,8 @@ async def game_websocket(websocket: WebSocket, table_id: str):
         logger.info("WebSocket disconnected from table %s (seat %s)", table_id, my_seat)
         if my_seat is not None:
             try:
-                await tm.stand_up(table_id, my_seat)
+                await tm.handle_disconnect(table_id, my_seat)
             except Exception:
-                pass
+                logger.exception("handle_disconnect failed for seat %s", my_seat)
     except Exception:
         logger.exception("Unexpected error in WebSocket for table %s", table_id)

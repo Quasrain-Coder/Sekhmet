@@ -16,13 +16,14 @@ from __future__ import annotations
 import asyncio
 import logging
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
 
+from ..config import app_config
 from ..game_engine import (
     Action,
     ActionType,
@@ -99,6 +100,8 @@ class TableSession:
     bot_levels: dict[int, int] = field(default_factory=dict)  # seat_idx → 1-3
     stats: dict[int, PlayerStats] = field(default_factory=dict)      # seat_idx → stats
     total_buyin: dict[int, int] = field(default_factory=dict)        # seat_idx → chips bought
+    disconnected: set[int] = field(default_factory=set)
+    grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
 
     @property
     def n_seats(self) -> int:
@@ -219,6 +222,85 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
     return _table_summary(session)
 
 
+async def handle_disconnect(table_id: str, seat_idx: int) -> None:
+    """Mark the seat disconnected and start the grace timer (no instant removal)."""
+    session = await get_table(table_id)
+    if session is None:
+        return
+    session.clients.pop(seat_idx, None)  # dead socket
+    session.disconnected.add(seat_idx)
+    await broadcast(table_id, _table_summary(session))
+
+    async def _expire() -> None:
+        try:
+            await asyncio.sleep(app_config.game.disconnect_grace_seconds)
+        except asyncio.CancelledError:
+            return
+        await _expire_seat(table_id, seat_idx)
+
+    session.grace_timers[seat_idx] = asyncio.create_task(_expire())
+
+
+async def try_reclaim(table_id: str, name: str) -> int | None:
+    """Reclaim a disconnected seat by player name. Returns the seat or None."""
+    session = await get_table(table_id)
+    if session is None:
+        return None
+    for seat in list(session.disconnected):
+        if session.player_names.get(seat) == name:
+            timer = session.grace_timers.pop(seat, None)
+            if timer is not None:
+                timer.cancel()
+            session.disconnected.discard(seat)
+            return seat
+    return None
+
+
+async def _expire_seat(table_id: str, seat_idx: int) -> None:
+    """Grace expired: fold out of any running hand, then remove the seat."""
+    session = await get_table(table_id)
+    if session is None or seat_idx not in session.disconnected:
+        return
+    session.disconnected.discard(seat_idx)
+    session.grace_timers.pop(seat_idx, None)
+
+    gs = session.game_state
+    mid_hand = gs.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN)
+
+    if not mid_hand:
+        await stand_up(table_id, seat_idx)
+        await broadcast(table_id, _table_summary(session))
+        return
+
+    # Mid-hand: force-fold (engine fold if it's their turn, else mark inactive —
+    # the engine's round logic skips inactive players either way).
+    p = gs.player(seat_idx)
+    if p is not None and p.is_active and not p.is_all_in:
+        if gs.current_player_idx == seat_idx:
+            gs = execute(gs, Action(seat_idx, ActionType.FOLD))
+        else:
+            gs = gs.with_players(tuple(
+                replace(pl, is_active=False) if pl.seat_idx == seat_idx else pl
+                for pl in gs.players
+            ))
+        session.game_state = gs
+
+    # Identity mappings go now; the folded shell stays until the hand ends
+    # (start_hand purges it before the next deal).
+    session.player_names.pop(seat_idx, None)
+    session.stats.pop(seat_idx, None)
+    session.total_buyin.pop(seat_idx, None)
+    session.bot_levels.pop(seat_idx, None)
+
+    result = None
+    if session.game_state.phase == GamePhase.SHOWDOWN:
+        result = _resolve_showdown(session)
+    await broadcast(table_id, _state_broadcast(session, result))
+    for msg in await auto_bot_actions(table_id):
+        await broadcast(table_id, msg)
+    await broadcast(table_id, _table_summary(session))
+
+
 async def rebuy(table_id: str, seat_idx: int, amount: int) -> dict[str, Any]:
     """Top up a busted player between hands. Only stack==0 may rebuy."""
     session = await get_table(table_id)
@@ -263,6 +345,14 @@ async def start_hand(table_id: str) -> dict[str, Any]:
 
     if len(session.player_seats()) < 2:
         raise GameError("Need at least 2 players to start a hand")
+
+    # Purge shells of players removed mid-hand (grace expiry) before dealing.
+    live = tuple(
+        p for p in session.game_state.players
+        if p.seat_idx in session.player_names
+    )
+    if len(live) != len(session.game_state.players):
+        session.game_state = session.game_state.with_players(live)
 
     # Fresh deck, shuffle, deal
     session.deck = Deck()
@@ -436,6 +526,7 @@ def table_info(session: TableSession) -> dict[str, Any]:
             "hands": st.hands if st else 0,
             "wins": st.wins if st else 0,
             "net_chips": (p.stack if p is not None else 0) - buyin,
+            "connected": seat not in session.disconnected,
         })
     return {
         "table_id": session.table_id,
