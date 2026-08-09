@@ -16,9 +16,13 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
+    "pytest-timeout>=2.3",
     "httpx>=0.28",
 ]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# A hanging test (e.g. a WebSocket receive that never comes) must fail
+# fast instead of stalling the suite — CI once burned a 6h job on this.
+timeout = 60

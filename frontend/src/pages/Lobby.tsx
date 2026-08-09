@@ -67,24 +67,31 @@ export default function Lobby() {
 
   return (
     <div className="lobby">
-      <h1 className="page-title">♠ Sekhmet Poker</h1>
+      <div className="lobby-logo">
+        <div className="spade">♠</div>
+        <h1>SEKHMET</h1>
+        <div className="sub">Poker Trainer</div>
+      </div>
 
-      <div className="lobby-actions">
-        <input className="input" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
-        <select className="input" value={tier.label}
-                onChange={e => {
-                  const t = BLIND_TIERS.find(x => x.label === e.target.value)!;
-                  setTier(t);
-                  setBuyin(t.bb * 100);
-                }}>
-          {BLIND_TIERS.map(t => <option key={t.label} value={t.label}>Blinds {t.label}</option>)}
-        </select>
-        <input className="input" type="number" placeholder="Default buy-in" value={buyin}
-               onChange={e => setBuyin(Number(e.target.value))} style={{ width: 130 }} />
-        <select className="input" value={maxSeats} onChange={e => setMaxSeats(Number(e.target.value))}>
-          {[2, 3, 4, 5, 6, 7, 8, 9].map(n => <option key={n} value={n}>{n} seats</option>)}
-        </select>
-        <button className="btn" onClick={create} disabled={!name}>+ New Table</button>
+      <div className="lobby-panel">
+        <div className="panel-label">New Table</div>
+        <div className="lobby-actions">
+          <input className="input" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
+          <select className="input" value={tier.label}
+                  onChange={e => {
+                    const t = BLIND_TIERS.find(x => x.label === e.target.value)!;
+                    setTier(t);
+                    setBuyin(t.bb * 100);
+                  }}>
+            {BLIND_TIERS.map(t => <option key={t.label} value={t.label}>Blinds {t.label}</option>)}
+          </select>
+          <input className="input" type="number" placeholder="Default buy-in" value={buyin}
+                 onChange={e => setBuyin(Number(e.target.value))} />
+          <select className="input" value={maxSeats} onChange={e => setMaxSeats(Number(e.target.value))}>
+            {[2, 3, 4, 5, 6, 7, 8, 9].map(n => <option key={n} value={n}>{n} seats</option>)}
+          </select>
+          <button className="btn gold" onClick={create} disabled={!name}>+ New Table</button>
+        </div>
       </div>
 
       <div className="table-list">
@@ -92,9 +99,22 @@ export default function Lobby() {
         {tables.map(t => (
           <div key={t.table_id} className="table-card"
                onClick={() => { localStorage.setItem('pokerName', name); navigate(`/game/${t.table_id}`); }}>
-            <span className="id">{t.table_id}</span>
-            <span className="info">
-              {t.config.small_blind}/{t.config.big_blind} · {t.seats.length}/{t.max_seats} · {t.phase}
+            <div>
+              <span className="id">{t.table_id}</span>
+              <div className="info">
+                {t.config.small_blind}/{t.config.big_blind} · buy-in {t.config.default_buyin}
+              </div>
+              <div className="seat-dots">
+                {t.seats.map(s => (
+                  <span key={s.seat_idx} className={`dot ${s.is_human ? 'full' : 'bot'}`} />
+                ))}
+                {Array.from({ length: t.max_seats - t.seats.length }, (_, i) => (
+                  <span key={`e${i}`} className="dot" />
+                ))}
+              </div>
+            </div>
+            <span className={`phase-pill ${t.phase === 'WAITING' ? 'waiting' : 'playing'}`}>
+              {t.phase === 'WAITING' ? 'Waiting' : t.phase}
             </span>
           </div>
         ))}

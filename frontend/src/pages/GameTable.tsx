@@ -109,12 +109,12 @@ export default function GameTablePage() {
     return (
       <div className="join-panel">
         <h2>Table {detail.table_id}</h2>
-        <p>Blinds {detail.config.small_blind}/{detail.config.big_blind}
+        <p className="room-meta">Blinds {detail.config.small_blind}/{detail.config.big_blind}
            {' '}· Buy-in {detail.config.default_buyin}
            {' '}· {detail.seats.length}/{detail.max_seats} players
            {' '}· {detail.phase}</p>
         {detail.seats.length > 0 && (
-          <p>Seated: {detail.seats.map(s => s.name).join(', ')}</p>
+          <p className="room-meta">Seated: {detail.seats.map(s => s.name).join(', ')}</p>
         )}
         <div className="lobby-actions">
           <input className="input" placeholder="Your name" value={name}
@@ -139,12 +139,13 @@ export default function GameTablePage() {
 
   return (
     <div className="game-table">
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+      <div className="table-head">
         <button className="btn btn-sm" onClick={() => navigate('/')}>← Lobby</button>
+        <span className="logo">♠ Sekhmet</span>
         <span className="phase-label">
           {tableId} · {state.phase}{!connected && ' (disconnected)'}
         </span>
-        <button className="btn btn-sm" onClick={() => send({ type: 'start_hand' })}
+        <button className="btn btn-sm gold" onClick={() => send({ type: 'start_hand' })}
                 disabled={state.phase !== 'WAITING' && state.phase !== 'SHOWDOWN'}>
           Deal
         </button>

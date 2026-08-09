@@ -50,6 +50,10 @@ export default function OvalTable({
 
   return (
     <div className="table-felt">
+      <div className="felt-rail" />
+      <div className="felt-cloth" />
+      <div className="bet-line" />
+      <div className="felt-watermark">♠ SEKHMET</div>
       {showCommunity && <CommunityCards cards={communityCards} />}
       <PotDisplay amount={pot} />
 
@@ -71,10 +75,14 @@ export default function OvalTable({
           <div key={seat.seat_idx} className={`seat-wrap seat-${slot}`}>
             <PlayerSeat
               player={merged}
-              seatIndex={slot}
               isCurrent={currentPlayerIdx === seat.seat_idx}
               holeCards={isMe ? holeCards : undefined}
-              showCards={phase === 'SHOWDOWN' || isMe}
+              avatarLabel={
+                seat.is_human
+                  ? (isMe ? '你' : seat.name.charAt(0))
+                  : `L${seat.bot_level ?? 2}`
+              }
+              isMe={isMe}
             />
             {!seat.is_human && (
               <span className="bot-badge">

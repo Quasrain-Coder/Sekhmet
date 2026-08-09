@@ -1,13 +1,15 @@
 interface CardViewProps {
   card?: string;   // e.g. "A♠", "10♥", "K♦", "7♣" — or empty for face-down
   small?: boolean;
+  big?: boolean;
 }
 
 const RED_SUITS = ['♥', '♦'];
 
-export default function CardView({ card, small }: CardViewProps) {
+export default function CardView({ card, small, big }: CardViewProps) {
+  const size = big ? 'big' : small ? 'small' : '';
   if (!card) {
-    return <span className={`card card-back ${small ? 'small' : ''}`} />;
+    return <span className={`card card-back ${size}`} />;
   }
 
   const suit = card.slice(-1);
@@ -15,10 +17,9 @@ export default function CardView({ card, small }: CardViewProps) {
   const isRed = RED_SUITS.includes(suit);
 
   return (
-    <span className={`card ${isRed ? 'card-red' : 'card-black'} ${small ? 'small' : ''}`}
-          title={card}>
-      <span className="rank">{rank}</span>
-      <span className="suit">{suit}</span>
+    <span className={`card ${isRed ? 'card-red' : 'card-black'} ${size}`} title={card}>
+      <span className="corner">{rank}<br />{suit}</span>
+      <span className="pip">{suit}</span>
     </span>
   );
 }
