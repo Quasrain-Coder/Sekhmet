@@ -470,3 +470,27 @@ async def test_grace_expiry_mid_hand_non_current_player(monkeypatch):
     assert target not in session.player_names
     assert target not in session.stats
     assert target not in session.total_buyin
+
+
+def test_action_timeout_auto_checks(monkeypatch):
+    """轮到人类且迟迟不动 → 超时自动 CHECK（无注）/FOLD（有注）。"""
+    import random
+    monkeypatch.setattr(tm.app_config.game, "action_timeout_seconds", 0.1)
+    random.seed(7)  # bot SB 跟注，人类 BB 获得 option（无注）
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        ws.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot", "buyin": 200,
+                      "is_human": False})
+        ws.send_json({"type": "start_hand"})
+        # 人类不行动，等超时：应在若干消息内看到 seat 0 的自动行动
+        for _ in range(40):
+            msg = ws.receive_json()
+            if msg["type"] in ("game_state_update", "hand_result"):
+                auto = [a for a in msg.get("round_history", [])
+                        if a["seat"] == 0 and a["action"] in ("CHECK", "FOLD")]
+                if auto:
+                    return  # 超时自动行动生效
+            # 注意：绝不发送 player_action
+        raise AssertionError("no auto action within 40 messages")

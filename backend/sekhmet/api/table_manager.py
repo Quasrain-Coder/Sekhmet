@@ -102,6 +102,7 @@ class TableSession:
     total_buyin: dict[int, int] = field(default_factory=dict)        # seat_idx → chips bought
     disconnected: set[int] = field(default_factory=set)
     grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
+    action_timer: asyncio.Task | None = None
 
     @property
     def n_seats(self) -> int:
@@ -294,8 +295,7 @@ async def _expire_seat(table_id: str, seat_idx: int) -> None:
         if session.game_state.phase == GamePhase.SHOWDOWN:
             result = _resolve_showdown(session)
         await broadcast(table_id, _state_broadcast(session, result))
-        for msg in await auto_bot_actions(table_id):
-            await broadcast(table_id, msg)
+        await after_action(table_id)
     except Exception:
         logger.exception(
             "Grace-expiry mid-hand removal failed for seat %s at table %s",
@@ -480,6 +480,65 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
         broadcasts.append(msg)
 
     return broadcasts
+
+
+# ---------------------------------------------------------------------------
+# Action timeout + unified after-action pipeline
+# ---------------------------------------------------------------------------
+
+
+def schedule_action_timeout(session: TableSession) -> None:
+    """(Re)arm the action timer if a human is to act in a betting round."""
+    if session.action_timer is not None:
+        session.action_timer.cancel()
+        session.action_timer = None
+    gs = session.game_state
+    if gs.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+        return
+    cur = gs.current_player_idx
+    if cur is None:
+        return
+    p = gs.player(cur)
+    if p is None or not p.is_human:
+        return
+    session.action_timer = asyncio.create_task(_action_timeout(session.table_id, cur))
+
+
+async def _action_timeout(table_id: str, seat_idx: int) -> None:
+    try:
+        await asyncio.sleep(app_config.game.action_timeout_seconds)
+    except asyncio.CancelledError:
+        return
+    session = await get_table(table_id)
+    if session is None:
+        return
+    gs = session.game_state
+    if gs.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+        return
+    if gs.current_player_idx != seat_idx:
+        return
+    player = gs.player(seat_idx)
+    if player is None or not player.is_human:
+        return
+    to_call = gs.current_bet - player.current_bet
+    action_type = "CHECK" if to_call == 0 else "FOLD"
+    logger.info("action timeout: auto %s for seat %s at table %s",
+                action_type, seat_idx, table_id)
+    msg = await handle_player_action(table_id, seat_idx, action_type)
+    await broadcast(table_id, msg)
+    await after_action(table_id)
+
+
+async def after_action(table_id: str) -> None:
+    """Drive bots, push fresh stats at hand end, re-arm the action timer."""
+    for msg in await auto_bot_actions(table_id):
+        await broadcast(table_id, msg)
+    session = await get_table(table_id)
+    if session is None:
+        return
+    if session.game_state.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+        await broadcast(table_id, _table_summary(session))
+    schedule_action_timeout(session)
 
 
 # ---------------------------------------------------------------------------

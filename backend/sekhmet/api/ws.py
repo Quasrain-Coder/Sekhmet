@@ -132,18 +132,8 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                                     "type": "hole_cards",
                                     "cards": [str(c) for c in p.hole_cards],
                                 })
-                        # Auto-play bots until human's turn
-                        bot_msgs = await tm.auto_bot_actions(table_id)
-                        for msg in bot_msgs:
-                            await tm.broadcast(table_id, msg)
-
-                        # Leaderboard stats changed with the hand result —
-                        # push a fresh table_state so clients see them.
-                        session = await tm.get_table(table_id)
-                        if session and session.game_state.phase in (
-                            GamePhase.WAITING, GamePhase.SHOWDOWN,
-                        ):
-                            await tm.broadcast(table_id, tm._table_summary(session))
+                        # Drive bots, push end-of-hand stats, re-arm timer
+                        await tm.after_action(table_id)
 
                 elif msg_type == "rebuy":
                     if my_seat is None:
@@ -164,19 +154,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         table_id, my_seat, action_type, amount,
                     )
                     await tm.broadcast(table_id, state_msg)
-
-                    # Auto-play bots until next human turn
-                    bot_msgs = await tm.auto_bot_actions(table_id)
-                    for msg in bot_msgs:
-                        await tm.broadcast(table_id, msg)
-
-                    # Leaderboard stats changed with the hand result —
-                    # push a fresh table_state so clients see them.
-                    session = await tm.get_table(table_id)
-                    if session and session.game_state.phase in (
-                        GamePhase.WAITING, GamePhase.SHOWDOWN,
-                    ):
-                        await tm.broadcast(table_id, tm._table_summary(session))
+                    await tm.after_action(table_id)
 
                 else:
                     await websocket.send_json({
