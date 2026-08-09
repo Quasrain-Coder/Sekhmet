@@ -5,6 +5,7 @@ import { useGameState } from '../hooks/useGameState';
 import type { GameMsg, TableConfigData, SeatInfo } from '../hooks/useGameState';
 import OvalTable from '../components/table/OvalTable';
 import ActionBar from '../components/table/ActionBar';
+import Leaderboard from '../components/table/Leaderboard';
 
 interface TableDetail {
   table_id: string;
@@ -165,6 +166,8 @@ export default function GameTablePage() {
         onKickBot={kickBot}
       />
 
+      <Leaderboard seats={state.seats} />
+
       <ActionBar
         isMyTurn={state.currentPlayerIdx === state.mySeat}
         currentBet={state.currentBet}
@@ -186,6 +189,12 @@ export default function GameTablePage() {
               <span>{a.hand}</span>
             </div>
           ))}
+          {state.phase === 'SHOWDOWN' && (
+            <button className="btn gold next-hand"
+                    onClick={() => send({ type: 'start_hand' })}>
+              Next Hand
+            </button>
+          )}
         </div>
       )}
 

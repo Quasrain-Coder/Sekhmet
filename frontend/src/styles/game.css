@@ -287,3 +287,35 @@ select.input { width: auto; }
 .award { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 2px 0; }
 .award .winner { color: var(--gold-text); }
 .history { font-size: 0.75rem; color: var(--text-dim); max-height: 80px; overflow-y: auto; }
+
+/* ---- Leaderboard ---- */
+.leaderboard { width: 100%; max-width: 780px; }
+.lb-toggle {
+  background: transparent; border: 1.5px solid var(--cyan-dim); color: var(--cyan-text);
+  border-radius: 6px; padding: 5px 14px; font-size: 0.75rem; cursor: pointer;
+}
+.lb-toggle:hover { border-color: var(--cyan); box-shadow: 0 0 10px rgba(34, 211, 238, 0.3); }
+.lb-table {
+  width: 100%; margin-top: 8px; border-collapse: collapse;
+  background: var(--surface); border: 1px solid var(--cyan-dim); border-radius: 8px;
+  font-size: 0.78rem;
+}
+.lb-table th {
+  text-align: left; padding: 7px 12px; color: var(--cyan-text);
+  font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase;
+  border-bottom: 1px solid var(--cyan-dim);
+}
+.lb-table td { padding: 6px 12px; border-bottom: 1px solid rgba(22, 78, 99, 0.4); }
+.lb-table tr:last-child td { border-bottom: none; }
+.lb-bot { color: var(--purple); font-size: 0.7rem; }
+.lb-pos { color: var(--gold-text); font-weight: 700; }
+.lb-neg { color: var(--text-dim); }
+.next-hand { margin-top: 10px; width: 100%; }
+
+/* 头像挡牌修复：我的手牌挂到座位盒下沿之外，不再向上撑高压住公共牌 */
+.player-seat.me .cards {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  margin-top: 6px;
+}
+/* 给悬出的手牌留出页面空间 */
+.table-felt { margin-bottom: 70px; }
