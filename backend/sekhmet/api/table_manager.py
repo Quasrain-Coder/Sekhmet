@@ -104,6 +104,12 @@ class TableSession:
     disconnected: set[int] = field(default_factory=set)
     grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
     action_timer: asyncio.Task | None = None
+    # Serializes every read-modify-write of ``game_state`` that can race:
+    # the auto_bot_actions loop (incl. the all-in runout, whose per-street
+    # sleep is deliberately inside the critical section) and _expire_seat's
+    # mid-hand surgery.  Never call after_action/auto_bot_actions while
+    # holding it — asyncio.Lock is not reentrant.
+    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
 
     @property
     def n_seats(self) -> int:
@@ -290,28 +296,41 @@ async def _expire_seat(table_id: str, seat_idx: int) -> None:
     # Mid-hand: force-fold (engine fold if it's their turn, else mark inactive —
     # the engine's round logic skips inactive players either way).
     try:
-        p = gs.player(seat_idx)
-        if p is not None and p.is_active and not p.is_all_in:
-            if gs.current_player_idx == seat_idx:
-                gs = execute(gs, Action(seat_idx, ActionType.FOLD))
-            else:
-                gs = gs.with_players(tuple(
-                    replace(pl, is_active=False) if pl.seat_idx == seat_idx else pl
-                    for pl in gs.players
-                ))
-                # The replace surgery bypasses execute(), so the engine's
-                # fold-out check never runs.  If only one active player
-                # remains, force SHOWDOWN now so the fold-out branch below
-                # pays the survivor — otherwise the pot evaporates when the
-                # survivor later folds.
-                if gs.n_active <= 1:
-                    gs = gs.with_phase(GamePhase.SHOWDOWN)
-            session.game_state = gs
-
         result = None
-        if session.game_state.phase == GamePhase.SHOWDOWN:
-            result = _resolve_showdown(session)
+        # Critical section: the surgery below and the runout loop in
+        # auto_bot_actions both do read → modify → write on game_state;
+        # interleaving them double-pays the pot or resurrects pre-surgery
+        # state.  Re-read the state inside the lock — the hand may have
+        # ended (runout finished) while we waited.
+        async with session.lock:
+            gs = session.game_state
+            if gs.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+                p = gs.player(seat_idx)
+                if p is not None and p.is_active and not p.is_all_in:
+                    if gs.current_player_idx == seat_idx:
+                        gs = execute(gs, Action(seat_idx, ActionType.FOLD))
+                    else:
+                        gs = gs.with_players(tuple(
+                            replace(pl, is_active=False) if pl.seat_idx == seat_idx else pl
+                            for pl in gs.players
+                        ))
+                        # The replace surgery bypasses execute(), so the engine's
+                        # fold-out check never runs.  If only one active player
+                        # remains, force SHOWDOWN now so the fold-out branch below
+                        # pays the survivor — otherwise the pot evaporates when the
+                        # survivor later folds.
+                        if gs.n_active <= 1:
+                            gs = gs.with_phase(GamePhase.SHOWDOWN)
+                    session.game_state = gs
+
+                # Resolve only a showdown we just caused under the lock —
+                # if the hand was already at SHOWDOWN when we acquired it,
+                # the runout/action path that got it there owns the payout.
+                if session.game_state.phase == GamePhase.SHOWDOWN:
+                    result = _resolve_showdown(session)
         await broadcast(table_id, _state_broadcast(session, result))
+        # after_action → auto_bot_actions takes session.lock itself; it must
+        # be called only after the critical section above has released it.
         await after_action(table_id)
     except Exception:
         logger.exception(
@@ -452,70 +471,79 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
         if session is None:
             break
 
-        gs = session.game_state
-        if gs.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
-            break
-
-        cur_idx = gs.current_player_idx
-        if cur_idx is None:
-            # All-in runout: delay, then deal the next street and broadcast
-            # it live from inside the loop — appending streets to
-            # `broadcasts` would hold them until this coroutine returns and
-            # deliver the whole runout in one burst.  Sleeping before each
-            # step (including the first) keeps the cadence uniform:
-            # FLOP → delay → TURN → delay → RIVER → delay → result.
-            #
-            # Flush any queued bot-action broadcasts first so a client never
-            # sees a street before the action that triggered the runout
-            # (e.g. a bot's all-in/call in solo play).
-            for pending in broadcasts:
-                await broadcast(table_id, pending)
-            broadcasts.clear()
-            await asyncio.sleep(app_config.game.runout_delay_seconds)
-            session.game_state = runout_step(gs)
+        # The whole loop body is one critical section: a grace-expiry
+        # (_expire_seat) or a second auto_bot_actions loop must never
+        # interleave with our read → step → write cycle, or both sides
+        # step from stale snapshots (duplicated streets, the pot resolved
+        # twice, or a stale write resurrecting pre-surgery state).  The
+        # runout sleep stays inside the lock on purpose — the all-in
+        # runout is a single critical section.
+        async with session.lock:
             gs = session.game_state
+            if gs.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+                break
+
+            cur_idx = gs.current_player_idx
+            if cur_idx is None:
+                # All-in runout: delay, then deal the next street and
+                # broadcast it live from inside the loop — appending streets
+                # to `broadcasts` would hold them until this coroutine
+                # returns and deliver the whole runout in one burst.
+                # Sleeping before each step (including the first) keeps the
+                # cadence uniform:
+                # FLOP → delay → TURN → delay → RIVER → delay → result.
+                #
+                # Flush any queued bot-action broadcasts first so a client
+                # never sees a street before the action that triggered the
+                # runout (e.g. a bot's all-in/call in solo play).
+                for pending in broadcasts:
+                    await broadcast(table_id, pending)
+                broadcasts.clear()
+                await asyncio.sleep(app_config.game.runout_delay_seconds)
+                session.game_state = runout_step(gs)
+                gs = session.game_state
+                if gs.phase == GamePhase.SHOWDOWN:
+                    result = _resolve_showdown(session)
+                    await broadcast(table_id, _state_broadcast(session, result))
+                    break
+                await broadcast(table_id, _state_broadcast(session))
+                continue
+
+            player = gs.player(cur_idx)
+            if player is None or not player.is_active or player.is_all_in:
+                break
+
+            if player.is_human:
+                break  # it's a human's turn — stop auto-play
+
+            # Bot's turn — decide and execute.  A bot that produces an illegal
+            # action must never freeze the game: fall back to check (free) or
+            # fold (facing a bet) and carry on.
+            bot_name = session.player_names.get(cur_idx, f"Bot{cur_idx}")
+            level = session.bot_levels.get(cur_idx, 2)
+            bot = create_bot(f"rule_lv{level}")
+            try:
+                action = bot.decide(gs, cur_idx)
+                gs = execute(gs, action)
+            except GameError:
+                logger.warning(
+                    "Bot %s produced an illegal action at table %s — falling back",
+                    bot_name, table_id, exc_info=True,
+                )
+                to_call = gs.current_bet - player.current_bet
+                fallback = Action(
+                    cur_idx,
+                    ActionType.CHECK if to_call == 0 else ActionType.FOLD,
+                )
+                gs = execute(gs, fallback)
+            session.game_state = gs
+
+            result = None
             if gs.phase == GamePhase.SHOWDOWN:
                 result = _resolve_showdown(session)
-                await broadcast(table_id, _state_broadcast(session, result))
-                break
-            await broadcast(table_id, _state_broadcast(session))
-            continue
 
-        player = gs.player(cur_idx)
-        if player is None or not player.is_active or player.is_all_in:
-            break
-
-        if player.is_human:
-            break  # it's a human's turn — stop auto-play
-
-        # Bot's turn — decide and execute.  A bot that produces an illegal
-        # action must never freeze the game: fall back to check (free) or
-        # fold (facing a bet) and carry on.
-        bot_name = session.player_names.get(cur_idx, f"Bot{cur_idx}")
-        level = session.bot_levels.get(cur_idx, 2)
-        bot = create_bot(f"rule_lv{level}")
-        try:
-            action = bot.decide(gs, cur_idx)
-            gs = execute(gs, action)
-        except GameError:
-            logger.warning(
-                "Bot %s produced an illegal action at table %s — falling back",
-                bot_name, table_id, exc_info=True,
-            )
-            to_call = gs.current_bet - player.current_bet
-            fallback = Action(
-                cur_idx,
-                ActionType.CHECK if to_call == 0 else ActionType.FOLD,
-            )
-            gs = execute(gs, fallback)
-        session.game_state = gs
-
-        result = None
-        if gs.phase == GamePhase.SHOWDOWN:
-            result = _resolve_showdown(session)
-
-        msg = _state_broadcast(session, result)
-        broadcasts.append(msg)
+            msg = _state_broadcast(session, result)
+            broadcasts.append(msg)
 
     return broadcasts
 
