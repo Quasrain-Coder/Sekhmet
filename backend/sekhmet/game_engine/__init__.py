@@ -5,7 +5,7 @@ Public API surface — import from here for the common types and functions::
     from sekhmet.game_engine import (
         GamePhase, GameState, Player, PotState, Action, ActionType,
         evaluate_7_cards, HandScore, HandRank,
-        validate, execute, deal_new_hand,
+        validate, execute, deal_new_hand, runout_step,
         create_side_pots, award_pot,
     )
 """
@@ -29,7 +29,7 @@ from .game_state import (
     InsufficientFundsError,
     ScenarioNotFoundError,
 )
-from .action_processor import validate, execute, deal_new_hand
+from .action_processor import validate, execute, deal_new_hand, runout_step
 from .pot_manager import create_side_pots, award_pot, PotAward
 
 __all__ = [
@@ -45,7 +45,7 @@ __all__ = [
     "NotYourTurnError", "PhaseError", "TableFullError",
     "InsufficientFundsError", "ScenarioNotFoundError",
     # action processing
-    "validate", "execute", "deal_new_hand",
+    "validate", "execute", "deal_new_hand", "runout_step",
     # pot management
     "create_side_pots", "award_pot", "PotAward",
 ]

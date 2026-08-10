@@ -272,7 +272,9 @@ def test_players_all_in_goes_to_showdown():
     state = make_state(p1, p2, p3, current_player_idx=1, current_bet=10, dealer_idx=2)
     # Player B is the only one who can act; checks → all bets equal → advance
     state = execute(state, Action(1, ActionType.CHECK))
-    assert state.phase in (GamePhase.FLOP, GamePhase.SHOWDOWN)
+    # 无人能行动 → 推进一条街并等待 runout（不再是直接摊牌）
+    assert state.phase == GamePhase.FLOP
+    assert state.current_player_idx is None
 
 
 # ---------------------------------------------------------------------------

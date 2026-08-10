@@ -17,7 +17,7 @@ from sekhmet.game_engine.game_state import (
     Player,
     PotState,
 )
-from sekhmet.game_engine.action_processor import deal_new_hand, execute
+from sekhmet.game_engine.action_processor import deal_new_hand, execute, runout_step
 from sekhmet.game_engine.pot_manager import award_pot, create_side_pots
 from sekhmet.game_engine.hand_evaluator import evaluate_7_cards
 
@@ -141,24 +141,32 @@ def test_full_checkdown_deals_every_street():
 
 
 def test_all_in_runout_heads_up():
-    """Both players all-in preflop → board runs out to showdown, no stall."""
+    """Both players all-in preflop → streets deal one at a time to showdown."""
     state = deal(waiting_state(
-        make_player("SB", 0, stack=200),  # HU: dealer=SB, acts first
+        make_player("SB", 0, stack=200),
         make_player("BB", 1, stack=200),
         dealer_idx=0,
     ))
-    assert state.current_player_idx == 0
-
     state = act(state, 0, ActionType.ALL_IN)
-    state = act(state, 1, ActionType.CALL)  # call also puts BB all-in
+    state = act(state, 1, ActionType.CALL)
 
+    # No one can act — the engine deals ONE street and waits (current=None)
+    assert state.phase == GamePhase.FLOP
+    assert len(state.community_cards) == 3
+    assert state.current_player_idx is None
+
+    from sekhmet.game_engine.action_processor import runout_step
+    state = runout_step(state)
+    assert state.phase == GamePhase.TURN and len(state.community_cards) == 4
+    state = runout_step(state)
+    assert state.phase == GamePhase.RIVER and len(state.community_cards) == 5
+    state = runout_step(state)
     assert state.phase == GamePhase.SHOWDOWN
-    assert len(state.community_cards) == 5
     assert len(state.deck) + 5 + 4 == 52
 
 
 def test_runout_when_one_player_still_has_chips():
-    """All-in called by a deeper stack → runout immediately, no phantom turn."""
+    """All-in called by a deeper stack → runout steps, no phantom turn."""
     state = deal(waiting_state(
         make_player("SB", 0, stack=100),
         make_player("BB", 1, stack=200),
@@ -167,8 +175,10 @@ def test_runout_when_one_player_still_has_chips():
     state = act(state, 0, ActionType.ALL_IN)   # short stack shoves 100
     state = act(state, 1, ActionType.CALL)     # BB calls, keeps 100 behind
 
-    # No further betting is possible — the hand must run itself out
-    assert state.phase == GamePhase.SHOWDOWN
+    # No further betting is possible — step the runout to showdown
+    while state.phase != GamePhase.SHOWDOWN:
+        assert state.current_player_idx is None
+        state = runout_step(state)
     assert len(state.community_cards) == 5
 
 
@@ -184,7 +194,8 @@ def test_side_pots_with_uneven_all_ins():
     state = act(state, 2, ActionType.ALL_IN)   # 200
     state = act(state, 1, ActionType.ALL_IN)   # Mid calls the extra 150
 
-    assert state.phase == GamePhase.SHOWDOWN
+    while state.phase != GamePhase.SHOWDOWN:
+        state = runout_step(state)
     assert len(state.community_cards) == 5
 
     pots = create_side_pots(state.players)

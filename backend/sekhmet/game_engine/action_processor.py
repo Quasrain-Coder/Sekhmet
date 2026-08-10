@@ -305,15 +305,16 @@ def _advance(state: GameState, from_seat: int) -> GameState:
     if _round_closed(state):
         if _count_players_who_can_act(state.players) <= 1:
             # No further betting is possible (everyone else is all-in) —
-            # deal out the remaining board and go straight to showdown.
-            return _runout(state)
+            # advance one street; current_player_idx=None signals "runout
+            # pending" and the table layer drives runout_step().
+            return _advance_phase(state)
         return _advance_phase(state)
 
     # Otherwise, pass to the next player
     next_seat = _next_active_seat(state.players, from_seat, n_seats)
     if next_seat is None:
-        # No one left who can act — run out the board
-        return _runout(state)
+        # No one left who can act — advance one street of the runout
+        return _advance_phase(state)
 
     return GameState(
         phase=state.phase,
@@ -352,49 +353,15 @@ def _deal_community(
     return community + deck[-n:], deck[:-n]
 
 
-def _runout(state: GameState) -> GameState:
-    """Deal the remaining community cards and go straight to showdown.
+def runout_step(state: GameState) -> GameState:
+    """Advance one street during an all-in runout (nobody left to act).
 
-    Used when no further betting is possible — e.g. every remaining player
-    is all-in.  Without this the hand would stall with no one able to act.
+    The table layer calls this in a loop (broadcasting each street) until
+    the state reaches SHOWDOWN.
     """
-    community = state.community_cards
-    deck = state.deck
-    while len(community) < 5 and deck:
-        n = 3 if len(community) == 0 else 1
-        community, deck = _deal_community(community, deck, n)
-
-    players = tuple(
-        Player(
-            name=p.name,
-            seat_idx=p.seat_idx,
-            stack=p.stack,
-            hole_cards=p.hole_cards,
-            is_active=p.is_active,
-            is_all_in=p.is_all_in,
-            current_bet=0,
-            total_bet=p.total_bet,
-            is_human=p.is_human,
-        )
-        for p in state.players
-    )
-
-    return GameState(
-        phase=GamePhase.SHOWDOWN,
-        players=players,
-        community_cards=community,
-        pot=state.pot,
-        deck=deck,
-        current_player_idx=None,
-        dealer_idx=state.dealer_idx,
-        current_bet=0,
-        min_raise=state.big_blind,
-        last_aggressor_idx=None,
-        small_blind=state.small_blind,
-        big_blind=state.big_blind,
-        round_history=state.round_history,
-        acted_seats=(),
-    )
+    if state.phase in (GamePhase.WAITING, GamePhase.DEALING, GamePhase.SHOWDOWN):
+        raise PhaseError(f"Cannot run out from {state.phase.name}")
+    return _advance_phase(state)
 
 
 def _advance_phase(state: GameState) -> GameState:
@@ -446,9 +413,14 @@ def _advance_phase(state: GameState) -> GameState:
         state.community_cards, state.deck, _CARDS_PER_STREET[next_phase]
     )
 
-    # First to act post-flop: first active player left of the dealer
-    n_seats = max((p.seat_idx + 1 for p in players), default=0)
-    first_to_act = _next_active_seat(players, state.dealer_idx, n_seats)
+    # First to act post-flop: first active player left of the dealer.
+    # No more betting is possible with ≤1 actor — signal "runout pending"
+    # with current_player_idx=None instead of offering a phantom turn.
+    if _count_players_who_can_act(players) <= 1:
+        first_to_act = None
+    else:
+        n_seats = max((p.seat_idx + 1 for p in players), default=0)
+        first_to_act = _next_active_seat(players, state.dealer_idx, n_seats)
 
     return GameState(
         phase=next_phase,
