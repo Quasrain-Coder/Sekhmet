@@ -7,9 +7,10 @@ interface Props {
   holeCards?: string[];   // only ever set for the hero
   avatarLabel: string;
   isMe: boolean;
+  positionTag?: 'D' | 'SB' | 'BB';
 }
 
-export default function PlayerSeat({ player, isCurrent, holeCards, avatarLabel, isMe }: Props) {
+export default function PlayerSeat({ player, isCurrent, holeCards, avatarLabel, isMe, positionTag }: Props) {
   const folded = !player.is_active;
   // NOTE: no seat-N class here — absolute placement is owned by the outer
   // .seat-wrap (PR #10). player-seat is position:relative (containing block
@@ -23,7 +24,9 @@ export default function PlayerSeat({ player, isCurrent, holeCards, avatarLabel, 
 
   return (
     <div className={cls}>
-      <div className="avatar">{avatarLabel}</div>
+      <div className="avatar">{avatarLabel}
+        {positionTag && <span className={`pos-tag pos-${positionTag.toLowerCase()}`}>{positionTag}</span>}
+      </div>
       <div className="name">{player.name}</div>
       <div className="stack">{player.stack}</div>
       {player.current_bet > 0 && <div className="bet">{player.current_bet}</div>}
