@@ -459,17 +459,26 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
         cur_idx = gs.current_player_idx
         if cur_idx is None:
             # All-in runout: delay, then deal the next street and broadcast
-            # it live.  Sleeping before each step (including the first) keeps
-            # the cadence uniform: FLOP → delay → TURN → delay → RIVER →
-            # delay → result.
+            # it live from inside the loop — appending streets to
+            # `broadcasts` would hold them until this coroutine returns and
+            # deliver the whole runout in one burst.  Sleeping before each
+            # step (including the first) keeps the cadence uniform:
+            # FLOP → delay → TURN → delay → RIVER → delay → result.
+            #
+            # Flush any queued bot-action broadcasts first so a client never
+            # sees a street before the action that triggered the runout
+            # (e.g. a bot's all-in/call in solo play).
+            for pending in broadcasts:
+                await broadcast(table_id, pending)
+            broadcasts.clear()
             await asyncio.sleep(app_config.game.runout_delay_seconds)
             session.game_state = runout_step(gs)
             gs = session.game_state
             if gs.phase == GamePhase.SHOWDOWN:
                 result = _resolve_showdown(session)
-                broadcasts.append(_state_broadcast(session, result))
+                await broadcast(table_id, _state_broadcast(session, result))
                 break
-            broadcasts.append(_state_broadcast(session))
+            await broadcast(table_id, _state_broadcast(session))
             continue
 
         player = gs.player(cur_idx)
