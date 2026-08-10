@@ -643,8 +643,12 @@ def test_all_in_runout_broadcasts_each_street(monkeypatch):
             msg = ws1.receive_json()
             if msg["type"] == "game_state_update":
                 boards.append(len(msg["community_cards"]))
+                # dealer/SB/BB must ride every state broadcast, not just
+                # hand_start — else the D badge vanishes after the first action
+                assert msg["dealer_idx"] is not None
             if msg["type"] == "hand_result":
                 break
         assert boards == [3, 4, 5]
         # 位置字段
         assert msg["sb_seat"] is not None and msg["bb_seat"] is not None
+        assert msg["dealer_idx"] is not None

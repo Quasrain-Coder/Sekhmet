@@ -702,6 +702,7 @@ def _state_broadcast(
         "pot": gs.pot.main_pot,
         "current_bet": gs.current_bet,
         "current_player_idx": gs.current_player_idx,
+        "dealer_idx": gs.dealer_idx,
         "sb_seat": gs.sb_seat,
         "bb_seat": gs.bb_seat,
         "players": [
