@@ -498,16 +498,27 @@ def deal_new_hand(
     if live_count < 2:
         raise InvalidActionError("Need at least 2 players with chips to deal")
 
-    n = len(state.players)
+    # Blinds rotate clockwise over players WITH CHIPS (busted players sit
+    # out; a busted blind seat is dead and the blind moves on).  Seat
+    # indices may be sparse (custom seat picker), so rotate over the
+    # actual live seat list, never modulo len(players).
+    live_seats = sorted(p.seat_idx for p in state.players if p.stack > 0)
 
-    # Heads-up: dealer is SB, non-dealer is BB
-    # Full ring: SB is left of dealer, BB is left of SB
-    if n == 2:
-        sb_seat = dealer_idx
-        bb_seat = (dealer_idx + 1) % n
+    def _after(seat: int) -> int:
+        """First live seat clockwise after *seat* (wraps)."""
+        for s in live_seats:
+            if s > seat:
+                return s
+        return live_seats[0]
+
+    if len(live_seats) == 2:
+        # HU: dealer is SB when they have chips; otherwise first live seat
+        # after the (dead) button.
+        sb_seat = dealer_idx if dealer_idx in live_seats else _after(dealer_idx)
+        bb_seat = _after(sb_seat)
     else:
-        sb_seat = (dealer_idx + 1) % n
-        bb_seat = (dealer_idx + 2) % n
+        sb_seat = _after(dealer_idx)
+        bb_seat = _after(sb_seat)
 
     updated: list[Player] = []
     for p in state.players:
