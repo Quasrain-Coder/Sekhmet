@@ -240,6 +240,8 @@ def execute(state: GameState, action: Action) -> GameState:
         last_aggressor_idx=new_last_aggressor,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
+        sb_seat=state.sb_seat,
+        bb_seat=state.bb_seat,
         round_history=new_history,
         acted_seats=new_acted,
     )
@@ -329,6 +331,8 @@ def _advance(state: GameState, from_seat: int) -> GameState:
         last_aggressor_idx=state.last_aggressor_idx,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
+        sb_seat=state.sb_seat,
+        bb_seat=state.bb_seat,
         round_history=state.round_history,
         acted_seats=state.acted_seats,
     )
@@ -404,6 +408,8 @@ def _advance_phase(state: GameState) -> GameState:
             last_aggressor_idx=None,
             small_blind=state.small_blind,
             big_blind=state.big_blind,
+            sb_seat=state.sb_seat,
+            bb_seat=state.bb_seat,
             round_history=state.round_history,
             acted_seats=(),
         )
@@ -435,6 +441,8 @@ def _advance_phase(state: GameState) -> GameState:
         last_aggressor_idx=None,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
+        sb_seat=state.sb_seat,
+        bb_seat=state.bb_seat,
         round_history=state.round_history,
         acted_seats=(),
     )
@@ -544,5 +552,7 @@ def deal_new_hand(
         last_aggressor_idx=bb_seat if first_to_act != bb_seat else None,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
+        sb_seat=sb_seat,
+        bb_seat=bb_seat,
         round_history=(),
     )

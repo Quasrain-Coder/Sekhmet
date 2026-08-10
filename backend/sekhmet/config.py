@@ -10,6 +10,7 @@ class GameConfig:
     max_seats_per_table: int = 9
     action_timeout_seconds: int = 30
     disconnect_grace_seconds: int = 60
+    runout_delay_seconds: float = 0.8
 
 
 @dataclass

@@ -37,6 +37,7 @@ from ..game_engine import (
     deal_new_hand,
     execute,
     evaluate_7_cards,
+    runout_step,
 )
 from ..game_engine.pot_manager import PotAward, create_side_pots, award_pot
 
@@ -444,7 +445,7 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
     from ..ai_engine.bot_registry import create as create_bot
 
     broadcasts: list[dict[str, Any]] = []
-    max_iterations = 20  # safety limit
+    max_iterations = 40  # safety limit (runout streets each consume one)
 
     for _ in range(max_iterations):
         session = await get_table(table_id)
@@ -457,7 +458,18 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
 
         cur_idx = gs.current_player_idx
         if cur_idx is None:
-            break
+            if gs.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+                break
+            # All-in runout: deal the next street and broadcast it live.
+            session.game_state = runout_step(gs)
+            gs = session.game_state
+            if gs.phase == GamePhase.SHOWDOWN:
+                result = _resolve_showdown(session)
+                broadcasts.append(_state_broadcast(session, result))
+                break
+            broadcasts.append(_state_broadcast(session))
+            await asyncio.sleep(app_config.game.runout_delay_seconds)
+            continue
 
         player = gs.player(cur_idx)
         if player is None or not player.is_active or player.is_all_in:
@@ -659,6 +671,8 @@ def _hand_start_broadcast(session: TableSession) -> dict[str, Any]:
         ],
         "small_blind": session.game_state.small_blind,
         "big_blind": session.game_state.big_blind,
+        "sb_seat": session.game_state.sb_seat,
+        "bb_seat": session.game_state.bb_seat,
         "pot": session.game_state.pot.main_pot,
     }
 
@@ -678,6 +692,8 @@ def _state_broadcast(
         "pot": gs.pot.main_pot,
         "current_bet": gs.current_bet,
         "current_player_idx": gs.current_player_idx,
+        "sb_seat": gs.sb_seat,
+        "bb_seat": gs.bb_seat,
         "players": [
             {
                 "seat_idx": p.seat_idx,
