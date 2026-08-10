@@ -652,3 +652,61 @@ def test_all_in_runout_broadcasts_each_street(monkeypatch):
         # 位置字段
         assert msg["sb_seat"] is not None and msg["bb_seat"] is not None
         assert msg["dealer_idx"] is not None
+
+
+async def test_runout_expire_seat_race_pays_pot_once(monkeypatch):
+    """断线宽限过期撞上 all-in runout：底池必须只结算一次。
+
+    回归测试（pre-fix 红）：_expire_seat → after_action 会在第一个
+    auto_bot_actions 循环睡在两条街之间时，再拉起第二个循环。两个循环都从
+    过期快照 runout_step（街道重复），且后者用未结算的 SHOWDOWN 覆盖前者已
+    结算的状态后再 _resolve_showdown 一次 —— 底池发两遍（两条 hand_result）。
+    修复后由 session.lock 串行化：恰好一条 hand_result，筹码守恒。
+    """
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "runout_delay_seconds", 0.2)
+
+    hand_results: list[dict] = []
+    real_broadcast = tm.broadcast
+
+    async def spy_broadcast(table_id, message):
+        if message.get("type") == "hand_result":
+            hand_results.append(message)
+        await real_broadcast(table_id, message)
+
+    monkeypatch.setattr(tm, "broadcast", spy_broadcast)
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "A", buyin=200)
+    await tm.sit_down(tid, 1, "B", buyin=200)
+    await tm.start_hand(tid)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    cur = session.game_state.current_player_idx
+    assert cur is not None
+    await tm.handle_player_action(tid, cur, "ALL_IN")
+    await tm.handle_player_action(tid, 1 - cur, "CALL")
+
+    session = await tm.get_table(tid)
+    gs = session.game_state
+    assert gs.current_player_idx is None  # runout pending
+    assert gs.phase == GamePhase.FLOP
+
+    # 宽限过期在 runout 中途触发（座位全下中，走无手术分支 → after_action
+    # 拉起第二个 bot 循环，与第一个交错）。
+    session.disconnected.add(0)
+    await asyncio.gather(
+        tm.auto_bot_actions(tid),
+        tm._expire_seat(tid, 0),
+    )
+
+    session = await tm.get_table(tid)
+    gs = session.game_state
+    assert gs.phase == GamePhase.SHOWDOWN
+    # 底池恰好结算一次
+    assert len(hand_results) == 1
+    awards = hand_results[0]["showdown"]["awards"]
+    assert sum(a["amount"] for a in awards) == 400
+    # 筹码守恒：总筹码 400，不多不少
+    assert sum(p.stack for p in gs.players) == 400
