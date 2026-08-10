@@ -305,11 +305,9 @@ def _advance(state: GameState, from_seat: int) -> GameState:
         return state.with_phase(GamePhase.SHOWDOWN)
 
     if _round_closed(state):
-        if _count_players_who_can_act(state.players) <= 1:
-            # No further betting is possible (everyone else is all-in) —
-            # advance one street; current_player_idx=None signals "runout
-            # pending" and the table layer drives runout_step().
-            return _advance_phase(state)
+        # No further betting is possible (everyone else is all-in) —
+        # advance one street; current_player_idx=None signals "runout
+        # pending" and the table layer drives runout_step().
         return _advance_phase(state)
 
     # Otherwise, pass to the next player

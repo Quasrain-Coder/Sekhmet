@@ -411,7 +411,8 @@ def test_deal_skips_zero_stack_player():
     assert busted.hole_cards in (None, ())
     assert busted.is_active is False
     assert busted.current_bet == 0 and busted.total_bet == 0
-    # SB/BB 顺延给有筹码玩家：SB 顺延到 seat 2 缴 5、BB 落到 seat 0 缴 10
+    # SB/BB 顺延给有筹码玩家（HU 规则：dealer 即 SB）：seat 0 (dealer) 缴 SB 5、
+    # seat 2 缴 BB 10 ——  busted 的 seat 1 被跳过
     assert new_state.pot.main_pot == 15
     # 有筹码的玩家都拿到了底牌
     for p in new_state.players:
