@@ -362,6 +362,8 @@ def test_ws_sit_down_sends_private_token():
         assert len(token_msg["token"]) == 32
 ```
 
+既有测试适配：`test_reclaim_by_name_restores_seat`（断线 PR 引入，无 token 调用 try_reclaim）同步更新——先从 `session.reclaim_tokens[0]` 取 token 再调用；`tm.try_reclaim(tid, "Stranger", token)` 仍应返回 None（名字不匹配）。
+
 - [ ] **Step 2: 确认红**
 
 - [ ] **Step 3: 实现**
