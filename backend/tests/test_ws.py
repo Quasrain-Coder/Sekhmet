@@ -72,15 +72,20 @@ def test_websocket_sit_down_and_start():
     ):
         # Sit down: ws1 first → broadcast to {0: ws1}
         #            ws2 second → broadcast to {0: ws1, 1: ws2}
+        # Each human sit_down also gets a private reclaim_token first.
         ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
         ws2.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot", "buyin": 200})
 
-        # ws1: 2 table_state, ws2: 1 table_state
+        # ws1: token + 2 table_state, ws2: token + 1 table_state
+        tk1 = ws1.receive_json()
         ts1a = ws1.receive_json()
         ts1b = ws1.receive_json()
+        tk2 = ws2.receive_json()
         ts2 = ws2.receive_json()
+        assert tk1["type"] == "reclaim_token"
         assert ts1a["type"] == "table_state"
         assert ts1b["type"] == "table_state"
+        assert tk2["type"] == "reclaim_token"
         assert ts2["type"] == "table_state"
 
         # Start hand → broadcast hand_start + private hole_cards

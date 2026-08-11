@@ -132,8 +132,10 @@ def test_ws_kick_bot_and_reject_kicking_human():
         client.websocket_connect(f"/ws/{tid}") as ws2,
     ):
         ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero"})
+        ws1.receive_json()                      # reclaim_token
         ws1.receive_json()                      # ws1's join broadcast
         ws2.send_json({"type": "sit_down", "seat_idx": 1, "name": "Friend"})
+        ws2.receive_json()                      # reclaim_token
         ws2.receive_json()                      # ws2's join broadcast
         ws1.receive_json()                      # ws2's join, echoed to ws1
 
@@ -162,8 +164,9 @@ def test_failed_sit_down_does_not_hijack_victim_broadcasts():
         client.websocket_connect(f"/ws/{tid}") as ws1,
         client.websocket_connect(f"/ws/{tid}") as ws2,
     ):
-        # ws1 takes seat 0
+        # ws1 takes seat 0 (private reclaim_token + join broadcast)
         ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero"})
+        ws1.receive_json()                      # reclaim_token
         ws1.receive_json()                      # ws1's join broadcast
 
         # ws2 tries the same seat — rejected, must not touch clients
@@ -391,13 +394,18 @@ async def test_disconnect_marks_seat_and_keeps_player():
 async def test_reclaim_by_name_restores_seat():
     tid = await tm.create_table()
     await tm.sit_down(tid, 0, "Hero", buyin=200)
+    session = await tm.get_table(tid)
+    assert session is not None
+    token = session.reclaim_tokens[0]
     await tm.handle_disconnect(tid, 0)
-    seat = await tm.try_reclaim(tid, "Hero")
+    result = await tm.try_reclaim(tid, "Hero", token)
+    assert result is not None
+    seat = result[0]
     assert seat == 0
     session = await tm.get_table(tid)
     assert session is not None
     assert tm.table_info(session)["seats"][0]["connected"] is True
-    assert await tm.try_reclaim(tid, "Stranger") is None
+    assert await tm.try_reclaim(tid, "Stranger", token) is None
 
 
 async def test_grace_expiry_between_hands_removes_seat(monkeypatch):
@@ -750,9 +758,10 @@ def test_ws_non_owner_cannot_start_hand():
         client.websocket_connect(f"/ws/{tid}") as ws2,
     ):
         ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Owner"})
-        ws1.receive_json()
+        ws1.receive_json(); ws1.receive_json()  # reclaim_token + join broadcast
         ws2.send_json({"type": "sit_down", "seat_idx": 1, "name": "Guest"})
-        ws2.receive_json(); ws1.receive_json()
+        ws2.receive_json(); ws2.receive_json()  # reclaim_token + join broadcast
+        ws1.receive_json()                      # guest join echoed to ws1
         ws2.send_json({"type": "start_hand"})
         err = ws2.receive_json()
         assert err["type"] == "error"
@@ -771,9 +780,10 @@ def test_ws_non_owner_cannot_kick_bot():
         client.websocket_connect(f"/ws/{tid}") as ws2,
     ):
         ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Owner"})
-        ws1.receive_json()
+        ws1.receive_json(); ws1.receive_json()  # reclaim_token + join broadcast
         ws2.send_json({"type": "sit_down", "seat_idx": 1, "name": "Guest"})
-        ws2.receive_json(); ws1.receive_json()
+        ws2.receive_json(); ws2.receive_json()  # reclaim_token + join broadcast
+        ws1.receive_json()                      # guest join echoed to ws1
         ws1.send_json({"type": "sit_down", "seat_idx": 2, "name": "Bot", "is_human": False})
         ws1.receive_json(); ws2.receive_json()
         ws2.send_json({"type": "stand_up", "seat_idx": 2})
@@ -817,3 +827,37 @@ async def test_sweep_keeps_active_room():
     closed = await tm.sweep_idle_tables()
     assert tid not in closed
     assert await tm.get_table(tid) is not None
+
+
+# ---------------------------------------------------------------------------
+# Reclaim token — per-seat token issued on sit_down, rotated on reclaim
+# ---------------------------------------------------------------------------
+
+
+async def test_reclaim_requires_token():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    session = await tm.get_table(tid)
+    token = session.reclaim_tokens[0]
+
+    await tm.handle_disconnect(tid, 0)
+    # 无 token / 错 token 拒
+    assert await tm.try_reclaim(tid, "Hero", None) is None
+    assert await tm.try_reclaim(tid, "Hero", "wrong") is None
+    # 正确 token → 认领成功并轮换
+    result = await tm.try_reclaim(tid, "Hero", token)
+    assert result is not None
+    seat, new_token = result
+    assert seat == 0
+    assert new_token != token
+    assert session.reclaim_tokens[0] == new_token
+
+
+def test_ws_sit_down_sends_private_token():
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        msgs = [ws.receive_json(), ws.receive_json()]
+        token_msg = next(m for m in msgs if m["type"] == "reclaim_token")
+        assert len(token_msg["token"]) == 32

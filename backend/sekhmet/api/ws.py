@@ -51,17 +51,26 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await websocket.send_json({"type": "error", "message": "Table not found"})
                         continue
 
-                    # Reconnect path: a name matching a disconnected seat
-                    # reclaims it (works mid-hand — the player never left).
-                    reclaimed = await tm.try_reclaim(table_id, name)
+                    # Reconnect path: a name + token matching a disconnected
+                    # seat reclaims it (works mid-hand — the player never
+                    # left).  Without a valid token this falls through to the
+                    # normal sit_down, where "Seat is already occupied"
+                    # rejects the impostor.
+                    reclaimed = await tm.try_reclaim(
+                        table_id, name, msg.get("reclaim_token")
+                    )
                     if reclaimed is not None:
-                        session.clients[reclaimed] = websocket
-                        my_seat = reclaimed
+                        seat, new_token = reclaimed
+                        session.clients[seat] = websocket
+                        my_seat = seat
+                        await websocket.send_json({
+                            "type": "reclaim_token", "token": new_token,
+                        })
                         await tm.broadcast(table_id, tm._table_summary(session))
                         # Re-send private state so the reclaimer catches up
-                        p = session.game_state.player(reclaimed)
+                        p = session.game_state.player(seat)
                         if p is not None and p.hole_cards:
-                            await tm.send_to_player(table_id, reclaimed, {
+                            await tm.send_to_player(table_id, seat, {
                                 "type": "hole_cards",
                                 "cards": [str(c) for c in p.hole_cards],
                             })
@@ -69,7 +78,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         # current player) or a mid-hand reclaimer stays blind
                         # until the next broadcast.
                         await tm.send_to_player(
-                            table_id, reclaimed, tm._state_broadcast(session),
+                            table_id, seat, tm._state_broadcast(session),
                         )
                         continue
 
@@ -88,6 +97,11 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                     if is_human:
                         session.clients[seat_idx] = websocket
                         my_seat = seat_idx
+                        token = session.reclaim_tokens.get(seat_idx)
+                        if token:
+                            await websocket.send_json({
+                                "type": "reclaim_token", "token": token,
+                            })
 
                     await tm.broadcast(table_id, summary)
 

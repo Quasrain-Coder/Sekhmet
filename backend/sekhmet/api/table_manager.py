@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import secrets
 import time
 import uuid
 from dataclasses import dataclass, field, replace
@@ -104,6 +105,7 @@ class TableSession:
     total_buyin: dict[int, int] = field(default_factory=dict)        # seat_idx → chips bought
     disconnected: set[int] = field(default_factory=set)
     grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
+    reclaim_tokens: dict[int, str] = field(default_factory=dict)  # seat_idx → token
     action_timer: asyncio.Task | None = None
     owner_seat: int | None = None
     last_activity: float = field(default_factory=time.monotonic)
@@ -268,6 +270,8 @@ async def sit_down(
 
     session.stats[seat_idx] = PlayerStats()
     session.total_buyin[seat_idx] = stack
+    if is_human:
+        session.reclaim_tokens[seat_idx] = secrets.token_hex(16)
 
     return _table_summary(session)
 
@@ -283,6 +287,7 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
     session.bot_levels.pop(seat_idx, None)
     session.stats.pop(seat_idx, None)
     session.total_buyin.pop(seat_idx, None)
+    session.reclaim_tokens.pop(seat_idx, None)
 
     players = tuple(p for p in session.game_state.players if p.seat_idx != seat_idx)
     session.game_state = session.game_state.with_players(players)
@@ -314,18 +319,25 @@ async def handle_disconnect(table_id: str, seat_idx: int) -> None:
     session.grace_timers[seat_idx] = asyncio.create_task(_expire())
 
 
-async def try_reclaim(table_id: str, name: str) -> int | None:
-    """Reclaim a disconnected seat by player name. Returns the seat or None."""
+async def try_reclaim(
+    table_id: str, name: str, token: str | None
+) -> tuple[int, str] | None:
+    """Reclaim a disconnected seat by name + token. Returns (seat, new_token)."""
     session = await get_table(table_id)
-    if session is None:
+    if session is None or token is None:
         return None
     for seat in list(session.disconnected):
-        if session.player_names.get(seat) == name:
+        if (
+            session.player_names.get(seat) == name
+            and session.reclaim_tokens.get(seat) == token
+        ):
             timer = session.grace_timers.pop(seat, None)
             if timer is not None:
                 timer.cancel()
             session.disconnected.discard(seat)
-            return seat
+            new_token = secrets.token_hex(16)
+            session.reclaim_tokens[seat] = new_token
+            return seat, new_token
     return None
 
 
@@ -398,6 +410,7 @@ async def _expire_seat(table_id: str, seat_idx: int) -> None:
         session.stats.pop(seat_idx, None)
         session.total_buyin.pop(seat_idx, None)
         session.bot_levels.pop(seat_idx, None)
+        session.reclaim_tokens.pop(seat_idx, None)
         _reassign_owner(session)
         await broadcast(table_id, _table_summary(session))
 
