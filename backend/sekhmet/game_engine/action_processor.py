@@ -240,6 +240,8 @@ def execute(state: GameState, action: Action) -> GameState:
         last_aggressor_idx=new_last_aggressor,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
+        sb_seat=state.sb_seat,
+        bb_seat=state.bb_seat,
         round_history=new_history,
         acted_seats=new_acted,
     )
@@ -303,17 +305,16 @@ def _advance(state: GameState, from_seat: int) -> GameState:
         return state.with_phase(GamePhase.SHOWDOWN)
 
     if _round_closed(state):
-        if _count_players_who_can_act(state.players) <= 1:
-            # No further betting is possible (everyone else is all-in) —
-            # deal out the remaining board and go straight to showdown.
-            return _runout(state)
+        # No further betting is possible (everyone else is all-in) —
+        # advance one street; current_player_idx=None signals "runout
+        # pending" and the table layer drives runout_step().
         return _advance_phase(state)
 
     # Otherwise, pass to the next player
     next_seat = _next_active_seat(state.players, from_seat, n_seats)
     if next_seat is None:
-        # No one left who can act — run out the board
-        return _runout(state)
+        # No one left who can act — advance one street of the runout
+        return _advance_phase(state)
 
     return GameState(
         phase=state.phase,
@@ -328,6 +329,8 @@ def _advance(state: GameState, from_seat: int) -> GameState:
         last_aggressor_idx=state.last_aggressor_idx,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
+        sb_seat=state.sb_seat,
+        bb_seat=state.bb_seat,
         round_history=state.round_history,
         acted_seats=state.acted_seats,
     )
@@ -352,49 +355,15 @@ def _deal_community(
     return community + deck[-n:], deck[:-n]
 
 
-def _runout(state: GameState) -> GameState:
-    """Deal the remaining community cards and go straight to showdown.
+def runout_step(state: GameState) -> GameState:
+    """Advance one street during an all-in runout (nobody left to act).
 
-    Used when no further betting is possible — e.g. every remaining player
-    is all-in.  Without this the hand would stall with no one able to act.
+    The table layer calls this in a loop (broadcasting each street) until
+    the state reaches SHOWDOWN.
     """
-    community = state.community_cards
-    deck = state.deck
-    while len(community) < 5 and deck:
-        n = 3 if len(community) == 0 else 1
-        community, deck = _deal_community(community, deck, n)
-
-    players = tuple(
-        Player(
-            name=p.name,
-            seat_idx=p.seat_idx,
-            stack=p.stack,
-            hole_cards=p.hole_cards,
-            is_active=p.is_active,
-            is_all_in=p.is_all_in,
-            current_bet=0,
-            total_bet=p.total_bet,
-            is_human=p.is_human,
-        )
-        for p in state.players
-    )
-
-    return GameState(
-        phase=GamePhase.SHOWDOWN,
-        players=players,
-        community_cards=community,
-        pot=state.pot,
-        deck=deck,
-        current_player_idx=None,
-        dealer_idx=state.dealer_idx,
-        current_bet=0,
-        min_raise=state.big_blind,
-        last_aggressor_idx=None,
-        small_blind=state.small_blind,
-        big_blind=state.big_blind,
-        round_history=state.round_history,
-        acted_seats=(),
-    )
+    if state.phase in (GamePhase.WAITING, GamePhase.DEALING, GamePhase.SHOWDOWN):
+        raise PhaseError(f"Cannot run out from {state.phase.name}")
+    return _advance_phase(state)
 
 
 def _advance_phase(state: GameState) -> GameState:
@@ -437,6 +406,8 @@ def _advance_phase(state: GameState) -> GameState:
             last_aggressor_idx=None,
             small_blind=state.small_blind,
             big_blind=state.big_blind,
+            sb_seat=state.sb_seat,
+            bb_seat=state.bb_seat,
             round_history=state.round_history,
             acted_seats=(),
         )
@@ -446,9 +417,14 @@ def _advance_phase(state: GameState) -> GameState:
         state.community_cards, state.deck, _CARDS_PER_STREET[next_phase]
     )
 
-    # First to act post-flop: first active player left of the dealer
-    n_seats = max((p.seat_idx + 1 for p in players), default=0)
-    first_to_act = _next_active_seat(players, state.dealer_idx, n_seats)
+    # First to act post-flop: first active player left of the dealer.
+    # No more betting is possible with ≤1 actor — signal "runout pending"
+    # with current_player_idx=None instead of offering a phantom turn.
+    if _count_players_who_can_act(players) <= 1:
+        first_to_act = None
+    else:
+        n_seats = max((p.seat_idx + 1 for p in players), default=0)
+        first_to_act = _next_active_seat(players, state.dealer_idx, n_seats)
 
     return GameState(
         phase=next_phase,
@@ -463,6 +439,8 @@ def _advance_phase(state: GameState) -> GameState:
         last_aggressor_idx=None,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
+        sb_seat=state.sb_seat,
+        bb_seat=state.bb_seat,
         round_history=state.round_history,
         acted_seats=(),
     )
@@ -498,16 +476,27 @@ def deal_new_hand(
     if live_count < 2:
         raise InvalidActionError("Need at least 2 players with chips to deal")
 
-    n = len(state.players)
+    # Blinds rotate clockwise over players WITH CHIPS (busted players sit
+    # out; a busted blind seat is dead and the blind moves on).  Seat
+    # indices may be sparse (custom seat picker), so rotate over the
+    # actual live seat list, never modulo len(players).
+    live_seats = sorted(p.seat_idx for p in state.players if p.stack > 0)
 
-    # Heads-up: dealer is SB, non-dealer is BB
-    # Full ring: SB is left of dealer, BB is left of SB
-    if n == 2:
-        sb_seat = dealer_idx
-        bb_seat = (dealer_idx + 1) % n
+    def _after(seat: int) -> int:
+        """First live seat clockwise after *seat* (wraps)."""
+        for s in live_seats:
+            if s > seat:
+                return s
+        return live_seats[0]
+
+    if len(live_seats) == 2:
+        # HU: dealer is SB when they have chips; otherwise first live seat
+        # after the (dead) button.
+        sb_seat = dealer_idx if dealer_idx in live_seats else _after(dealer_idx)
+        bb_seat = _after(sb_seat)
     else:
-        sb_seat = (dealer_idx + 1) % n
-        bb_seat = (dealer_idx + 2) % n
+        sb_seat = _after(dealer_idx)
+        bb_seat = _after(sb_seat)
 
     updated: list[Player] = []
     for p in state.players:
@@ -561,5 +550,7 @@ def deal_new_hand(
         last_aggressor_idx=bb_seat if first_to_act != bb_seat else None,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
+        sb_seat=sb_seat,
+        bb_seat=bb_seat,
         round_history=(),
     )

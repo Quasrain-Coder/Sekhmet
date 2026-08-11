@@ -272,7 +272,9 @@ def test_players_all_in_goes_to_showdown():
     state = make_state(p1, p2, p3, current_player_idx=1, current_bet=10, dealer_idx=2)
     # Player B is the only one who can act; checks → all bets equal → advance
     state = execute(state, Action(1, ActionType.CHECK))
-    assert state.phase in (GamePhase.FLOP, GamePhase.SHOWDOWN)
+    # 无人能行动 → 推进一条街并等待 runout（不再是直接摊牌）
+    assert state.phase == GamePhase.FLOP
+    assert state.current_player_idx is None
 
 
 # ---------------------------------------------------------------------------
@@ -409,12 +411,53 @@ def test_deal_skips_zero_stack_player():
     assert busted.hole_cards in (None, ())
     assert busted.is_active is False
     assert busted.current_bet == 0 and busted.total_bet == 0
-    # SB 是爆掉玩家 → 死盲注不收（不重排），只有 BB 的 10 入池
-    assert new_state.pot.main_pot == 10
+    # SB/BB 顺延给有筹码玩家（HU 规则：dealer 即 SB）：seat 0 (dealer) 缴 SB 5、
+    # seat 2 缴 BB 10 ——  busted 的 seat 1 被跳过
+    assert new_state.pot.main_pot == 15
     # 有筹码的玩家都拿到了底牌
     for p in new_state.players:
         if p.stack > 0:
             assert p.hole_cards is not None and len(p.hole_cards) == 2
+
+
+def test_blinds_skip_busted_and_sparse_seats():
+    """Blinds rotate over players WITH CHIPS, across sparse seat indices."""
+    p1 = make_player("A", 0, stack=200)   # dealer
+    p2 = make_player("B", 2, stack=0)     # busted, sparse seat
+    p3 = make_player("C", 5, stack=200)   # sparse seat
+    state = GameState(
+        phase=GamePhase.WAITING,
+        players=(p1, p2, p3),
+        dealer_idx=0, small_blind=5, big_blind=10,
+    )
+    deck = Deck(); deck.shuffle()
+    s = deal_new_hand(state, deck.cards[:], dealer_idx=0)
+
+    # 2 live players (seats 0 and 5) → HU blinds: dealer(0)=SB 5, seat 5=BB 10
+    assert s.player(0).total_bet == 5
+    assert s.player(5).total_bet == 10
+    assert s.player(2).total_bet == 0
+    assert s.pot.main_pot == 15
+    # HU first to act preflop = SB (seat 0)
+    assert s.current_player_idx == 0
+
+
+def test_blinds_three_live_sparse_seats():
+    p1 = make_player("A", 1, stack=200)
+    p2 = make_player("B", 3, stack=200)
+    p3 = make_player("C", 4, stack=200)
+    state = GameState(
+        phase=GamePhase.WAITING,
+        players=(p1, p2, p3),
+        dealer_idx=1, small_blind=5, big_blind=10,
+    )
+    deck = Deck(); deck.shuffle()
+    s = deal_new_hand(state, deck.cards[:], dealer_idx=1)
+
+    # dealer=1 → SB=3, BB=4, first to act = seat 1 (left of BB, wraps)
+    assert s.player(3).total_bet == 5
+    assert s.player(4).total_bet == 10
+    assert s.current_player_idx == 1
 
 
 def test_deal_requires_two_players_with_chips():

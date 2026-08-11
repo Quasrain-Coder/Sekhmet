@@ -180,6 +180,9 @@ class GameState:
     # Blinds
     small_blind: int = 5
     big_blind: int = 10
+    # Which seats posted the blinds this hand (None before the deal).
+    sb_seat: int | None = None
+    bb_seat: int | None = None
 
     # History (append-only log for replay)
     round_history: tuple[Action, ...] = ()
@@ -234,6 +237,8 @@ class GameState:
             last_aggressor_idx=self.last_aggressor_idx,
             small_blind=self.small_blind,
             big_blind=self.big_blind,
+            sb_seat=self.sb_seat,
+            bb_seat=self.bb_seat,
             round_history=self.round_history,
             acted_seats=self.acted_seats,
         )
@@ -253,6 +258,8 @@ class GameState:
             last_aggressor_idx=None,
             small_blind=self.small_blind,
             big_blind=self.big_blind,
+            sb_seat=self.sb_seat,
+            bb_seat=self.bb_seat,
             round_history=self.round_history,
             acted_seats=(),
         )

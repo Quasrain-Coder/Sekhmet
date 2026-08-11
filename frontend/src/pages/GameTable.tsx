@@ -181,6 +181,9 @@ export default function GameTablePage() {
         communityCards={state.communityCards}
         pot={state.pot}
         currentPlayerIdx={state.currentPlayerIdx}
+        dealerIdx={state.dealerIdx}
+        sbSeat={state.sbSeat}
+        bbSeat={state.bbSeat}
         mySeat={state.mySeat}
         holeCards={state.holeCards}
         phase={state.phase}

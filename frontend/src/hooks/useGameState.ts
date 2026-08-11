@@ -37,6 +37,9 @@ export interface GameStateData {
   current_player_idx: number | null;
   players: PlayerInfo[];
   round_history: { seat: number; action: string; amount: number }[];
+  dealer_idx: number | null;
+  sb_seat: number | null;
+  bb_seat: number | null;
 }
 
 interface HandStartData {
@@ -49,6 +52,8 @@ interface HandStartData {
   small_blind: number;
   big_blind: number;
   pot: number;
+  sb_seat: number | null;
+  bb_seat: number | null;
 }
 
 interface ShowdownData {
@@ -81,6 +86,9 @@ interface AppState {
   connected: boolean;
   seats: SeatInfo[];
   config: TableConfigData | null;
+  dealerIdx: number | null;
+  sbSeat: number | null;
+  bbSeat: number | null;
 }
 
 type Action =
@@ -109,6 +117,9 @@ export const initialState: AppState = {
   connected: false,
   seats: [],
   config: null,
+  dealerIdx: null,
+  sbSeat: null,
+  bbSeat: null,
 };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -134,6 +145,9 @@ function reducer(state: AppState, action: Action): AppState {
         roundHistory: [],
         currentBet: action.data.current_bet ?? 0,
         currentPlayerIdx: action.data.current_player_idx ?? null,
+        dealerIdx: action.data.dealer_idx ?? null,
+        sbSeat: action.data.sb_seat ?? null,
+        bbSeat: action.data.bb_seat ?? null,
       };
     case 'HOLE_CARDS':
       return { ...state, holeCards: action.cards };
@@ -147,6 +161,9 @@ function reducer(state: AppState, action: Action): AppState {
         currentBet: action.data.current_bet,
         currentPlayerIdx: action.data.current_player_idx,
         roundHistory: action.data.round_history,
+        dealerIdx: action.data.dealer_idx ?? null,
+        sbSeat: action.data.sb_seat ?? null,
+        bbSeat: action.data.bb_seat ?? null,
       };
     case 'HAND_RESULT':
       return {

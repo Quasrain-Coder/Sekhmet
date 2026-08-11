@@ -600,3 +600,113 @@ def test_action_timeout_auto_checks(monkeypatch):
                     return  # 超时自动行动生效
             # 注意：绝不发送 player_action
         raise AssertionError("no auto action within 40 messages")
+
+
+def test_all_in_runout_broadcasts_each_street(monkeypatch):
+    """All-in then call → clients see FLOP(3) → TURN(4) → RIVER(5) → result."""
+    monkeypatch.setattr(tm.app_config.game, "runout_delay_seconds", 0)
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with (
+        client.websocket_connect(f"/ws/{tid}") as ws1,
+        client.websocket_connect(f"/ws/{tid}") as ws2,
+    ):
+        ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "A", "buyin": 200})
+        ws1.receive_json()
+        ws2.send_json({"type": "sit_down", "seat_idx": 1, "name": "B", "buyin": 200})
+        ws2.receive_json(); ws1.receive_json()
+        ws1.send_json({"type": "start_hand"})
+
+        # 谁被问到谁 ALL_IN，另一方 CALL（按实际 current_player_idx 驱动，
+        # 不预设哪个座位先手——按钮每手推进，先手座位不确定）。
+        sockets = {0: ws1, 1: ws2}
+        while True:
+            msg = ws1.receive_json()
+            if msg.get("current_player_idx") in (0, 1):
+                actor = msg["current_player_idx"]
+                break
+        caller_seat = 1 - actor
+        sockets[actor].send_json({"type": "player_action", "action": "ALL_IN"})
+
+        # 两个 socket 都要读到"轮到 caller"再行动，保证随后读板面时队列里
+        # 没有 ALL_IN 那条旧广播（其 community_cards 仍为 0 张）。
+        for ws in (ws1, ws2):
+            while True:
+                msg = ws.receive_json()
+                if msg.get("current_player_idx") == caller_seat:
+                    break
+        sockets[caller_seat].send_json({"type": "player_action", "action": "CALL"})
+
+        # 现在应逐街收到广播：3 张 → 4 张 → 5 张 → hand_result
+        boards = []
+        for _ in range(20):
+            msg = ws1.receive_json()
+            if msg["type"] == "game_state_update":
+                boards.append(len(msg["community_cards"]))
+                # dealer/SB/BB must ride every state broadcast, not just
+                # hand_start — else the D badge vanishes after the first action
+                assert msg["dealer_idx"] is not None
+            if msg["type"] == "hand_result":
+                break
+        assert boards == [3, 4, 5]
+        # 位置字段
+        assert msg["sb_seat"] is not None and msg["bb_seat"] is not None
+        assert msg["dealer_idx"] is not None
+
+
+async def test_runout_expire_seat_race_pays_pot_once(monkeypatch):
+    """断线宽限过期撞上 all-in runout：底池必须只结算一次。
+
+    回归测试（pre-fix 红）：_expire_seat → after_action 会在第一个
+    auto_bot_actions 循环睡在两条街之间时，再拉起第二个循环。两个循环都从
+    过期快照 runout_step（街道重复），且后者用未结算的 SHOWDOWN 覆盖前者已
+    结算的状态后再 _resolve_showdown 一次 —— 底池发两遍（两条 hand_result）。
+    修复后由 session.lock 串行化：恰好一条 hand_result，筹码守恒。
+    """
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "runout_delay_seconds", 0.2)
+
+    hand_results: list[dict] = []
+    real_broadcast = tm.broadcast
+
+    async def spy_broadcast(table_id, message):
+        if message.get("type") == "hand_result":
+            hand_results.append(message)
+        await real_broadcast(table_id, message)
+
+    monkeypatch.setattr(tm, "broadcast", spy_broadcast)
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "A", buyin=200)
+    await tm.sit_down(tid, 1, "B", buyin=200)
+    await tm.start_hand(tid)
+
+    session = await tm.get_table(tid)
+    assert session is not None
+    cur = session.game_state.current_player_idx
+    assert cur is not None
+    await tm.handle_player_action(tid, cur, "ALL_IN")
+    await tm.handle_player_action(tid, 1 - cur, "CALL")
+
+    session = await tm.get_table(tid)
+    gs = session.game_state
+    assert gs.current_player_idx is None  # runout pending
+    assert gs.phase == GamePhase.FLOP
+
+    # 宽限过期在 runout 中途触发（座位全下中，走无手术分支 → after_action
+    # 拉起第二个 bot 循环，与第一个交错）。
+    session.disconnected.add(0)
+    await asyncio.gather(
+        tm.auto_bot_actions(tid),
+        tm._expire_seat(tid, 0),
+    )
+
+    session = await tm.get_table(tid)
+    gs = session.game_state
+    assert gs.phase == GamePhase.SHOWDOWN
+    # 底池恰好结算一次
+    assert len(hand_results) == 1
+    awards = hand_results[0]["showdown"]["awards"]
+    assert sum(a["amount"] for a in awards) == 400
+    # 筹码守恒：总筹码 400，不多不少
+    assert sum(p.stack for p in gs.players) == 400

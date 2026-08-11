@@ -11,6 +11,9 @@ interface Props {
   communityCards: string[];
   pot: number;
   currentPlayerIdx: number | null;
+  dealerIdx: number | null;
+  sbSeat: number | null;
+  bbSeat: number | null;
   mySeat: number | null;
   holeCards: string[];
   phase: string;
@@ -33,6 +36,7 @@ function displaySlot(seatIdx: number, total: number, mySeat: number | null): num
 
 export default function OvalTable({
   seats, players, maxSeats, communityCards, pot, currentPlayerIdx,
+  dealerIdx, sbSeat, bbSeat,
   mySeat, holeCards, phase, onAddBot, onKickBot,
 }: Props) {
   const showCommunity = phase !== 'WAITING' && phase !== 'PREFLOP' && phase !== 'DEALING';
@@ -60,6 +64,10 @@ export default function OvalTable({
       {seats.map((seat) => {
         const p = players.find(pl => pl.seat_idx === seat.seat_idx);
         const isMe = mySeat === seat.seat_idx;
+        const tag = seat.seat_idx === dealerIdx ? 'D'
+          : seat.seat_idx === sbSeat ? 'SB'
+          : seat.seat_idx === bbSeat ? 'BB'
+          : undefined;
         const slot = displaySlot(seat.seat_idx, total, mySeat);
         // Merge lobby-level seat info with in-hand player info
         const merged: PlayerInfo = p ?? {
@@ -84,6 +92,7 @@ export default function OvalTable({
                   : `L${seat.bot_level ?? 2}`
               }
               isMe={isMe}
+              positionTag={tag}
             />
             {!seat.is_human && (
               <span className="bot-badge">
