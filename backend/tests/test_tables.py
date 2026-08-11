@@ -710,3 +710,77 @@ async def test_runout_expire_seat_race_pays_pot_once(monkeypatch):
     assert sum(a["amount"] for a in awards) == 400
     # 筹码守恒：总筹码 400，不多不少
     assert sum(p.stack for p in gs.players) == 400
+
+
+# ---------------------------------------------------------------------------
+# Table ownership — first human owns the table; only owner starts/kicks
+# ---------------------------------------------------------------------------
+
+
+async def test_first_human_becomes_owner():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 2, "Bot", buyin=200, is_human=False)
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert session.owner_seat == 0  # bot 不当房主；第一个人类接任
+    info = tm.table_info(session)
+    owners = {s["seat_idx"]: s["is_owner"] for s in info["seats"]}
+    assert owners == {0: True, 2: False}
+
+
+async def test_owner_reassigned_on_removal():
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Friend", buyin=200)
+    await tm.stand_up(tid, 0)
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert session.owner_seat == 1
+    await tm.stand_up(tid, 1)
+    session = await tm.get_table(tid)
+    assert session.owner_seat is None
+
+
+def test_ws_non_owner_cannot_start_hand():
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with (
+        client.websocket_connect(f"/ws/{tid}") as ws1,
+        client.websocket_connect(f"/ws/{tid}") as ws2,
+    ):
+        ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Owner"})
+        ws1.receive_json()
+        ws2.send_json({"type": "sit_down", "seat_idx": 1, "name": "Guest"})
+        ws2.receive_json(); ws1.receive_json()
+        ws2.send_json({"type": "start_hand"})
+        err = ws2.receive_json()
+        assert err["type"] == "error"
+        assert "owner" in err["message"]
+        # 房主可以发
+        ws1.send_json({"type": "start_hand"})
+        msg = ws1.receive_json()
+        assert msg["type"] == "hand_start"
+
+
+def test_ws_non_owner_cannot_kick_bot():
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with (
+        client.websocket_connect(f"/ws/{tid}") as ws1,
+        client.websocket_connect(f"/ws/{tid}") as ws2,
+    ):
+        ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Owner"})
+        ws1.receive_json()
+        ws2.send_json({"type": "sit_down", "seat_idx": 1, "name": "Guest"})
+        ws2.receive_json(); ws1.receive_json()
+        ws1.send_json({"type": "sit_down", "seat_idx": 2, "name": "Bot", "is_human": False})
+        ws1.receive_json(); ws2.receive_json()
+        ws2.send_json({"type": "stand_up", "seat_idx": 2})
+        err = ws2.receive_json()
+        assert err["type"] == "error" and "owner" in err["message"]
+        # 房主可以踢
+        ws1.send_json({"type": "stand_up", "seat_idx": 2})
+        msg = ws1.receive_json()
+        assert msg["type"] == "table_state"
+        assert all(s["seat_idx"] != 2 for s in msg["seats"])

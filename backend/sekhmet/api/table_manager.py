@@ -104,6 +104,7 @@ class TableSession:
     disconnected: set[int] = field(default_factory=set)
     grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
     action_timer: asyncio.Task | None = None
+    owner_seat: int | None = None
     # Serializes every read-modify-write of ``game_state`` that can race:
     # the auto_bot_actions loop (incl. the all-in runout, whose per-street
     # sleep is deliberately inside the critical section) and _expire_seat's
@@ -171,6 +172,19 @@ async def remove_table(table_id: str) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _reassign_owner(session: TableSession) -> None:
+    """Hand ownership to the lowest-seated remaining human (or None)."""
+    if session.owner_seat is not None:
+        p = session.game_state.player(session.owner_seat)
+        if p is not None and p.is_human and session.owner_seat in session.player_names:
+            return  # current owner still valid
+    humans = [
+        p.seat_idx for p in session.game_state.players
+        if p.is_human and p.seat_idx in session.player_names
+    ]
+    session.owner_seat = min(humans) if humans else None
+
+
 async def sit_down(
     table_id: str,
     seat_idx: int,
@@ -214,6 +228,7 @@ async def sit_down(
     current = list(session.game_state.players)
     current.append(player)
     session.game_state = session.game_state.with_players(tuple(current))
+    _reassign_owner(session)
 
     session.stats[seat_idx] = PlayerStats()
     session.total_buyin[seat_idx] = stack
@@ -235,6 +250,7 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
 
     players = tuple(p for p in session.game_state.players if p.seat_idx != seat_idx)
     session.game_state = session.game_state.with_players(players)
+    _reassign_owner(session)
 
     return _table_summary(session)
 
@@ -346,6 +362,7 @@ async def _expire_seat(table_id: str, seat_idx: int) -> None:
         session.stats.pop(seat_idx, None)
         session.total_buyin.pop(seat_idx, None)
         session.bot_levels.pop(seat_idx, None)
+        _reassign_owner(session)
         await broadcast(table_id, _table_summary(session))
 
 
@@ -670,6 +687,7 @@ def table_info(session: TableSession) -> dict[str, Any]:
             "wins": st.wins if st else 0,
             "net_chips": (p.stack if p is not None else 0) - buyin,
             "connected": seat not in session.disconnected,
+            "is_owner": seat == session.owner_seat,
         })
     return {
         "table_id": session.table_id,

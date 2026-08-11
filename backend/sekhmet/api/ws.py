@@ -115,7 +115,13 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await tm.broadcast(table_id, summary)
                     else:
                         session = await tm.get_table(table_id)
-                        p = session.game_state.player(target) if session else None
+                        if session is None or my_seat != session.owner_seat:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": "Only the table owner can remove bots",
+                            })
+                            continue
+                        p = session.game_state.player(target)
                         mid_hand = session is not None and session.game_state.phase not in (
                             GamePhase.WAITING, GamePhase.SHOWDOWN,
                         )
@@ -135,6 +141,13 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await tm.broadcast(table_id, summary)
 
                 elif msg_type == "start_hand":
+                    session = await tm.get_table(table_id)
+                    if session is None or my_seat != session.owner_seat:
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": "Only the table owner can start a hand",
+                        })
+                        continue
                     broadcast_msg = await tm.start_hand(table_id)
                     await tm.broadcast(table_id, broadcast_msg)
 
