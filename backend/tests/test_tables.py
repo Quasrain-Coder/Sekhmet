@@ -784,3 +784,36 @@ def test_ws_non_owner_cannot_kick_bot():
         msg = ws1.receive_json()
         assert msg["type"] == "table_state"
         assert all(s["seat_idx"] != 2 for s in msg["seats"])
+
+
+# ---------------------------------------------------------------------------
+# Idle-room sweeper — touch refreshes activity, sweep closes stale rooms
+# ---------------------------------------------------------------------------
+
+
+async def test_touch_refreshes_activity():
+    tid = await tm.create_table()
+    session = await tm.get_table(tid)
+    assert session is not None
+    session.last_activity -= 100  # 手动老化
+    await tm.touch(tid)
+    import time
+    assert time.monotonic() - session.last_activity < 5
+
+
+async def test_sweep_removes_idle_room():
+    import time
+    tid = await tm.create_table()
+    session = await tm.get_table(tid)
+    assert session is not None
+    session.last_activity = time.monotonic() - 3700  # 超过 30 分钟
+    closed = await tm.sweep_idle_tables()
+    assert tid in closed
+    assert await tm.get_table(tid) is None
+
+
+async def test_sweep_keeps_active_room():
+    tid = await tm.create_table()
+    closed = await tm.sweep_idle_tables()
+    assert tid not in closed
+    assert await tm.get_table(tid) is not None

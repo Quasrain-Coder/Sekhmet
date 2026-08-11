@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 import uuid
 from dataclasses import dataclass, field, replace
 from typing import Any
@@ -105,6 +106,7 @@ class TableSession:
     grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
     action_timer: asyncio.Task | None = None
     owner_seat: int | None = None
+    last_activity: float = field(default_factory=time.monotonic)
     # Serializes every read-modify-write of ``game_state`` that can race:
     # the auto_bot_actions loop (incl. the all-in runout, whose per-street
     # sleep is deliberately inside the critical section) and _expire_seat's
@@ -165,6 +167,40 @@ async def remove_table(table_id: str) -> None:
         if session.action_timer is not None:
             session.action_timer.cancel()
             session.action_timer = None
+
+
+async def touch(table_id: str) -> None:
+    session = await get_table(table_id)
+    if session is not None:
+        session.last_activity = time.monotonic()
+
+
+async def sweep_idle_tables() -> list[str]:
+    """Close rooms idle beyond the configured timeout. Returns closed ids."""
+    timeout = app_config.game.room_idle_timeout_seconds
+    now = time.monotonic()
+    closed: list[str] = []
+    for tid, session in list(_tables.items()):
+        if now - session.last_activity <= timeout:
+            continue
+        for task in session.grace_timers.values():
+            task.cancel()
+        if session.action_timer is not None:
+            session.action_timer.cancel()
+        await broadcast(tid, {"type": "room_closed", "table_id": tid})
+        await remove_table(tid)
+        closed.append(tid)
+    return closed
+
+
+async def sweeper_loop(interval_seconds: float = 60.0) -> None:
+    """Background task: periodically sweep idle rooms."""
+    while True:
+        await asyncio.sleep(interval_seconds)
+        try:
+            await sweep_idle_tables()
+        except Exception:
+            logger.exception("sweeper iteration failed")
 
 
 # ---------------------------------------------------------------------------

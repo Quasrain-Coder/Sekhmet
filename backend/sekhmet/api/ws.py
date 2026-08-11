@@ -34,6 +34,8 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                 await websocket.send_json({"type": "error", "message": "Invalid JSON"})
                 continue
 
+            await tm.touch(table_id)
+
             msg_type = msg.get("type", "")
 
             try:
@@ -142,7 +144,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
 
                 elif msg_type == "start_hand":
                     session = await tm.get_table(table_id)
-                    if session is None or my_seat != session.owner_seat:
+                    if session is None or my_seat is None or my_seat != session.owner_seat:
                         await websocket.send_json({
                             "type": "error",
                             "message": "Only the table owner can start a hand",

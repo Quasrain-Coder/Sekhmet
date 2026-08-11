@@ -9,12 +9,27 @@ Start with::
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import asyncio
+from contextlib import asynccontextmanager
+
 from .api import game, trainer, ws
+from .api import table_manager as tm
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    sweeper = asyncio.create_task(tm.sweeper_loop())
+    try:
+        yield
+    finally:
+        sweeper.cancel()
+
 
 app = FastAPI(
     title="Sekhmet",
     description="Texas Hold'em game & training platform",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # CORS — allow frontend dev server
