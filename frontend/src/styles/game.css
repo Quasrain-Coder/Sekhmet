@@ -361,3 +361,9 @@ select.input { width: auto; }
   background: var(--surface); border: 1px solid var(--cyan); color: var(--cyan-text);
 }
 .pos-tag.pos-d { border-color: var(--gold); color: var(--gold-text); }
+
+/* ---- Owner crown ---- */
+.owner-crown {
+  position: absolute; top: -10px; left: -8px; font-size: 0.7rem;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.7));
+}

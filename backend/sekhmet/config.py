@@ -11,6 +11,7 @@ class GameConfig:
     action_timeout_seconds: int = 30
     disconnect_grace_seconds: int = 60
     runout_delay_seconds: float = 0.8
+    room_idle_timeout_seconds: int = 1800
 
 
 @dataclass

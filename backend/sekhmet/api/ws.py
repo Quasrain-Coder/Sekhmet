@@ -34,6 +34,8 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                 await websocket.send_json({"type": "error", "message": "Invalid JSON"})
                 continue
 
+            await tm.touch(table_id)
+
             msg_type = msg.get("type", "")
 
             try:
@@ -49,17 +51,27 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await websocket.send_json({"type": "error", "message": "Table not found"})
                         continue
 
-                    # Reconnect path: a name matching a disconnected seat
-                    # reclaims it (works mid-hand — the player never left).
-                    reclaimed = await tm.try_reclaim(table_id, name)
+                    # Reconnect path: a name + token matching a disconnected
+                    # seat reclaims it (works mid-hand — the player never
+                    # left).  Without a valid token this falls through to the
+                    # normal sit_down, where "Seat is already occupied"
+                    # rejects the impostor.
+                    reclaimed = await tm.try_reclaim(
+                        table_id, name, msg.get("reclaim_token")
+                    )
                     if reclaimed is not None:
-                        session.clients[reclaimed] = websocket
-                        my_seat = reclaimed
+                        seat, new_token = reclaimed
+                        session.clients[seat] = websocket
+                        my_seat = seat
+                        await websocket.send_json({
+                            "type": "reclaim_token", "token": new_token,
+                            "seat": seat,
+                        })
                         await tm.broadcast(table_id, tm._table_summary(session))
                         # Re-send private state so the reclaimer catches up
-                        p = session.game_state.player(reclaimed)
+                        p = session.game_state.player(seat)
                         if p is not None and p.hole_cards:
-                            await tm.send_to_player(table_id, reclaimed, {
+                            await tm.send_to_player(table_id, seat, {
                                 "type": "hole_cards",
                                 "cards": [str(c) for c in p.hole_cards],
                             })
@@ -67,7 +79,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         # current player) or a mid-hand reclaimer stays blind
                         # until the next broadcast.
                         await tm.send_to_player(
-                            table_id, reclaimed, tm._state_broadcast(session),
+                            table_id, seat, tm._state_broadcast(session),
                         )
                         continue
 
@@ -86,6 +98,12 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                     if is_human:
                         session.clients[seat_idx] = websocket
                         my_seat = seat_idx
+                        token = session.reclaim_tokens.get(seat_idx)
+                        if token:
+                            await websocket.send_json({
+                                "type": "reclaim_token", "token": token,
+                                "seat": seat_idx,
+                            })
 
                     await tm.broadcast(table_id, summary)
 
@@ -115,7 +133,13 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await tm.broadcast(table_id, summary)
                     else:
                         session = await tm.get_table(table_id)
-                        p = session.game_state.player(target) if session else None
+                        if session is None or my_seat is None or my_seat != session.owner_seat:
+                            await websocket.send_json({
+                                "type": "error",
+                                "message": "Only the table owner can remove bots",
+                            })
+                            continue
+                        p = session.game_state.player(target)
                         mid_hand = session is not None and session.game_state.phase not in (
                             GamePhase.WAITING, GamePhase.SHOWDOWN,
                         )
@@ -135,6 +159,13 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await tm.broadcast(table_id, summary)
 
                 elif msg_type == "start_hand":
+                    session = await tm.get_table(table_id)
+                    if session is None or my_seat is None or my_seat != session.owner_seat:
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": "Only the table owner can start a hand",
+                        })
+                        continue
                     broadcast_msg = await tm.start_hand(table_id)
                     await tm.broadcast(table_id, broadcast_msg)
 

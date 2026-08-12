@@ -101,6 +101,7 @@ export default function OvalTable({
                         onClick={() => onKickBot(seat.seat_idx)}>×</button>
               </span>
             )}
+            {seat.is_owner && <span className="owner-crown">👑</span>}
           </div>
         );
       })}

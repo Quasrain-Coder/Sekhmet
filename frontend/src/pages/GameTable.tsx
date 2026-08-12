@@ -61,6 +61,19 @@ export default function GameTablePage() {
         case 'hole_cards': dispatch({ type: 'HOLE_CARDS', cards: m.cards }); break;
         case 'game_state_update': dispatch({ type: 'GAME_UPDATE', data: m as any }); break;
         case 'hand_result': dispatch({ type: 'HAND_RESULT', data: m as any }); break;
+        case 'reclaim_token':
+          localStorage.setItem(`reclaimToken_${tableId}`, m.token);
+          // The server assigns the seat authoritatively — on reclaim it is
+          // the OLD seat, which may differ from the picker selection.
+          // Receiving the token also confirms the sit, so drop pendingSeat
+          // (its table_state/error handlers are no-ops once null).
+          pendingSeat.current = null;
+          dispatch({ type: 'SET_MY_SEAT', seat: m.seat });
+          break;
+        case 'room_closed':
+          alert('Room was closed due to inactivity');
+          navigate('/');
+          break;
         case 'error':
           if (pendingSeat.current !== null) {
             pendingSeat.current = null;
@@ -70,7 +83,7 @@ export default function GameTablePage() {
           break;
       }
     });
-  }, [onMessage, dispatch]);
+  }, [onMessage, dispatch, tableId, navigate]);
 
   useEffect(() => {
     dispatch({ type: 'SET_TABLE', tableId });
@@ -81,7 +94,9 @@ export default function GameTablePage() {
     if (!detail || detail === 'not-found' || selectedSeat === null) return;
     localStorage.setItem('pokerName', name);
     pendingSeat.current = selectedSeat;
-    send({ type: 'sit_down', seat_idx: selectedSeat, name, buyin });
+    const reclaimToken = localStorage.getItem(`reclaimToken_${tableId}`);
+    send({ type: 'sit_down', seat_idx: selectedSeat, name, buyin,
+           ...(reclaimToken ? { reclaim_token: reclaimToken } : {}) });
     dispatch({ type: 'SET_MY_SEAT', seat: selectedSeat });
   };
 
@@ -110,6 +125,12 @@ export default function GameTablePage() {
     }
     if (!detail) return <div className="waiting-text">Loading…</div>;
     const midHand = detail.phase !== 'WAITING' && detail.phase !== 'SHOWDOWN';
+    // Reclaim must stay reachable mid-hand (that's its core value: a
+    // disconnected player rejoins the hand in progress).  The midHand
+    // disable only blocks FRESH joins.
+    const selectedOcc = detail.seats.find(s => s.seat_idx === selectedSeat);
+    const selectedIsReclaimable = !!selectedOcc && !selectedOcc.connected
+      && selectedOcc.name === name;
     return (
       <div className="join-panel">
         <h2>Table {detail.table_id}</h2>
@@ -145,12 +166,13 @@ export default function GameTablePage() {
           <input className="input" type="number" value={buyin} style={{ width: 110 }}
                  onChange={e => setBuyin(Number(e.target.value))} />
           <button className="btn" onClick={joinTable}
-                  disabled={!name || !connected || midHand || selectedSeat === null}>
+                  disabled={!name || !connected || selectedSeat === null
+                            || (midHand && !selectedIsReclaimable)}>
             Sit Down
           </button>
           <button className="btn btn-sm" onClick={() => navigate('/')}>← Lobby</button>
         </div>
-        {midHand && (
+        {midHand && !selectedIsReclaimable && (
           <p className="join-hint">Hand in progress — wait for it to finish</p>
         )}
       </div>
@@ -159,6 +181,7 @@ export default function GameTablePage() {
 
   // ---- Table view (seated) ----
   const me = state.players.find(p => p.seat_idx === state.mySeat);
+  const isOwner = state.seats.find(s => s.seat_idx === state.mySeat)?.is_owner ?? false;
 
   return (
     <div className="game-table">
@@ -169,7 +192,8 @@ export default function GameTablePage() {
           {tableId} · {state.phase}{!connected && ' (disconnected)'}
         </span>
         <button className="btn btn-sm gold" onClick={() => send({ type: 'start_hand' })}
-                disabled={state.phase !== 'WAITING' && state.phase !== 'SHOWDOWN'}>
+                disabled={!isOwner || (state.phase !== 'WAITING' && state.phase !== 'SHOWDOWN')}
+                title={isOwner ? '' : 'Only the table owner can deal'}>
           Deal
         </button>
       </div>

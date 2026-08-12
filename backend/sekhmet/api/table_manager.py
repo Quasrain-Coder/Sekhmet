@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import secrets
+import time
 import uuid
 from dataclasses import dataclass, field, replace
 from typing import Any
@@ -103,7 +105,10 @@ class TableSession:
     total_buyin: dict[int, int] = field(default_factory=dict)        # seat_idx → chips bought
     disconnected: set[int] = field(default_factory=set)
     grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
+    reclaim_tokens: dict[int, str] = field(default_factory=dict)  # seat_idx → token
     action_timer: asyncio.Task | None = None
+    owner_seat: int | None = None
+    last_activity: float = field(default_factory=time.monotonic)
     # Serializes every read-modify-write of ``game_state`` that can race:
     # the auto_bot_actions loop (incl. the all-in runout, whose per-street
     # sleep is deliberately inside the critical section) and _expire_seat's
@@ -166,9 +171,56 @@ async def remove_table(table_id: str) -> None:
             session.action_timer = None
 
 
+async def touch(table_id: str) -> None:
+    session = await get_table(table_id)
+    if session is not None:
+        session.last_activity = time.monotonic()
+
+
+async def sweep_idle_tables() -> list[str]:
+    """Close rooms idle beyond the configured timeout. Returns closed ids."""
+    timeout = app_config.game.room_idle_timeout_seconds
+    now = time.monotonic()
+    closed: list[str] = []
+    for tid, session in list(_tables.items()):
+        if now - session.last_activity <= timeout:
+            continue
+        for task in session.grace_timers.values():
+            task.cancel()
+        if session.action_timer is not None:
+            session.action_timer.cancel()
+        await broadcast(tid, {"type": "room_closed", "table_id": tid})
+        await remove_table(tid)
+        closed.append(tid)
+    return closed
+
+
+async def sweeper_loop(interval_seconds: float = 60.0) -> None:
+    """Background task: periodically sweep idle rooms."""
+    while True:
+        await asyncio.sleep(interval_seconds)
+        try:
+            await sweep_idle_tables()
+        except Exception:
+            logger.exception("sweeper iteration failed")
+
+
 # ---------------------------------------------------------------------------
 # Player management
 # ---------------------------------------------------------------------------
+
+
+def _reassign_owner(session: TableSession) -> None:
+    """Hand ownership to the lowest-seated remaining human (or None)."""
+    if session.owner_seat is not None:
+        p = session.game_state.player(session.owner_seat)
+        if p is not None and p.is_human and session.owner_seat in session.player_names:
+            return  # current owner still valid
+    humans = [
+        p.seat_idx for p in session.game_state.players
+        if p.is_human and p.seat_idx in session.player_names
+    ]
+    session.owner_seat = min(humans) if humans else None
 
 
 async def sit_down(
@@ -214,9 +266,12 @@ async def sit_down(
     current = list(session.game_state.players)
     current.append(player)
     session.game_state = session.game_state.with_players(tuple(current))
+    _reassign_owner(session)
 
     session.stats[seat_idx] = PlayerStats()
     session.total_buyin[seat_idx] = stack
+    if is_human:
+        session.reclaim_tokens[seat_idx] = secrets.token_hex(16)
 
     return _table_summary(session)
 
@@ -232,9 +287,11 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
     session.bot_levels.pop(seat_idx, None)
     session.stats.pop(seat_idx, None)
     session.total_buyin.pop(seat_idx, None)
+    session.reclaim_tokens.pop(seat_idx, None)
 
     players = tuple(p for p in session.game_state.players if p.seat_idx != seat_idx)
     session.game_state = session.game_state.with_players(players)
+    _reassign_owner(session)
 
     return _table_summary(session)
 
@@ -262,18 +319,25 @@ async def handle_disconnect(table_id: str, seat_idx: int) -> None:
     session.grace_timers[seat_idx] = asyncio.create_task(_expire())
 
 
-async def try_reclaim(table_id: str, name: str) -> int | None:
-    """Reclaim a disconnected seat by player name. Returns the seat or None."""
+async def try_reclaim(
+    table_id: str, name: str, token: str | None
+) -> tuple[int, str] | None:
+    """Reclaim a disconnected seat by name + token. Returns (seat, new_token)."""
     session = await get_table(table_id)
-    if session is None:
+    if session is None or token is None:
         return None
     for seat in list(session.disconnected):
-        if session.player_names.get(seat) == name:
+        if (
+            session.player_names.get(seat) == name
+            and session.reclaim_tokens.get(seat) == token
+        ):
             timer = session.grace_timers.pop(seat, None)
             if timer is not None:
                 timer.cancel()
             session.disconnected.discard(seat)
-            return seat
+            new_token = secrets.token_hex(16)
+            session.reclaim_tokens[seat] = new_token
+            return seat, new_token
     return None
 
 
@@ -346,6 +410,8 @@ async def _expire_seat(table_id: str, seat_idx: int) -> None:
         session.stats.pop(seat_idx, None)
         session.total_buyin.pop(seat_idx, None)
         session.bot_levels.pop(seat_idx, None)
+        session.reclaim_tokens.pop(seat_idx, None)
+        _reassign_owner(session)
         await broadcast(table_id, _table_summary(session))
 
 
@@ -670,6 +736,7 @@ def table_info(session: TableSession) -> dict[str, Any]:
             "wins": st.wins if st else 0,
             "net_chips": (p.stack if p is not None else 0) - buyin,
             "connected": seat not in session.disconnected,
+            "is_owner": seat == session.owner_seat,
         })
     return {
         "table_id": session.table_id,
