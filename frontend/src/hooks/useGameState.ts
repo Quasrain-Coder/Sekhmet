@@ -71,6 +71,7 @@ export type GameMsg =
   | { type: 'hand_result' } & GameStateData & { showdown: ShowdownData }
   | { type: 'reclaim_token'; token: string; seat: number }
   | { type: 'room_closed'; table_id: string }
+  | { type: 'kicked'; message?: string }
   | { type: 'error'; message: string };
 
 interface AppState {

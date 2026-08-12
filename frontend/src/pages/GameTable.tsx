@@ -42,11 +42,6 @@ export default function GameTablePage() {
     setToasts(ts => ts.filter(t => t.id !== id));
   }, []);
 
-  // Live seat/phase data pushed over the ws (table_state) — once any arrives
-  // it supersedes the one-shot REST detail for the join panel picker.
-  const [liveSeats, setLiveSeats] = useState<SeatInfo[] | null>(null);
-  const [livePhase, setLivePhase] = useState<string | null>(null);
-
   // Fetch room info for the join panel
   useEffect(() => {
     fetch(`/api/game/tables/${tableId}`)
@@ -62,14 +57,27 @@ export default function GameTablePage() {
       .catch(() => setDetail('not-found'));
   }, [tableId]);
 
+  // While the join panel is shown we are not in session.clients, so no
+  // table_state broadcast ever reaches us — poll REST to keep the picker's
+  // occupancy / reclaimability / mid-hand state fresh.  Stops once seated
+  // (live table_state pushes take over from there).
+  useEffect(() => {
+    if (state.mySeat !== null) return;
+    const id = setInterval(() => {
+      fetch(`/api/game/tables/${tableId}`)
+        .then(r => (r.ok ? r.json() : Promise.reject()))
+        .then((d: TableDetail) => setDetail(d))
+        .catch(() => setDetail('not-found'));
+    }, 3000);
+    return () => clearInterval(id);
+  }, [state.mySeat, tableId]);
+
   // Dispatch messages to reducer
   useEffect(() => {
     onMessage((msg) => {
       const m = msg as GameMsg;
       switch (m.type) {
         case 'table_state':
-          setLiveSeats(m.seats);
-          setLivePhase(m.phase);
           if (pendingSeat.current !== null &&
               m.seats.some(s => s.seat_idx === pendingSeat.current)) {
             pendingSeat.current = null;  // sit confirmed
@@ -92,6 +100,14 @@ export default function GameTablePage() {
         case 'room_closed':
           pushToast('info', 'Room was closed due to inactivity');
           setTimeout(() => navigate('/'), 1500);
+          break;
+        case 'kicked':
+          // Timeout-kick: the server already dropped our seat server-side —
+          // reset mySeat so we return to the join panel instead of freezing
+          // in the table view.
+          pendingSeat.current = null;
+          dispatch({ type: 'SET_MY_SEAT', seat: null });
+          pushToast('error', m.message ?? 'Removed from table');
           break;
         case 'error':
           if (pendingSeat.current !== null) {
@@ -143,8 +159,8 @@ export default function GameTablePage() {
       );
     }
     if (!detail) return <div className="waiting-text">Loading…</div>;
-    const seatsNow = liveSeats ?? detail.seats;
-    const phaseNow = livePhase ?? detail.phase;
+    const seatsNow = detail.seats;
+    const phaseNow = detail.phase;
     const midHand = phaseNow !== 'WAITING' && phaseNow !== 'SHOWDOWN';
     // Reclaim must stay reachable mid-hand (that's its core value: a
     // disconnected player rejoins the hand in progress).  The midHand
