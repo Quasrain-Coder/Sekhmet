@@ -796,6 +796,27 @@ def test_ws_non_owner_cannot_kick_bot():
         assert all(s["seat_idx"] != 2 for s in msg["seats"])
 
 
+def test_ws_spectator_cannot_kick_bot_on_ownerless_table():
+    """无房主（纯 bot 桌）时，旁观者（未入座，my_seat=None）不能踢 bot。
+
+    None != None 为 False，旧守卫 `my_seat != session.owner_seat` 会放行。
+    """
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        # 旁观者连接直接坐一个 bot —— is_human=False 不会占据 my_seat，
+        # 桌上无人类 → owner_seat=None。
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Bot", "is_human": False})
+        # 旁观者不在 session.clients 中，收不到广播，无需 drain。
+        ws.send_json({"type": "stand_up", "seat_idx": 0})
+        # 先查 REST 确认 bot 仍在（修复前踢人成功且无回包，
+        # 直接 receive 会永久阻塞）。
+        seats = client.get(f"/api/game/tables/{tid}").json()["seats"]
+        assert any(s["seat_idx"] == 0 for s in seats)
+        err = ws.receive_json()
+        assert err["type"] == "error" and "owner" in err["message"]
+
+
 # ---------------------------------------------------------------------------
 # Idle-room sweeper — touch refreshes activity, sweep closes stale rooms
 # ---------------------------------------------------------------------------

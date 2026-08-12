@@ -133,7 +133,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await tm.broadcast(table_id, summary)
                     else:
                         session = await tm.get_table(table_id)
-                        if session is None or my_seat != session.owner_seat:
+                        if session is None or my_seat is None or my_seat != session.owner_seat:
                             await websocket.send_json({
                                 "type": "error",
                                 "message": "Only the table owner can remove bots",
