@@ -1,5 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Toast from '../components/shared/Toast';
+import type { ToastItem } from '../components/shared/Toast';
 
 interface SeatInfo {
   seat_idx: number;
@@ -31,6 +33,15 @@ export default function Lobby() {
   const [buyin, setBuyin] = useState(BLIND_TIERS[1].bb * 100);
   const [maxSeats, setMaxSeats] = useState(9);
   const navigate = useNavigate();
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const toastId = useRef(0);
+  const pushToast = useCallback((kind: 'error' | 'info', text: string) => {
+    const id = ++toastId.current;
+    setToasts(ts => [...ts, { id, kind, text }]);
+  }, []);
+  const dismissToast = useCallback((id: number) => {
+    setToasts(ts => ts.filter(t => t.id !== id));
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
@@ -56,17 +67,18 @@ export default function Lobby() {
       });
       if (!resp.ok) {
         const err = await resp.json();
-        alert(err.detail ?? 'Create failed');
+        pushToast('error', err.detail ?? 'Create failed');
         return;
       }
       const data = await resp.json();
       localStorage.setItem('pokerName', name);
       navigate(`/game/${data.table_id}`);
-    } catch { alert('Cannot reach server'); }
+    } catch { pushToast('error', 'Cannot reach server'); }
   };
 
   return (
     <div className="lobby">
+      <Toast items={toasts} onDismiss={dismissToast} />
       <div className="lobby-logo">
         <div className="spade">♠</div>
         <h1>SEKHMET</h1>

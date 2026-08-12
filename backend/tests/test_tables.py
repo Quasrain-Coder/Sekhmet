@@ -924,3 +924,125 @@ def test_ws_reclaim_token_message_carries_authoritative_seat():
         assert msg["seat"] == 0
         assert msg["token"] != token    # rotated
 
+
+
+# ---------------------------------------------------------------------------
+# Consecutive action timeouts → automatic kick
+# ---------------------------------------------------------------------------
+
+
+async def test_consecutive_timeout_kicks_player(monkeypatch):
+    """Hitting the timeout limit mid-hand: folded out and removed."""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "action_timeout_seconds", 0.05)
+    monkeypatch.setattr(tm.app_config.game, "max_consecutive_timeouts", 2)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+    await tm.after_action(tid)  # ws.py does this in production: drive bots + arm timer
+    await asyncio.sleep(0.6)  # 两次超时（BB option + 翻后首条街）足够触发
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert 0 not in session.player_names          # 已踢出
+    assert session.game_state.phase == GamePhase.SHOWDOWN  # 手牌善终
+    assert sum(p.stack for p in session.game_state.players) == 400  # 守恒
+
+
+class _RecorderSocket:
+    """Stand-in WebSocket that records every JSON message sent to it."""
+
+    def __init__(self) -> None:
+        self.sent: list[dict] = []
+
+    async def send_json(self, message: dict) -> None:
+        self.sent.append(message)
+
+
+async def test_timeout_kick_between_hands_notifies_kicked_player(monkeypatch):
+    """Auto-action ends the hand → kick lands on the between-hands path.
+
+    回归测试（pre-fix 红）：not-mid-hand 分支走 stand_up 静默弹 socket，
+    被踢者收不到任何通知，前端 mySeat 不重置，冻在牌桌页。
+    """
+    from dataclasses import replace
+    monkeypatch.setattr(tm.app_config.game, "action_timeout_seconds", 0)
+    monkeypatch.setattr(tm.app_config.game, "max_consecutive_timeouts", 1)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    session = await tm.get_table(tid)
+    assert session is not None
+    sock = _RecorderSocket()
+    session.clients[0] = sock
+    # Hero 坐按钮/SB（heads-up 翻前先手），面对 BB 必 auto-FOLD → 一手直接
+    # 结束，踢人走 not-mid-hand（stand_up）路径。
+    session.game_state = replace(session.game_state, dealer_idx=1)
+    await tm.start_hand(tid)
+    assert session.game_state.current_player_idx == 0
+
+    await tm._action_timeout(tid, 0)
+
+    kicked = [m for m in sock.sent if m.get("type") == "kicked"]
+    assert kicked, f"no kicked message; got {[m.get('type') for m in sock.sent]}"
+    assert "timeout" in kicked[0]["message"].lower()
+    # kicked 是 socket 被移除前收到的最后一条私信
+    assert sock.sent[-1]["type"] == "kicked"
+    assert 0 not in session.player_names
+    assert 0 not in session.clients
+    assert session.game_state.phase == GamePhase.SHOWDOWN  # 手牌善终
+
+
+async def test_timeout_kick_mid_hand_notifies_kicked_player():
+    """Mid-hand force-kick (surgery path) also notifies the kicked player."""
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    session = await tm.get_table(tid)
+    assert session is not None
+    sock = _RecorderSocket()
+    session.clients[0] = sock
+    await tm.start_hand(tid)
+    assert session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN)
+
+    await tm._expire_seat(tid, 0, force=True)
+
+    assert any(m.get("type") == "kicked" for m in sock.sent)
+    assert 0 not in session.player_names
+    assert 0 not in session.clients
+    assert session.game_state.phase == GamePhase.SHOWDOWN  # fold-out 善终
+    assert sum(p.stack for p in session.game_state.players) == 400  # 守恒
+
+
+async def test_force_kick_cancels_pending_grace_timer():
+    """force 踢人时挂着的断线宽限计时器必须取消，否则它会二次触发过期。"""
+    import asyncio
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.handle_disconnect(tid, 0)  # 挂起 60s 宽限计时器
+    session = await tm.get_table(tid)
+    assert session is not None
+    timer = session.grace_timers[0]
+
+    await tm._expire_seat(tid, 0, force=True)
+    await asyncio.sleep(0)
+
+    assert 0 not in session.grace_timers
+    assert timer.done()  # 60s 睡眠不可能自然结束 —— 只能是被取消
+    assert 0 not in session.player_names
+
+
+async def test_manual_action_resets_timeout_counter():
+    import random
+    random.seed(7)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+    session = await tm.get_table(tid)
+    assert session is not None
+    session.consecutive_timeouts[0] = 1  # 预置计数
+    await tm.auto_bot_actions(tid)       # bot 先行动（SB）
+    await tm.handle_player_action(tid, 0, "CHECK")  # 人类主动行动
+    assert session.consecutive_timeouts[0] == 0
