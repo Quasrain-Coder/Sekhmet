@@ -414,6 +414,19 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
         session.bot_levels.pop(seat_idx, None)
         session.reclaim_tokens.pop(seat_idx, None)
         session.consecutive_timeouts.pop(seat_idx, None)
+        # A timeout-kicked player is still connected — tell them, then drop
+        # the socket or they keep receiving broadcasts for a seat they no
+        # longer hold.  (Grace expiry already popped the socket in
+        # handle_disconnect, so this is a no-op on that path.)
+        ws = session.clients.pop(seat_idx, None)
+        if ws is not None:
+            try:
+                await ws.send_json({
+                    "type": "error",
+                    "message": "Removed after consecutive timeouts",
+                })
+            except Exception:
+                pass
         _reassign_owner(session)
         await broadcast(table_id, _table_summary(session))
 
@@ -648,6 +661,12 @@ async def _action_timeout(table_id: str, seat_idx: int) -> None:
     session = await get_table(table_id)
     if session is None:
         return
+    # This task IS session.action_timer, and it has now fired.  Clear the
+    # reference so schedule_action_timeout (reached via after_action below)
+    # doesn't cancel the currently-running task — the CancelledError would
+    # otherwise be delivered at the next await, i.e. inside the kick path.
+    if session.action_timer is asyncio.current_task():
+        session.action_timer = None
     gs = session.game_state
     if gs.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
         return
