@@ -61,6 +61,13 @@ export default function GameTablePage() {
         case 'hole_cards': dispatch({ type: 'HOLE_CARDS', cards: m.cards }); break;
         case 'game_state_update': dispatch({ type: 'GAME_UPDATE', data: m as any }); break;
         case 'hand_result': dispatch({ type: 'HAND_RESULT', data: m as any }); break;
+        case 'reclaim_token':
+          localStorage.setItem(`reclaimToken_${tableId}`, m.token);
+          break;
+        case 'room_closed':
+          alert('Room was closed due to inactivity');
+          navigate('/');
+          break;
         case 'error':
           if (pendingSeat.current !== null) {
             pendingSeat.current = null;
@@ -70,7 +77,7 @@ export default function GameTablePage() {
           break;
       }
     });
-  }, [onMessage, dispatch]);
+  }, [onMessage, dispatch, tableId, navigate]);
 
   useEffect(() => {
     dispatch({ type: 'SET_TABLE', tableId });
@@ -81,7 +88,9 @@ export default function GameTablePage() {
     if (!detail || detail === 'not-found' || selectedSeat === null) return;
     localStorage.setItem('pokerName', name);
     pendingSeat.current = selectedSeat;
-    send({ type: 'sit_down', seat_idx: selectedSeat, name, buyin });
+    const reclaimToken = localStorage.getItem(`reclaimToken_${tableId}`);
+    send({ type: 'sit_down', seat_idx: selectedSeat, name, buyin,
+           ...(reclaimToken ? { reclaim_token: reclaimToken } : {}) });
     dispatch({ type: 'SET_MY_SEAT', seat: selectedSeat });
   };
 
@@ -159,6 +168,7 @@ export default function GameTablePage() {
 
   // ---- Table view (seated) ----
   const me = state.players.find(p => p.seat_idx === state.mySeat);
+  const isOwner = state.seats.find(s => s.seat_idx === state.mySeat)?.is_owner ?? false;
 
   return (
     <div className="game-table">
@@ -169,7 +179,8 @@ export default function GameTablePage() {
           {tableId} · {state.phase}{!connected && ' (disconnected)'}
         </span>
         <button className="btn btn-sm gold" onClick={() => send({ type: 'start_hand' })}
-                disabled={state.phase !== 'WAITING' && state.phase !== 'SHOWDOWN'}>
+                disabled={!isOwner || (state.phase !== 'WAITING' && state.phase !== 'SHOWDOWN')}
+                title={isOwner ? '' : 'Only the table owner can deal'}>
           Deal
         </button>
       </div>

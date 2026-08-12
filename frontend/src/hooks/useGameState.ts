@@ -20,6 +20,7 @@ export interface SeatInfo {
   wins: number;
   net_chips: number;
   connected: boolean;
+  is_owner: boolean;
 }
 
 export interface TableConfigData {
@@ -68,6 +69,8 @@ export type GameMsg =
   | { type: 'hole_cards'; cards: string[] }
   | { type: 'game_state_update' } & GameStateData
   | { type: 'hand_result' } & GameStateData & { showdown: ShowdownData }
+  | { type: 'reclaim_token'; token: string }
+  | { type: 'room_closed'; table_id: string }
   | { type: 'error'; message: string };
 
 interface AppState {
