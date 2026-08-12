@@ -381,3 +381,34 @@ select.input { width: auto; }
 .toast-error { border: 1.5px solid var(--rose); color: #fecdd3; box-shadow: 0 0 14px rgba(251, 113, 133, 0.25); }
 .toast-info { border: 1.5px solid var(--cyan); color: var(--cyan-text); box-shadow: 0 0 14px rgba(34, 211, 238, 0.25); }
 @keyframes toast-in { from { transform: translateX(30px); opacity: 0; } }
+
+/* ---- Mobile (≤768px) ---- */
+@media (max-width: 768px) {
+  .app { padding: 8px; }
+
+  /* Lobby：表单堆叠 */
+  .lobby-actions { flex-direction: column; align-items: stretch; }
+  .lobby-actions .btn { margin-left: 0; }
+  .lobby-actions .input { width: 100%; }
+
+  /* 牌桌：更小更扁 */
+  .table-felt { aspect-ratio: 1.6 / 1; margin-bottom: 84px; }
+  .player-seat .avatar { width: 32px; height: 32px; font-size: 0.5rem; }
+  .player-seat.me .avatar { width: 38px; height: 38px; }
+  .player-seat .name, .player-seat .stack { font-size: 0.55rem; }
+  .card { width: 30px; height: 43px; }
+  .card .pip { font-size: 0.9rem; }
+  .card .corner { font-size: 0.45rem; }
+  .card.big { width: 40px; height: 57px; }
+  .card.big .pip { font-size: 1.2rem; }
+
+  /* 动作栏：垂直堆叠，拇指友好 */
+  .action-bar { flex-direction: column; align-items: stretch; width: 100%; }
+  .action-bar .btn { width: 100%; padding: 12px; }
+  .raise-slider { width: 100%; }
+
+  /* 面板全宽 */
+  .leaderboard, .hand-result, .join-panel { max-width: 100%; }
+  .seat-picker { max-width: 320px; }
+  .toast-stack { left: 16px; max-width: none; }
+}
