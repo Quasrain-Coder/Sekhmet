@@ -104,6 +104,7 @@ class TableSession:
     stats: dict[int, PlayerStats] = field(default_factory=dict)      # seat_idx → stats
     total_buyin: dict[int, int] = field(default_factory=dict)        # seat_idx → chips bought
     disconnected: set[int] = field(default_factory=set)
+    consecutive_timeouts: dict[int, int] = field(default_factory=dict)  # seat_idx → count
     grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
     reclaim_tokens: dict[int, str] = field(default_factory=dict)  # seat_idx → token
     action_timer: asyncio.Task | None = None
@@ -288,6 +289,7 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
     session.stats.pop(seat_idx, None)
     session.total_buyin.pop(seat_idx, None)
     session.reclaim_tokens.pop(seat_idx, None)
+    session.consecutive_timeouts.pop(seat_idx, None)
 
     players = tuple(p for p in session.game_state.players if p.seat_idx != seat_idx)
     session.game_state = session.game_state.with_players(players)
@@ -341,10 +343,10 @@ async def try_reclaim(
     return None
 
 
-async def _expire_seat(table_id: str, seat_idx: int) -> None:
-    """Grace expired: fold out of any running hand, then remove the seat."""
+async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> None:
+    """Grace expired (or timeout-kicked): fold out of any running hand, then remove."""
     session = await get_table(table_id)
-    if session is None or seat_idx not in session.disconnected:
+    if session is None or (not force and seat_idx not in session.disconnected):
         return
     session.disconnected.discard(seat_idx)
     session.grace_timers.pop(seat_idx, None)
@@ -411,6 +413,7 @@ async def _expire_seat(table_id: str, seat_idx: int) -> None:
         session.total_buyin.pop(seat_idx, None)
         session.bot_levels.pop(seat_idx, None)
         session.reclaim_tokens.pop(seat_idx, None)
+        session.consecutive_timeouts.pop(seat_idx, None)
         _reassign_owner(session)
         await broadcast(table_id, _table_summary(session))
 
@@ -512,6 +515,7 @@ async def handle_player_action(
     at = ActionType[action_type.upper()]
     action = Action(player_idx=seat_idx, type=at, amount=amount)
     session.game_state = execute(session.game_state, action)
+    session.consecutive_timeouts[seat_idx] = 0  # 主动行动清零连续超时计数
 
     # If we reached showdown, evaluate hands and award pot
     result = None
@@ -656,10 +660,23 @@ async def _action_timeout(table_id: str, seat_idx: int) -> None:
     action_type = "CHECK" if to_call == 0 else "FOLD"
     logger.info("action timeout: auto %s for seat %s at table %s",
                 action_type, seat_idx, table_id)
+    # Capture the count before the auto-action: handle_player_action zeroes
+    # the counter (it can't distinguish auto from manual actions), so reading
+    # it afterwards would always yield 1 and the kick would never fire.
+    prev = session.consecutive_timeouts.get(seat_idx, 0)
     try:
         msg = await handle_player_action(table_id, seat_idx, action_type)
         await broadcast(table_id, msg)
         await after_action(table_id)
+        # Count only after the auto-action has been processed and broadcast,
+        # so the hand has fully advanced (or ended) before we kick.
+        count = prev + 1
+        session.consecutive_timeouts[seat_idx] = count
+        if count >= app_config.game.max_consecutive_timeouts:
+            logger.info("seat %s kicked after %s consecutive timeouts at table %s",
+                        seat_idx, count, table_id)
+            await _expire_seat(table_id, seat_idx, force=True)
+            return
     except GameError:
         # Lost a race (e.g. the player acted or the hand ended between the
         # checks above and the execute) — nothing to do, and the task must

@@ -9,6 +9,7 @@ class GameConfig:
     default_big_blind: int = 10
     max_seats_per_table: int = 9
     action_timeout_seconds: int = 30
+    max_consecutive_timeouts: int = 3
     disconnect_grace_seconds: int = 60
     runout_delay_seconds: float = 0.8
     room_idle_timeout_seconds: int = 1800

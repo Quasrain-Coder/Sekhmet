@@ -924,3 +924,41 @@ def test_ws_reclaim_token_message_carries_authoritative_seat():
         assert msg["seat"] == 0
         assert msg["token"] != token    # rotated
 
+
+
+# ---------------------------------------------------------------------------
+# Consecutive action timeouts → automatic kick
+# ---------------------------------------------------------------------------
+
+
+async def test_consecutive_timeout_kicks_player(monkeypatch):
+    """Hitting the timeout limit mid-hand: folded out and removed."""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "action_timeout_seconds", 0.05)
+    monkeypatch.setattr(tm.app_config.game, "max_consecutive_timeouts", 2)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+    await tm.after_action(tid)  # ws.py does this in production: drive bots + arm timer
+    await asyncio.sleep(0.6)  # 两次超时（BB option + 翻后首条街）足够触发
+    session = await tm.get_table(tid)
+    assert session is not None
+    assert 0 not in session.player_names          # 已踢出
+    assert session.game_state.phase == GamePhase.SHOWDOWN  # 手牌善终
+    assert sum(p.stack for p in session.game_state.players) == 400  # 守恒
+
+
+async def test_manual_action_resets_timeout_counter():
+    import random
+    random.seed(7)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+    session = await tm.get_table(tid)
+    assert session is not None
+    session.consecutive_timeouts[0] = 1  # 预置计数
+    await tm.auto_bot_actions(tid)       # bot 先行动（SB）
+    await tm.handle_player_action(tid, 0, "CHECK")  # 人类主动行动
+    assert session.consecutive_timeouts[0] == 0
