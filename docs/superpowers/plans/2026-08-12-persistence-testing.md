@@ -35,7 +35,7 @@
   - `models.records`: `HandRecord`、`PlayerStatsRecord`
   - `models.recorder`: `async def record_hand(table_id, players_meta, board, actions, awards) -> None`、`async def upsert_player_stats(deltas: list[dict]) -> None`、`def schedule_recording(...) -> None`（fire-and-forget 包装，异常仅 logger.exception）
 
-- [ ] **Step 1: 写失败测试**（新建 backend/tests/test_models.py）
+- [x] **Step 1: 写失败测试**（新建 backend/tests/test_models.py）
 
 ```python
 """Tests for the models/ persistence layer."""
@@ -98,9 +98,9 @@ async def test_recording_failure_does_not_raise(mem_db):
 
 （第三个测试要求 record_hand 内部容错——fire-and-forget 包装外的直接调用也不应抛出。实现时让 record_hand 自己 try/except，schedule_recording 只是 create_task 包装。）
 
-- [ ] **Step 2: 确认红**（ModuleNotFoundError: sekhmet.models）
+- [x] **Step 2: 确认红**（ModuleNotFoundError: sekhmet.models）
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 `models/__init__.py`：空文件。
 
@@ -241,7 +241,7 @@ def schedule_recording(coro) -> None:
     asyncio.create_task(coro)
 ```
 
-- [ ] **Step 4: 确认绿 + 回归 + 提交**
+- [x] **Step 4: 确认绿 + 回归 + 提交**
 
 ```bash
 python -m pytest tests/ -q   # 224 + 3 = 227 passed
