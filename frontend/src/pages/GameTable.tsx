@@ -6,6 +6,8 @@ import type { GameMsg, TableConfigData, SeatInfo } from '../hooks/useGameState';
 import OvalTable from '../components/table/OvalTable';
 import ActionBar from '../components/table/ActionBar';
 import Leaderboard from '../components/table/Leaderboard';
+import Toast from '../components/shared/Toast';
+import type { ToastItem } from '../components/shared/Toast';
 
 interface TableDetail {
   table_id: string;
@@ -30,6 +32,21 @@ export default function GameTablePage() {
   // was rejected — revert mySeat so the user is not stranded at the table.
   const pendingSeat = useRef<number | null>(null);
 
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const toastId = useRef(0);
+  const pushToast = useCallback((kind: 'error' | 'info', text: string) => {
+    const id = ++toastId.current;
+    setToasts(ts => [...ts, { id, kind, text }]);
+  }, []);
+  const dismissToast = useCallback((id: number) => {
+    setToasts(ts => ts.filter(t => t.id !== id));
+  }, []);
+
+  // Live seat/phase data pushed over the ws (table_state) — once any arrives
+  // it supersedes the one-shot REST detail for the join panel picker.
+  const [liveSeats, setLiveSeats] = useState<SeatInfo[] | null>(null);
+  const [livePhase, setLivePhase] = useState<string | null>(null);
+
   // Fetch room info for the join panel
   useEffect(() => {
     fetch(`/api/game/tables/${tableId}`)
@@ -51,6 +68,8 @@ export default function GameTablePage() {
       const m = msg as GameMsg;
       switch (m.type) {
         case 'table_state':
+          setLiveSeats(m.seats);
+          setLivePhase(m.phase);
           if (pendingSeat.current !== null &&
               m.seats.some(s => s.seat_idx === pendingSeat.current)) {
             pendingSeat.current = null;  // sit confirmed
@@ -71,19 +90,19 @@ export default function GameTablePage() {
           dispatch({ type: 'SET_MY_SEAT', seat: m.seat });
           break;
         case 'room_closed':
-          alert('Room was closed due to inactivity');
-          navigate('/');
+          pushToast('info', 'Room was closed due to inactivity');
+          setTimeout(() => navigate('/'), 1500);
           break;
         case 'error':
           if (pendingSeat.current !== null) {
             pendingSeat.current = null;
             dispatch({ type: 'SET_MY_SEAT', seat: null });
           }
-          alert(m.message);  // never fail silently
+          pushToast('error', m.message);  // never fail silently
           break;
       }
     });
-  }, [onMessage, dispatch, tableId, navigate]);
+  }, [onMessage, dispatch, tableId, navigate, pushToast]);
 
   useEffect(() => {
     dispatch({ type: 'SET_TABLE', tableId });
@@ -124,11 +143,13 @@ export default function GameTablePage() {
       );
     }
     if (!detail) return <div className="waiting-text">Loading…</div>;
-    const midHand = detail.phase !== 'WAITING' && detail.phase !== 'SHOWDOWN';
+    const seatsNow = liveSeats ?? detail.seats;
+    const phaseNow = livePhase ?? detail.phase;
+    const midHand = phaseNow !== 'WAITING' && phaseNow !== 'SHOWDOWN';
     // Reclaim must stay reachable mid-hand (that's its core value: a
     // disconnected player rejoins the hand in progress).  The midHand
     // disable only blocks FRESH joins.
-    const selectedOcc = detail.seats.find(s => s.seat_idx === selectedSeat);
+    const selectedOcc = seatsNow.find(s => s.seat_idx === selectedSeat);
     const selectedIsReclaimable = !!selectedOcc && !selectedOcc.connected
       && selectedOcc.name === name;
     return (
@@ -136,14 +157,14 @@ export default function GameTablePage() {
         <h2>Table {detail.table_id}</h2>
         <p className="room-meta">Blinds {detail.config.small_blind}/{detail.config.big_blind}
            {' '}· Buy-in {detail.config.default_buyin}
-           {' '}· {detail.seats.length}/{detail.max_seats} players
-           {' '}· {detail.phase}</p>
-        {detail.seats.length > 0 && (
-          <p className="room-meta">Seated: {detail.seats.map(s => s.name).join(', ')}</p>
+           {' '}· {seatsNow.length}/{detail.max_seats} players
+           {' '}· {phaseNow}</p>
+        {seatsNow.length > 0 && (
+          <p className="room-meta">Seated: {seatsNow.map(s => s.name).join(', ')}</p>
         )}
         <div className="seat-picker">
           {Array.from({ length: detail.max_seats }, (_, i) => {
-            const occ = detail.seats.find(s => s.seat_idx === i);
+            const occ = seatsNow.find(s => s.seat_idx === i);
             // A disconnected seat whose name matches the typed name can be
             // reclaimed — the server runs try_reclaim on same-name sit_down.
             const reclaimable = occ && !occ.connected && occ.name === name;
@@ -175,6 +196,7 @@ export default function GameTablePage() {
         {midHand && !selectedIsReclaimable && (
           <p className="join-hint">Hand in progress — wait for it to finish</p>
         )}
+        <Toast items={toasts} onDismiss={dismissToast} />
       </div>
     );
   }
@@ -264,6 +286,8 @@ export default function GameTablePage() {
           <span key={i}>P{h.seat} {h.action}{h.amount > 0 ? ` ${h.amount}` : ''} · </span>
         ))}
       </div>
+
+      <Toast items={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
