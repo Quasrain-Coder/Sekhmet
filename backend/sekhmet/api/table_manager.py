@@ -349,7 +349,27 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
     if session is None or (not force and seat_idx not in session.disconnected):
         return
     session.disconnected.discard(seat_idx)
-    session.grace_timers.pop(seat_idx, None)
+    timer = session.grace_timers.pop(seat_idx, None)
+    # A force-kick can orphan a still-pending grace timer — cancel it or it
+    # fires a second expiry later.  On the grace-expiry path the popped
+    # timer IS the currently-running task; cancelling ourselves would abort
+    # the cleanup below, so skip that case.
+    if timer is not None and timer is not asyncio.current_task():
+        timer.cancel()
+
+    # A timeout-kicked player is still connected — tell them why their seat
+    # vanished before either removal path drops the socket.  (Grace expiry
+    # already popped the socket in handle_disconnect, so force only.)
+    if force:
+        ws = session.clients.get(seat_idx)
+        if ws is not None:
+            try:
+                await ws.send_json({
+                    "type": "kicked",
+                    "message": "Removed after consecutive timeouts",
+                })
+            except Exception:
+                pass
 
     gs = session.game_state
     mid_hand = gs.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN)
@@ -414,19 +434,11 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
         session.bot_levels.pop(seat_idx, None)
         session.reclaim_tokens.pop(seat_idx, None)
         session.consecutive_timeouts.pop(seat_idx, None)
-        # A timeout-kicked player is still connected — tell them, then drop
-        # the socket or they keep receiving broadcasts for a seat they no
-        # longer hold.  (Grace expiry already popped the socket in
-        # handle_disconnect, so this is a no-op on that path.)
-        ws = session.clients.pop(seat_idx, None)
-        if ws is not None:
-            try:
-                await ws.send_json({
-                    "type": "error",
-                    "message": "Removed after consecutive timeouts",
-                })
-            except Exception:
-                pass
+        # Drop the kicked player's socket or they keep receiving broadcasts
+        # for a seat they no longer hold (the 'kicked' notice already went
+        # out at entry).  Grace expiry popped it in handle_disconnect, so
+        # this is a no-op on that path.
+        session.clients.pop(seat_idx, None)
         _reassign_owner(session)
         await broadcast(table_id, _table_summary(session))
 
