@@ -63,6 +63,12 @@ export default function GameTablePage() {
         case 'hand_result': dispatch({ type: 'HAND_RESULT', data: m as any }); break;
         case 'reclaim_token':
           localStorage.setItem(`reclaimToken_${tableId}`, m.token);
+          // The server assigns the seat authoritatively — on reclaim it is
+          // the OLD seat, which may differ from the picker selection.
+          // Receiving the token also confirms the sit, so drop pendingSeat
+          // (its table_state/error handlers are no-ops once null).
+          pendingSeat.current = null;
+          dispatch({ type: 'SET_MY_SEAT', seat: m.seat });
           break;
         case 'room_closed':
           alert('Room was closed due to inactivity');
@@ -119,6 +125,12 @@ export default function GameTablePage() {
     }
     if (!detail) return <div className="waiting-text">Loading…</div>;
     const midHand = detail.phase !== 'WAITING' && detail.phase !== 'SHOWDOWN';
+    // Reclaim must stay reachable mid-hand (that's its core value: a
+    // disconnected player rejoins the hand in progress).  The midHand
+    // disable only blocks FRESH joins.
+    const selectedOcc = detail.seats.find(s => s.seat_idx === selectedSeat);
+    const selectedIsReclaimable = !!selectedOcc && !selectedOcc.connected
+      && selectedOcc.name === name;
     return (
       <div className="join-panel">
         <h2>Table {detail.table_id}</h2>
@@ -154,12 +166,13 @@ export default function GameTablePage() {
           <input className="input" type="number" value={buyin} style={{ width: 110 }}
                  onChange={e => setBuyin(Number(e.target.value))} />
           <button className="btn" onClick={joinTable}
-                  disabled={!name || !connected || midHand || selectedSeat === null}>
+                  disabled={!name || !connected || selectedSeat === null
+                            || (midHand && !selectedIsReclaimable)}>
             Sit Down
           </button>
           <button className="btn btn-sm" onClick={() => navigate('/')}>← Lobby</button>
         </div>
-        {midHand && (
+        {midHand && !selectedIsReclaimable && (
           <p className="join-hint">Hand in progress — wait for it to finish</p>
         )}
       </div>

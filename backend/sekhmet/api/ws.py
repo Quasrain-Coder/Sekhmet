@@ -65,6 +65,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         my_seat = seat
                         await websocket.send_json({
                             "type": "reclaim_token", "token": new_token,
+                            "seat": seat,
                         })
                         await tm.broadcast(table_id, tm._table_summary(session))
                         # Re-send private state so the reclaimer catches up
@@ -101,6 +102,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         if token:
                             await websocket.send_json({
                                 "type": "reclaim_token", "token": token,
+                                "seat": seat_idx,
                             })
 
                     await tm.broadcast(table_id, summary)

@@ -861,3 +861,45 @@ def test_ws_sit_down_sends_private_token():
         msgs = [ws.receive_json(), ws.receive_json()]
         token_msg = next(m for m in msgs if m["type"] == "reclaim_token")
         assert len(token_msg["token"]) == 32
+        assert token_msg["seat"] == 0
+
+
+def test_ws_reclaim_token_message_carries_authoritative_seat():
+    """Reclaim ignores the requested seat_idx — the private reclaim_token
+    message must carry the server-assigned (old) seat so the client can
+    self-correct its mySeat."""
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws1:
+        ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        token_msg = ws1.receive_json()
+        token = token_msg["token"]
+        ws1.receive_json()              # table_state broadcast
+    # ws1 closed.  The TestClient cancels the server task on close instead of
+    # delivering WebSocketDisconnect, so mark the seat disconnected at the tm
+    # level (the grace timer is cancelled immediately — it belongs to this
+    # throwaway loop and must not outlive it).
+    import asyncio
+    async def _disconnect():
+        await tm.handle_disconnect(tid, 0)
+        session = await tm.get_table(tid)
+        timer = session.grace_timers.pop(0, None)
+        if timer is not None:
+            timer.cancel()
+            try:
+                await timer
+            except asyncio.CancelledError:
+                pass
+    asyncio.run(_disconnect())
+    # Reconnect and reclaim, but ask for a DIFFERENT (free) seat — the
+    # server must answer with seat 0.
+    with client.websocket_connect(f"/ws/{tid}") as ws2:
+        ws2.send_json({
+            "type": "sit_down", "seat_idx": 2, "name": "Hero",
+            "buyin": 200, "reclaim_token": token,
+        })
+        msg = ws2.receive_json()
+        assert msg["type"] == "reclaim_token"
+        assert msg["seat"] == 0
+        assert msg["token"] != token    # rotated
+

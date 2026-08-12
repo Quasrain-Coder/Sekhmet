@@ -83,9 +83,11 @@ def test_websocket_sit_down_and_start():
         tk2 = ws2.receive_json()
         ts2 = ws2.receive_json()
         assert tk1["type"] == "reclaim_token"
+        assert tk1["seat"] == 0
         assert ts1a["type"] == "table_state"
         assert ts1b["type"] == "table_state"
         assert tk2["type"] == "reclaim_token"
+        assert tk2["seat"] == 1
         assert ts2["type"] == "table_state"
 
         # Start hand → broadcast hand_start + private hole_cards

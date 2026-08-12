@@ -69,7 +69,7 @@ export type GameMsg =
   | { type: 'hole_cards'; cards: string[] }
   | { type: 'game_state_update' } & GameStateData
   | { type: 'hand_result' } & GameStateData & { showdown: ShowdownData }
-  | { type: 'reclaim_token'; token: string }
+  | { type: 'reclaim_token'; token: string; seat: number }
   | { type: 'room_closed'; table_id: string }
   | { type: 'error'; message: string };
 
