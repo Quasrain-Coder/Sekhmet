@@ -42,6 +42,7 @@ from ..game_engine import (
     runout_step,
 )
 from ..game_engine.pot_manager import PotAward, create_side_pots, award_pot
+from ..models import recorder
 
 
 @dataclass(frozen=True)
@@ -390,6 +391,7 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
         # ended (runout finished) while we waited.
         async with session.lock:
             gs = session.game_state
+            was_showdown = gs.phase == GamePhase.SHOWDOWN
             if gs.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
                 p = gs.player(seat_idx)
                 if p is not None and p.is_active and not p.is_all_in:
@@ -409,11 +411,11 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
                             gs = gs.with_phase(GamePhase.SHOWDOWN)
                     session.game_state = gs
 
-                # Resolve only a showdown we just caused under the lock —
-                # if the hand was already at SHOWDOWN when we acquired it,
-                # the runout/action path that got it there owns the payout.
-                if session.game_state.phase == GamePhase.SHOWDOWN:
-                    result = _resolve_showdown(session)
+            # Resolve only a showdown we just caused under the lock —
+            # if the hand was already at SHOWDOWN when we acquired it,
+            # the runout/action path that got it there owns the payout.
+            if not was_showdown and session.game_state.phase == GamePhase.SHOWDOWN:
+                result = _resolve_showdown(session)
         await broadcast(table_id, _state_broadcast(session, result))
         # after_action → auto_bot_actions takes session.lock itself; it must
         # be called only after the critical section above has released it.
@@ -876,6 +878,7 @@ def _state_broadcast(
 def _resolve_showdown(session: TableSession) -> dict[str, Any]:
     """Evaluate hands, create side pots, and award to winners."""
     gs = session.game_state
+    stacks_before = {p.seat_idx: p.stack for p in gs.players}
 
     active = [p for p in gs.players if p.is_active and p.hole_cards]
 
@@ -925,6 +928,38 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
                 )
                 break
     session.game_state = gs.with_players(tuple(players_list))
+
+    # Persist the completed hand (fire-and-forget; never blocks the game)
+    winner_seats = {a.winner_seat_idx for a in awards_list}
+    recorder.schedule_recording(recorder.record_hand(
+        table_id=session.table_id,
+        players_meta=[
+            {
+                "seat_idx": p.seat_idx, "name": p.name, "is_human": p.is_human,
+                "stack_before": stacks_before[p.seat_idx],
+                "stack_after": p.stack,
+            }
+            for p in players_list
+        ],
+        board=[str(c) for c in gs.community_cards],
+        actions=[
+            {"seat": a.player_idx, "action": a.type.name, "amount": a.amount}
+            for a in gs.round_history
+        ],
+        awards=[
+            {"seat_idx": a.winner_seat_idx, "amount": a.amount,
+             "hand": a.hand_description}
+            for a in awards_list
+        ],
+    ))
+    recorder.schedule_recording(recorder.upsert_player_stats([
+        {
+            "name": p.name, "is_human": p.is_human,
+            "won": p.seat_idx in winner_seats,
+            "delta": p.stack - stacks_before[p.seat_idx],
+        }
+        for p in players_list
+    ]))
 
     return {
         "hands": {

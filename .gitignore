@@ -8,6 +8,10 @@ __pycache__/
 venv/
 *.egg-info/
 
+# Python runtime artifacts
+*.db
+.coverage
+
 # Node
 node_modules/
 dist/

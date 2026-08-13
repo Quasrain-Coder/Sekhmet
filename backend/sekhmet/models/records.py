@@ -1,0 +1,36 @@
+"""ORM models for hand history and persistent player stats."""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+
+from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from .db import Base
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class HandRecord(Base):
+    __tablename__ = "hand_records"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    table_id: Mapped[str] = mapped_column(String(16), index=True)
+    players: Mapped[str] = mapped_column(Text)   # JSON array
+    board: Mapped[str] = mapped_column(Text)     # JSON array of card strings
+    actions: Mapped[str] = mapped_column(Text)   # JSON array
+    awards: Mapped[str] = mapped_column(Text)    # JSON array
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class PlayerStatsRecord(Base):
+    __tablename__ = "player_stats"
+
+    name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    hands: Mapped[int] = mapped_column(Integer, default=0)
+    wins: Mapped[int] = mapped_column(Integer, default=0)
+    net_chips: Mapped[int] = mapped_column(Integer, default=0)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
