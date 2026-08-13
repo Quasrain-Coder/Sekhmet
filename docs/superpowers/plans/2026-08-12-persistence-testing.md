@@ -181,6 +181,11 @@ class PlayerStatsRecord(Base):
 
 `models/recorder.py`：
 
+> 注：Task 1 评审实测发现原 verbatim 有两处必现 bug，已按实际实现修正：
+> ① 模块级 `from .db import SessionLocal` 在 `configure()` 重建后仍持有旧 sessionmaker，写入真实 DB 污染测试；
+> ② SQLAlchemy 列 default 仅在 INSERT 时生效，新行上 `hands += 1` 会抛 None+1 TypeError。
+> 修正：经 `from . import db` 动态取 `db.SessionLocal`；新建 PlayerStatsRecord 显式给零值。
+
 ```python
 """Fire-and-forget persistence for completed hands."""
 
@@ -192,7 +197,7 @@ import logging
 
 from sqlalchemy import select
 
-from .db import SessionLocal
+from . import db
 from .records import HandRecord, PlayerStatsRecord
 
 logger = logging.getLogger(__name__)
@@ -201,7 +206,7 @@ logger = logging.getLogger(__name__)
 async def record_hand(table_id, players_meta, board, actions, awards) -> None:
     """Persist one completed hand. Never raises."""
     try:
-        async with SessionLocal() as s:
+        async with db.SessionLocal() as s:
             s.add(HandRecord(
                 table_id=table_id,
                 players=json.dumps(players_meta),
@@ -217,7 +222,7 @@ async def record_hand(table_id, players_meta, board, actions, awards) -> None:
 async def upsert_player_stats(deltas: list[dict]) -> None:
     """Accumulate per-name stats for human players. Never raises."""
     try:
-        async with SessionLocal() as s:
+        async with db.SessionLocal() as s:
             for d in deltas:
                 if not d.get("is_human"):
                     continue
@@ -226,7 +231,7 @@ async def upsert_player_stats(deltas: list[dict]) -> None:
                         PlayerStatsRecord.name == d["name"])
                 )).scalar_one_or_none()
                 if row is None:
-                    row = PlayerStatsRecord(name=d["name"])
+                    row = PlayerStatsRecord(name=d["name"], hands=0, wins=0, net_chips=0)
                     s.add(row)
                 row.hands += 1
                 row.wins += 1 if d.get("won") else 0
