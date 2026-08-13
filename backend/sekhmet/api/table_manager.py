@@ -391,6 +391,7 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
         # ended (runout finished) while we waited.
         async with session.lock:
             gs = session.game_state
+            was_showdown = gs.phase == GamePhase.SHOWDOWN
             if gs.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
                 p = gs.player(seat_idx)
                 if p is not None and p.is_active and not p.is_all_in:
@@ -410,11 +411,11 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
                             gs = gs.with_phase(GamePhase.SHOWDOWN)
                     session.game_state = gs
 
-                # Resolve only a showdown we just caused under the lock —
-                # if the hand was already at SHOWDOWN when we acquired it,
-                # the runout/action path that got it there owns the payout.
-                if session.game_state.phase == GamePhase.SHOWDOWN:
-                    result = _resolve_showdown(session)
+            # Resolve only a showdown we just caused under the lock —
+            # if the hand was already at SHOWDOWN when we acquired it,
+            # the runout/action path that got it there owns the payout.
+            if not was_showdown and session.game_state.phase == GamePhase.SHOWDOWN:
+                result = _resolve_showdown(session)
         await broadcast(table_id, _state_broadcast(session, result))
         # after_action → auto_bot_actions takes session.lock itself; it must
         # be called only after the critical section above has released it.
