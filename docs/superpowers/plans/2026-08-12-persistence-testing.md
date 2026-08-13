@@ -366,7 +366,7 @@ router = APIRouter(prefix="/api/history", tags=["history"])
 async def list_hands(limit: int = 20, table_id: str | None = None):
     from sqlalchemy import select
     async with SessionLocal() as s:
-        q = select(HandRecord).order_by(HandRecord.id.desc()).limit(min(limit, 100))
+        q = select(HandRecord).order_by(HandRecord.id.desc()).limit(max(0, min(limit, 100)))
         if table_id:
             q = q.where(HandRecord.table_id == table_id)
         rows = (await s.execute(q)).scalars().all()
