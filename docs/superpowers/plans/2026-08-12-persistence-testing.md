@@ -90,9 +90,11 @@ async def test_upsert_player_stats_accumulates_humans_only(mem_db):
     assert hero.hands == 2 and hero.wins == 1 and hero.net_chips == 5
 
 
-async def test_recording_failure_does_not_raise(mem_db):
+async def test_recording_failure_does_not_raise():
     """落库异常只记日志，不向上抛。"""
-    await db.engine.dispose()  # 弄坏 engine
+    # 指向父目录不存在的路径 —— 连接必然失败。dispose() 只能暂时关闭连接，
+    # 连接池会惰性重建自愈，模拟不了真实故障，所以直接配置一个坏 URL。
+    db.configure("sqlite+aiosqlite:///definitely_missing_dir_xyz/t.db")
     await recorder.record_hand("t", [], "[]", "[]", "[]")  # 不应抛出
 ```
 
@@ -272,7 +274,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
   - `GET /api/history/hands?limit=20&table_id=` — 倒序，含解析后的 JSON 字段
   - `GET /api/history/players` — net_chips 降序
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 ```python
 async def test_hand_recorded_after_showdown(mem_db):
@@ -305,9 +307,9 @@ def test_history_endpoints(mem_db_sync_client):
 
 （`mem_db` fixture 与 TestClient 的组合细节由实现者处理——注意 TestClient 是同步的、recorder 是异步的：可以先 `asyncio.run(recorder.record_hand(...))` 准备数据再用 client 查询。）
 
-- [ ] **Step 2: 确认红**
+- [x] **Step 2: 确认红**
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 `_resolve_showdown` 末尾（stacks 更新、awards 计算之后）：
 
@@ -394,6 +396,8 @@ async def list_players():
     ]}
 ```
 
+> 注：实现时 history.py 与 Task 1 recorder 同款修正——模块级 `from ..models.db import SessionLocal` 在 `configure()` 重建后仍持有旧 sessionmaker，改为 `from ..models import db` + `db.SessionLocal()` 动态取。
+
 `main.py`：`from .api import game, trainer, ws` → 加 `history`；`app.include_router(history.router)`；lifespan 里 `await tm.init...` 不对——加：
 
 ```python
@@ -408,7 +412,7 @@ async def lifespan(app: FastAPI):
         sweeper.cancel()
 ```
 
-- [ ] **Step 4: 确认绿 + 回归 + 提交**
+- [x] **Step 4: 确认绿 + 回归 + 提交**
 
 ```bash
 python -m pytest tests/ -q   # 227 + 2 = 229 passed
