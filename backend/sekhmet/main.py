@@ -12,12 +12,14 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from contextlib import asynccontextmanager
 
-from .api import game, trainer, ws
+from .api import game, history, trainer, ws
 from .api import table_manager as tm
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from .models.db import init_db
+    await init_db()
     sweeper = asyncio.create_task(tm.sweeper_loop())
     try:
         yield
@@ -44,6 +46,7 @@ app.add_middleware(
 # Routes
 app.include_router(game.router)
 app.include_router(trainer.router)
+app.include_router(history.router)
 app.include_router(ws.router)
 
 
