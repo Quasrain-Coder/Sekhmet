@@ -597,14 +597,14 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ### Task 4: 全量验证 + PR
 
-- [ ] **Step 1: 全量验证**
+- [x] **Step 1: 全量验证**
 
 ```bash
-cd backend && source .venv/bin/activate && python -m pytest tests/ -q   # 229 passed
+cd backend && source .venv/bin/activate && python -m pytest tests/ -q   # 230 passed
 cd ../frontend && npm run test && npm run build && npx oxlint src
 ```
 
-- [ ] **Step 2: 推送并开 PR**（HTTPS+token 备用通道）
+- [x] **Step 2: 推送并开 PR**（HTTPS+token 备用通道）
 
 PR 标题：`feat: SQLite 持久化（对局记录+玩家战绩）+ 前端测试设施与 CI`
 - [ ] **Step 3: 等 CI 绿（两个 job），请用户确认后合入**
