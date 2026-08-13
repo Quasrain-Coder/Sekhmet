@@ -449,7 +449,7 @@ async def _isolated_db(tmp_path):
 **Interfaces:**
 - Produces: `npm run test`（vitest run）；CI `frontend` job
 
-- [ ] **Step 1: 装依赖**
+- [x] **Step 1: 装依赖**
 
 ```bash
 cd frontend && npm install -D vitest jsdom @testing-library/react @testing-library/jest-dom --registry=https://registry.npmmirror.com
@@ -457,7 +457,7 @@ cd frontend && npm install -D vitest jsdom @testing-library/react @testing-libra
 
 package.json scripts 加 `"test": "vitest run"`。
 
-- [ ] **Step 2: 配置与 setup**
+- [x] **Step 2: 配置与 setup**
 
 `vite.config.ts`（现有内容保留，加 test 段；顶部加 reference）：
 
@@ -477,7 +477,7 @@ package.json scripts 加 `"test": "vitest run"`。
 import '@testing-library/jest-dom';
 ```
 
-- [ ] **Step 3: 组件测试**
+- [x] **Step 3: 组件测试**
 
 `src/__tests__/CardView.test.tsx`：
 
@@ -552,7 +552,7 @@ test('collapsed by default, expands on click, sorted by net desc', () => {
 
 （Leaderboard 的 SeatInfo 字段以当前 useGameState.ts 为准——实现者核对字段名。）
 
-- [ ] **Step 4: 验证 + CI job**
+- [x] **Step 4: 验证 + CI job**
 
 ```bash
 cd frontend && npm run test && npm run build && npx oxlint src
@@ -584,7 +584,7 @@ cd frontend && npm run test && npm run build && npx oxlint src
         run: npm run build
 ```
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add frontend/ .github/workflows/ci.yml
