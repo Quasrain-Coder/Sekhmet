@@ -50,6 +50,31 @@ afterEach(() => {
   delete (globalThis as any).WebSocket;
 });
 
+test('logged-in players sit as their account name — no name input shown', async () => {
+  localStorage.setItem('authUser', 'alice');
+  localStorage.setItem('authToken', 'tok-1');
+  render(
+    <MemoryRouter initialEntries={['/game/abc']}>
+      <Routes>
+        <Route path="/game/:tableId" element={<GameTablePage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  const sitButton = await screen.findByRole('button', { name: 'Sit Down' });
+  // no name input for logged-in players — the account name is shown
+  expect(screen.queryByPlaceholderText('Your name')).toBeNull();
+  expect(screen.getByText('👤 alice')).toBeTruthy();
+
+  act(() => { MockWebSocket.instances[0].open(); });
+  fireEvent.click(sitButton);
+  const sent = JSON.parse(MockWebSocket.instances[0].sent[0]);
+  expect(sent.type).toBe('sit_down');
+  expect(sent.name).toBe('alice');
+  localStorage.removeItem('authUser');
+  localStorage.removeItem('authToken');
+});
+
 test('tapping Sit Down without a connection explains itself instead of dying silently', async () => {
   render(
     <MemoryRouter initialEntries={['/game/abc']}>
@@ -64,20 +89,6 @@ test('tapping Sit Down without a connection explains itself instead of dying sil
   expect(await screen.findByText('Connecting to the table… try again in a moment')).toBeTruthy();
   // the inline hint names the blocker too
   expect(screen.getByText('Connecting to the table…')).toBeTruthy();
-});
-
-test('seat name prefills from the logged-in account when no poker name is set', async () => {
-  localStorage.removeItem('pokerName');
-  localStorage.setItem('authUser', 'alice');
-  render(
-    <MemoryRouter initialEntries={['/game/abc']}>
-      <Routes>
-        <Route path="/game/:tableId" element={<GameTablePage />} />
-      </Routes>
-    </MemoryRouter>,
-  );
-  const input = (await screen.findByPlaceholderText('Your name')) as HTMLInputElement;
-  expect(input.value).toBe('alice');
 });
 
 test('a sit_down dropped by a dead socket is resent after reconnect', async () => {

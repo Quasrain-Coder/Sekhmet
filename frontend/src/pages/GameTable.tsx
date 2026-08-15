@@ -35,10 +35,15 @@ export default function GameTablePage() {
   const [state, dispatch] = useGameState();
   const { connected, reconnectIn, send, onMessage } = useWebSocket(tableId);
   const [detail, setDetail] = useState<TableDetail | null | 'not-found'>(null);
-  // Prefill the seat name: last used name, else the logged-in account name
-  // (mobile users may never have set a poker name).
+  // Logged-in players sit as their account name (no name input shown);
+  // guests type one.  `name` is the typed guest name; `seatName` is what
+  // actually goes to the server.
+  const [authedUser] = useState(() => localStorage.getItem('authUser'));
   const [name, setName] = useState(() =>
-    localStorage.getItem('pokerName') || localStorage.getItem('authUser') || '');
+    localStorage.getItem('pokerName') || authedUser || '');
+  // What actually goes to the server: the account name for logged-in
+  // players, the typed name for guests.
+  const seatName = authedUser ?? name.trim();
   const [buyin, setBuyin] = useState(200);
   const [rebuyAmount, setRebuyAmount] = useState(200);
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
@@ -79,7 +84,7 @@ export default function GameTablePage() {
   attemptReclaimRef.current = () => {
     if (state.mySeat === null) return;
     const token = localStorage.getItem(`reclaimToken_${tableId}`);
-    send({ type: 'sit_down', seat_idx: state.mySeat, name, buyin,
+    send({ type: 'sit_down', seat_idx: state.mySeat, name: seatName, buyin,
            ...(token ? { reclaim_token: token } : {}) });
   };
 
@@ -99,7 +104,8 @@ export default function GameTablePage() {
         const reclaimToken = localStorage.getItem(`reclaimToken_${tableId}`);
         // the saved name (not the live input) keeps this effect free of a
         // `name` dependency — typing must not re-run the preselect
-        const savedName = localStorage.getItem('pokerName') ?? '';
+        const savedName = localStorage.getItem('authUser')
+          ?? localStorage.getItem('pokerName') ?? '';
         const reclaimSeat = reclaimToken
           ? d.seats.find(s => !s.connected && s.name === savedName)?.seat_idx ?? null
           : null;
@@ -227,12 +233,12 @@ export default function GameTablePage() {
 
   const joinTable = () => {
     if (!detail || detail === 'not-found' || selectedSeat === null) return;
-    localStorage.setItem('pokerName', name);
+    localStorage.setItem('pokerName', seatName);
     pendingSeat.current = selectedSeat;
-    pendingSitRef.current = { seat: selectedSeat, name, buyin };
+    pendingSitRef.current = { seat: selectedSeat, name: seatName, buyin };
     const reclaimToken = localStorage.getItem(`reclaimToken_${tableId}`);
     const ownerToken = localStorage.getItem(`ownerToken_${tableId}`);
-    send({ type: 'sit_down', seat_idx: selectedSeat, name, buyin,
+    send({ type: 'sit_down', seat_idx: selectedSeat, name: seatName, buyin,
            ...(reclaimToken ? { reclaim_token: reclaimToken } : {}),
            ...(ownerToken ? { owner_token: ownerToken } : {}) });
     dispatch({ type: 'SET_MY_SEAT', seat: selectedSeat });
@@ -270,7 +276,7 @@ export default function GameTablePage() {
     // next deal — the server enforces that, this is the UI half.
     const selectedOcc = seatsNow.find(s => s.seat_idx === selectedSeat);
     const selectedIsReclaimable = !!selectedOcc && !selectedOcc.connected
-      && selectedOcc.name === name;
+      && selectedOcc.name === seatName;
     // Live preview of the public game state: seated players with card
     // backs / fold badges, community cards and pot.  Between hands stale
     // is_active flags are ignored (fold badges make no sense in WAITING);
@@ -290,7 +296,7 @@ export default function GameTablePage() {
     // disconnected seat (same name) can be picked.
     const handleSeatSelect = (idx: number) => {
       const occ = seatsNow.find(s => s.seat_idx === idx);
-      const reclaimable = !!occ && !occ.connected && occ.name === name;
+      const reclaimable = !!occ && !occ.connected && occ.name === seatName;
       if (occ && !reclaimable) return;
       setSelectedSeat(idx);
     };
@@ -298,7 +304,7 @@ export default function GameTablePage() {
     // mobile gives zero feedback when the ws is reconnecting or no seat is
     // picked — the user just sees a dead button.
     const handleJoinClick = () => {
-      if (!name.trim()) {
+      if (!seatName) {
         pushToast('error', 'Enter your name first');
         return;
       }
@@ -314,7 +320,7 @@ export default function GameTablePage() {
       }
       joinTable();
     };
-    const joinBlocker = !name.trim() ? 'Enter your name to sit down'
+    const joinBlocker = !seatName ? 'Enter your name to sit down'
       : !connected ? (reconnectIn > 0
           ? `Connecting… retrying in ${Math.ceil(reconnectIn / 1000)}s`
           : 'Connecting to the table…')
@@ -351,8 +357,10 @@ export default function GameTablePage() {
           />
         </div>
         <div className="lobby-actions">
-          <input className="input" placeholder="Your name" value={name}
-                 onChange={e => setName(e.target.value)} />
+          {authedUser
+            ? <span className="auth-user">👤 {authedUser}</span>
+            : <input className="input" placeholder="Your name" value={name}
+                     onChange={e => setName(e.target.value)} />}
           <input className="input" type="number" value={buyin} style={{ width: 110 }}
                  onChange={e => setBuyin(Number(e.target.value))} />
           <button className="btn" onClick={handleJoinClick}>
