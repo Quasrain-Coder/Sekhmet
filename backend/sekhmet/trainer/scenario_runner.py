@@ -45,6 +45,10 @@ class ScenarioRunner:
         self._start_times[s.id] = time.time()
         return s
 
+    def start(self, scenario_id: str) -> None:
+        """Record the decision timer's starting point for *scenario_id*."""
+        self._start_times[scenario_id] = time.time()
+
     def submit(
         self,
         scenario_id: str,
@@ -99,5 +103,5 @@ class ScenarioRunner:
         scenario = self.library.get(scenario_id)
         if scenario is None or not scenario.hints:
             return None
-        idx = min(level, len(scenario.hints) - 1)
+        idx = min(max(level, 0), len(scenario.hints) - 1)
         return scenario.hints[idx]
