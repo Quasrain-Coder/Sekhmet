@@ -11,7 +11,9 @@ interface Props {
 }
 
 export default function PlayerSeat({ player, isCurrent, holeCards, avatarLabel, isMe, positionTag }: Props) {
-  const folded = !player.is_active;
+  // `=== false` (not `!`) — a missing field must never render everyone
+  // folded, which happened when hand_start omitted is_active.
+  const folded = player.is_active === false;
   // NOTE: no seat-N class here — absolute placement is owned by the outer
   // .seat-wrap (PR #10). player-seat is position:relative (containing block
   // for the .bet capsule); an inner seat-N would re-apply top/left offsets.

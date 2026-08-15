@@ -185,8 +185,10 @@ export default function GameTablePage() {
     localStorage.setItem('pokerName', name);
     pendingSeat.current = selectedSeat;
     const reclaimToken = localStorage.getItem(`reclaimToken_${tableId}`);
+    const ownerToken = localStorage.getItem(`ownerToken_${tableId}`);
     send({ type: 'sit_down', seat_idx: selectedSeat, name, buyin,
-           ...(reclaimToken ? { reclaim_token: reclaimToken } : {}) });
+           ...(reclaimToken ? { reclaim_token: reclaimToken } : {}),
+           ...(ownerToken ? { owner_token: ownerToken } : {}) });
     dispatch({ type: 'SET_MY_SEAT', seat: selectedSeat });
   };
 
@@ -316,6 +318,7 @@ export default function GameTablePage() {
       <ActionBar
         isMyTurn={state.currentPlayerIdx === state.mySeat}
         currentBet={state.currentBet}
+        minRaise={state.minRaise}
         myStack={me?.stack ?? 0}
         myCurrentBet={me?.current_bet ?? 0}
         bigBlind={state.config?.big_blind ?? 10}

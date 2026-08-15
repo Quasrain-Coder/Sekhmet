@@ -72,6 +72,9 @@ export default function Lobby() {
       }
       const data = await resp.json();
       localStorage.setItem('pokerName', name);
+      if (data.owner_token) {
+        localStorage.setItem(`ownerToken_${data.table_id}`, data.owner_token);
+      }
       navigate(`/game/${data.table_id}`);
     } catch { pushToast('error', 'Cannot reach server'); }
   };
