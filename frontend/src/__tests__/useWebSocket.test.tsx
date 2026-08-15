@@ -98,6 +98,19 @@ test('reconnects with exponential backoff after a drop, and stops on unmount', (
   expect(MockWebSocket.instances).toHaveLength(countAfterUnmount); // no retries after unmount
 });
 
+test('a logged-in client sends its session token on the ws URL', () => {
+  localStorage.setItem('authToken', 'tok-abc123');
+  renderHook(() => useWebSocket('abc'));
+  expect(MockWebSocket.instances[0].url).toContain('/ws/abc?token=tok-abc123');
+  localStorage.removeItem('authToken');
+});
+
+test('a guest connects without a token', () => {
+  localStorage.removeItem('authToken');
+  renderHook(() => useWebSocket('abc'));
+  expect(MockWebSocket.instances[0].url).toBe(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/abc`);
+});
+
 test('backoff caps at 10s', () => {
   const { result } = renderHook(() => useWebSocket('abc'));
   const waits = [1000, 2000, 4000, 8000, 10_000, 10_000];

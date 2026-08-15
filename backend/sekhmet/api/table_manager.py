@@ -106,6 +106,9 @@ class TableSession:
     # Seats occupied while a hand was in progress — they join the roster at
     # the next deal (never added to game_state mid-hand).
     pending_seats: set[int] = field(default_factory=set)
+    # seat_idx → account id for logged-in players; guests are absent.
+    # Only these seats feed the per-account stats at showdown.
+    user_ids: dict[int, int] = field(default_factory=dict)
     total_buyin: dict[int, int] = field(default_factory=dict)        # seat_idx → chips bought
     disconnected: set[int] = field(default_factory=set)
     consecutive_timeouts: dict[int, int] = field(default_factory=dict)  # seat_idx → count
@@ -247,8 +250,13 @@ async def sit_down(
     is_human: bool = True,
     bot_level: int | None = None,
     owner_token: str | None = None,
+    user_id: int | None = None,
 ) -> dict[str, Any]:
-    """Seat a player at *table_id*.  Returns the updated table summary."""
+    """Seat a player at *table_id*.  Returns the updated table summary.
+
+    ``user_id`` links the seat to a logged-in account — its results are
+    recorded against the account profile.  Guest seats record nothing.
+    """
     session = await get_table(table_id)
     if session is None:
         raise GameError(f"Table {table_id} not found")
@@ -314,6 +322,8 @@ async def sit_down(
     session.total_buyin[seat_idx] = stack
     if is_human:
         session.reclaim_tokens[seat_idx] = secrets.token_hex(16)
+        if user_id is not None:
+            session.user_ids[seat_idx] = user_id
 
     return _table_summary(session)
 
@@ -329,6 +339,7 @@ def _stand_up_locked(session: TableSession, seat_idx: int) -> None:
     session.reclaim_tokens.pop(seat_idx, None)
     session.consecutive_timeouts.pop(seat_idx, None)
     session.pending_seats.discard(seat_idx)
+    session.user_ids.pop(seat_idx, None)
 
     players = tuple(p for p in session.game_state.players if p.seat_idx != seat_idx)
     session.game_state = session.game_state.with_players(players)
@@ -489,6 +500,7 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
             session.consecutive_timeouts.pop(seat_idx, None)
             session.send_locks.pop(seat_idx, None)
             session.pending_seats.discard(seat_idx)
+            session.user_ids.pop(seat_idx, None)
             # Drop the kicked player's socket or they keep receiving
             # broadcasts for a seat they no longer hold (the 'kicked'
             # notice already went out at entry).  Grace expiry popped it
@@ -1113,9 +1125,12 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
             for a in awards_list
         ],
     ))
-    recorder.schedule_recording(recorder.upsert_player_stats([
+    # Only logged-in players feed their account profile — guest seats are
+    # filtered out inside (no user_id → nothing recorded).
+    recorder.schedule_recording(recorder.upsert_user_stats([
         {
-            "name": p.name, "is_human": p.is_human,
+            "user_id": session.user_ids.get(p.seat_idx),
+            "username": p.name,
             "won": p.seat_idx in winner_seats,
             "delta": p.stack - stacks_before[p.seat_idx],
         }

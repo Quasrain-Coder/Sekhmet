@@ -25,7 +25,10 @@ export function useWebSocket(tableId: string | null) {
 
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = window.location.host;
-    const url = `${protocol}://${host}/ws/${tableId}`;
+    // A logged-in client sends its session token so the server can bind the
+    // seat to the account (stats → personal profile); guests omit it.
+    const token = localStorage.getItem('authToken');
+    const url = `${protocol}://${host}/ws/${tableId}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
 
     const connect = () => {
       setReconnectIn(0);  // attempt in flight — no retry pending

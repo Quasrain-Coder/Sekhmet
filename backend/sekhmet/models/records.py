@@ -34,3 +34,29 @@ class PlayerStatsRecord(Base):
     wins: Mapped[int] = mapped_column(Integer, default=0)
     net_chips: Mapped[int] = mapped_column(Integer, default=0)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class UserRecord(Base):
+    """Registered account (username + password)."""
+
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(128))
+    salt: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class UserStatsRecord(Base):
+    """Per-account lifetime stats — only logged-in players are recorded;
+    guest-mode play never reaches this table."""
+
+    __tablename__ = "user_stats"
+
+    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(64))
+    hands: Mapped[int] = mapped_column(Integer, default=0)
+    wins: Mapped[int] = mapped_column(Integer, default=0)
+    net_chips: Mapped[int] = mapped_column(Integer, default=0)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
