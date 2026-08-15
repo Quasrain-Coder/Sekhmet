@@ -76,7 +76,17 @@ export default function GameTablePage() {
         setRebuyAmount(d.config.default_buyin);
         const taken = new Set(d.seats.map(s => s.seat_idx));
         const free = Array.from({ length: d.max_seats }, (_, i) => i).find(i => !taken.has(i));
-        setSelectedSeat(free ?? null);
+        // After a reload with a reclaim token on file, preselect our old
+        // (disconnected) seat so a plain Sit Down reclaims it instead of
+        // landing us at some free seat with a fresh buy-in.
+        const reclaimToken = localStorage.getItem(`reclaimToken_${tableId}`);
+        // the saved name (not the live input) keeps this effect free of a
+        // `name` dependency — typing must not re-run the preselect
+        const savedName = localStorage.getItem('pokerName') ?? '';
+        const reclaimSeat = reclaimToken
+          ? d.seats.find(s => !s.connected && s.name === savedName)?.seat_idx ?? null
+          : null;
+        setSelectedSeat(reclaimSeat ?? free ?? null);
       })
       .catch(() => setDetail('not-found'));
   }, [tableId]);
