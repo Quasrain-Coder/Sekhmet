@@ -335,11 +335,15 @@ class RuleBot(BaseBot):
                 sizing = state.big_blind * 2
                 return Action(player_idx, ActionType.BET, amount=sizing)
             return Action(player_idx, ActionType.CHECK)
-        # Gutshots and weak pairs still callable at the right price.
+        # Gutshots and weak pairs still callable at the right price;
+        # otherwise bluff-catch occasionally (Level 2+) or fold.  The
+        # two checks must both be reachable — returning straight from
+        # _call_or_fold made bluff-catching dead code at every level.
         if self._level >= 2 and p.use_pot_odds:
-            return self._call_or_fold(state, player_idx, to_call, equity)
-        # Bluff catch or fold (Level 2+ — L2's bluff_frequency was
-        # previously dead configuration, only L3 ever reached here).
+            pot = state.pot.main_pot
+            required = to_call / (pot + to_call) if (pot + to_call) > 0 else 0.0
+            if equity >= required:
+                return Action(player_idx, ActionType.CALL)
         if self._level >= 2 and random.random() < p.bluff_frequency:
             return Action(player_idx, ActionType.CALL)
         return Action(player_idx, ActionType.FOLD)
