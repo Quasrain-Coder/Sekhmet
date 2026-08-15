@@ -466,3 +466,68 @@ def test_deal_requires_two_players_with_chips():
     state = GameState(phase=GamePhase.WAITING, players=(p1, p2))
     with pytest.raises(InvalidActionError, match="at least 2"):
         deal_new_hand(state, Deck().cards[:], 0)
+
+
+# ---------------------------------------------------------------------------
+# Under-raise (short all-in) does not reopen the action
+# ---------------------------------------------------------------------------
+
+
+def test_under_raise_does_not_reopen_action():
+    """A bets 10 (full), B calls, C short-all-ins to 15 (under-raise).
+    A and B have already matched the last full-raise level (10), so they
+    may only call the extra 5 or fold — re-raising must be rejected."""
+    a = make_player("A", 0, stack=990, current_bet=10, total_bet=10)
+    b = make_player("B", 1, stack=990, current_bet=10, total_bet=10)
+    c = make_player("C", 2, stack=15, current_bet=0, total_bet=0, is_all_in=True)
+    state = make_state(a, b, c, current_player_idx=0, current_bet=15,
+                       last_full_raise=10, acted_seats=(0, 1))
+
+    with pytest.raises(InvalidActionError, match="does not reopen"):
+        validate(state, Action(0, ActionType.RAISE, amount=25))
+
+    # short all-in that exceeds the call is also a raise → rejected
+    with pytest.raises(InvalidActionError, match="does not reopen"):
+        validate(state, Action(0, ActionType.ALL_IN))
+
+    # calling the extra 5 and folding stay legal
+    validate(state, Action(0, ActionType.CALL, amount=5))
+    validate(state, Action(0, ActionType.FOLD))
+
+    # a player who never matched the full raise may still raise
+    d = make_player("D", 3, stack=1000, current_bet=0, total_bet=0)
+    state2 = make_state(a, b, c, d, current_player_idx=3, current_bet=15,
+                        last_full_raise=10, acted_seats=(0, 1))
+    validate(state2, Action(3, ActionType.RAISE, amount=25))
+
+
+def test_full_raise_reopens_action():
+    """A full raise lifts last_full_raise above the callers' matched level,
+    so they may raise again."""
+    a = make_player("A", 0, stack=970, current_bet=30, total_bet=30)
+    b = make_player("B", 1, stack=990, current_bet=10, total_bet=10)
+    state = make_state(a, b, current_player_idx=1, current_bet=30,
+                       last_full_raise=30, acted_seats=(0, 1))
+    # B matched only 10, below the new full-raise level → may re-raise
+    validate(state, Action(1, ActionType.RAISE, amount=50))
+
+
+def test_execute_tracks_last_full_raise():
+    """Under-raises update current_bet but not last_full_raise; full raises
+    update both."""
+    a = make_player("A", 0, stack=985, current_bet=10, total_bet=10)
+    b = make_player("B", 1, stack=980, current_bet=20, total_bet=20)
+    state = make_state(a, b, current_player_idx=1, current_bet=10,
+                       last_full_raise=10, acted_seats=(0,))
+    # B raises 10 → 20: a full raise (10 == min_raise) → level lifts
+    s2 = execute(state, Action(1, ActionType.RAISE, amount=20))
+    assert s2.last_full_raise == 20
+
+    # C under-raises: all-in 25 total (5 more than 20, but min_raise is
+    # now 10) → under-raise: current_bet rises, last_full_raise does not
+    c = make_player("C", 2, stack=25, current_bet=0, total_bet=0)
+    s3 = make_state(a, b, c, current_player_idx=2, current_bet=20,
+                    last_full_raise=20, min_raise=10, acted_seats=(0, 1))
+    s4 = execute(s3, Action(2, ActionType.ALL_IN))
+    assert s4.current_bet == 25       # bet to match still goes up
+    assert s4.last_full_raise == 20   # but the action is NOT reopened
