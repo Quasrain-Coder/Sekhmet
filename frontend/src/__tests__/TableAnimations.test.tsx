@@ -137,6 +137,21 @@ describe('deal trigger', () => {
     expect(row.className).toContain('dealing');
   });
 
+  test('backs persist through showdown and clear in WAITING', () => {
+    const props = {
+      seats: [seat(0, '你', true), seat(1, 'Bot L2', false)],
+      players: [player({ seat_idx: 0, is_human: true }), player()],
+      maxSeats: 2, communityCards: [], pot: 0,
+      currentPlayerIdx: null, dealerIdx: null, sbSeat: null, bbSeat: null,
+      mySeat: 0, holeCards: [], onAddBot: vi.fn(), onKickBot: vi.fn(),
+    };
+    const { container, rerender } = render(<OvalTable {...props} phase="SHOWDOWN" />);
+    // players still hold their cards at showdown
+    expect(container.querySelector('.hole-cards')).not.toBeNull();
+    rerender(<OvalTable {...props} phase="WAITING" />);
+    expect(container.querySelector('.hole-cards')).toBeNull();
+  });
+
   test('reclaim mid-hand (mount in FLOP) does not fire the deal animation', () => {
     const props = {
       seats: [seat(0, '你', true), seat(1, 'Bot L2', false)],
