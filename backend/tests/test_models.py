@@ -239,3 +239,17 @@ def test_history_endpoints(mem_db_sync_client):
     assert players[0]["net_chips"] == 15 and players[0]["hands"] == 1
     assert players[1]["net_chips"] == -5
     assert isinstance(players[0]["updated_at"], str)
+
+
+async def test_concurrent_stats_upserts_do_not_lose_updates():
+    """50 concurrent upserts for the same name must all land — the old
+    select-then-mutate pattern lost every update after the first read."""
+    deltas = [{"name": "Hero", "is_human": True, "won": True, "delta": 3}]
+    await asyncio.gather(*(recorder.upsert_player_stats(deltas) for _ in range(50)))
+    async with db.SessionLocal() as s:
+        row = (await s.execute(
+            select(records.PlayerStatsRecord).where(records.PlayerStatsRecord.name == "Hero")
+        )).scalar_one()
+    assert row.hands == 50
+    assert row.wins == 50
+    assert row.net_chips == 150
