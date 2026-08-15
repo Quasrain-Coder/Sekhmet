@@ -333,6 +333,7 @@ export default function GameTablePage() {
         turnEpoch={state.turnEpoch}
         currentBet={state.currentBet}
         minRaise={state.minRaise}
+        pot={state.pot}
         myStack={me?.stack ?? 0}
         myCurrentBet={me?.current_bet ?? 0}
         bigBlind={state.config?.big_blind ?? 10}
