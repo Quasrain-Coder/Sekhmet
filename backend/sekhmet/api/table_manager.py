@@ -635,13 +635,13 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
             if player.is_human:
                 break  # it's a human's turn — stop auto-play
 
-            # Bot's turn — decide and execute.  A bot that produces an illegal
-            # action must never freeze the game: fall back to check (free) or
-            # fold (facing a bet) and carry on.
+            # Bot's turn — decide and execute.  A bot that crashes or
+            # produces an illegal action must never freeze the game: fall
+            # back to check (free) or fold (facing a bet) and carry on.
             bot_name = session.player_names.get(cur_idx, f"Bot{cur_idx}")
             level = session.bot_levels.get(cur_idx, 2)
-            bot = create_bot(f"rule_lv{level}")
             try:
+                bot = create_bot(f"rule_lv{level}")
                 action = bot.decide(gs, cur_idx)
                 gs = execute(gs, action)
             except GameError:
@@ -649,12 +649,17 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
                     "Bot %s produced an illegal action at table %s — falling back",
                     bot_name, table_id, exc_info=True,
                 )
-                to_call = gs.current_bet - player.current_bet
-                fallback = Action(
-                    cur_idx,
-                    ActionType.CHECK if to_call == 0 else ActionType.FOLD,
+                gs = _bot_fallback(gs, cur_idx, player)
+            except Exception:
+                # Any other exception (a buggy decide() crashing, a broken
+                # bot factory) would otherwise propagate through
+                # after_action and strand the hand with no driver and no
+                # action timer — a permanently frozen table.
+                logger.exception(
+                    "Bot %s crashed at table %s — falling back",
+                    bot_name, table_id,
                 )
-                gs = execute(gs, fallback)
+                gs = _bot_fallback(gs, cur_idx, player)
             session.game_state = gs
 
             result = None
@@ -741,14 +746,39 @@ async def _action_timeout(table_id: str, seat_idx: int) -> None:
 
 async def after_action(table_id: str) -> None:
     """Drive bots, push fresh stats at hand end, re-arm the action timer."""
-    for msg in await auto_bot_actions(table_id):
-        await broadcast(table_id, msg)
+    try:
+        for msg in await auto_bot_actions(table_id):
+            await broadcast(table_id, msg)
+    except Exception:
+        # auto_bot_actions is defensive, but if anything else throws the
+        # timer must still get armed — otherwise a human-to-act hand has
+        # no timeout safety net and the table wedges silently.
+        logger.exception("after_action bot phase failed at table %s", table_id)
     session = await get_table(table_id)
     if session is None:
         return
     if session.game_state.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
         await broadcast(table_id, _table_summary(session))
     schedule_action_timeout(session)
+
+
+def _bot_fallback(gs: GameState, cur_idx: int, player: Player) -> GameState:
+    """Least-damaging legal action when a bot misbehaves or crashes.
+
+    Check when free, fold when facing a bet.  FOLD is always legal while
+    it is the bot's turn, so this can only fail in a corrupt state.
+    """
+    to_call = gs.current_bet - player.current_bet
+    try:
+        return execute(
+            gs,
+            Action(cur_idx, ActionType.CHECK if to_call == 0 else ActionType.FOLD),
+        )
+    except GameError:
+        logger.exception(
+            "bot fallback rejected for seat %s — forcing fold", cur_idx,
+        )
+        return execute(gs, Action(cur_idx, ActionType.FOLD))
 
 
 # ---------------------------------------------------------------------------
