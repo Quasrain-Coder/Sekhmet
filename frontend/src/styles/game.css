@@ -391,19 +391,24 @@ select.input { width: auto; }
   box-shadow: 0 0 10px rgba(34, 211, 238, 0.25);
 }
 
-/* ---- Action bar ---- */
+/* ---- Action bar ----
+   两行结构：第一行 Fold / Check(Call) / All-in；第二行加注细分
+   （滑杆 + 输入框 + 底池比例 + Raise）。 */
 .action-bar {
-  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-  justify-content: center; padding: 8px 0;
+  display: flex; flex-direction: column; gap: 8px;
+  align-items: center; padding: 8px 0;
 }
+.action-row, .raise-panel {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  justify-content: center;
+}
+.raise-panel { gap: 8px; }
 .action-bar .btn { min-width: 64px; font-size: 0.8rem; padding: 8px 20px; }
 .action-bar .btn.fold { border-color: #475569; color: #94a3b8; box-shadow: none; }
 .action-bar .btn.check { border-color: var(--cyan); color: var(--cyan-text); }
 .action-bar .btn.raise { border-color: var(--gold); color: var(--gold-text); box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
 .action-bar .btn.allin { border-color: #8b2020; color: #ffd0d0; box-shadow: none; }
 .raise-slider { accent-color: var(--cyan); width: 150px; }
-.raise-controls { display: flex; flex-direction: column; gap: 5px; align-items: center; }
-.raise-row { display: flex; gap: 8px; align-items: center; }
 .raise-input { width: 88px; padding: 5px 8px; font-size: 0.8rem; }
 .raise-presets {
   display: flex; gap: 4px; flex-wrap: nowrap; justify-content: center;
@@ -626,9 +631,9 @@ select.input { width: auto; }
   .card-back::after { font-size: 14px; }
 
   /* 动作栏：垂直堆叠，拇指友好 */
-  .action-bar { flex-direction: column; align-items: stretch; width: 100%; }
+  .action-bar, .action-row { align-items: stretch; width: 100%; }
   .action-bar .btn { width: 100%; padding: 12px; }
-  .raise-controls, .raise-row { width: 100%; }
+  .raise-panel { width: 100%; }
   .raise-slider { width: auto; flex: 1; }
   .raise-input { flex: 1; width: auto; }
 
