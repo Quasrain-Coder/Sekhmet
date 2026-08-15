@@ -125,7 +125,7 @@ export default function Lobby() {
         return;
       }
       const data = await resp.json();
-      localStorage.setItem('pokerName', name);
+      localStorage.setItem('pokerName', authToken ? authUser : name);
       if (data.owner_token) {
         localStorage.setItem(`ownerToken_${data.table_id}`, data.owner_token);
       }
@@ -178,7 +178,9 @@ export default function Lobby() {
       <div className="lobby-panel">
         <div className="panel-label">New Table</div>
         <div className="lobby-actions">
-          <input className="input" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
+          {!authToken && (
+            <input className="input" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
+          )}
           <select className="input" value={tier.label}
                   onChange={e => {
                     const t = BLIND_TIERS.find(x => x.label === e.target.value)!;
@@ -192,7 +194,7 @@ export default function Lobby() {
           <select className="input" value={maxSeats} onChange={e => setMaxSeats(Number(e.target.value))}>
             {[2, 3, 4, 5, 6, 7, 8, 9].map(n => <option key={n} value={n}>{n} seats</option>)}
           </select>
-          <button className="btn gold" onClick={create} disabled={!name}>+ New Table</button>
+          <button className="btn gold" onClick={create} disabled={!authToken && !name}>+ New Table</button>
         </div>
       </div>
 
@@ -200,7 +202,7 @@ export default function Lobby() {
         {tables.length === 0 && <div className="waiting-text">No active tables. Create one!</div>}
         {tables.map(t => (
           <div key={t.table_id} className="table-card"
-               onClick={() => { localStorage.setItem('pokerName', name); navigate(`/game/${t.table_id}`); }}>
+               onClick={() => { localStorage.setItem('pokerName', authToken ? authUser : name); navigate(`/game/${t.table_id}`); }}>
             <div>
               <span className="id">{t.table_id}</span>
               <div className="info">
