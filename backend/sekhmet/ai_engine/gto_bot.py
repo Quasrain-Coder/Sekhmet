@@ -113,6 +113,10 @@ class GTOBot(BaseBot):
                     return Action(player_idx, ActionType.CALL)
                 return Action(player_idx, ActionType.FOLD)
             opener = self._opener_bucket(state, player_idx)
+            # A big-blind raise over limpers is a strong range — model it
+            # with the tightest (UTG) charts, which have no "bb" key.
+            if opener == "bb":
+                opener = "utg"
             if self._in(rng, hole, THREE_BET[opener]):
                 return self._raise_action(state, player_idx, 3.0)
             if (self._in(rng, hole, CALL_VS_OPEN[opener])
@@ -263,6 +267,11 @@ class GTOBot(BaseBot):
         if aggressor is None or aggressor == player_idx or aggressor not in opps:
             aggressor = opps[0]
         bucket = self._position_bucket(aggressor, state)
+        # The charts are keyed by the named RFI positions; a big-blind
+        # aggressor raised over limpers (strong — model as UTG) or
+        # defended then bet postflop (wide — the defend range below).
+        if bucket == "bb":
+            bucket = "utg"
         if state.phase == GamePhase.PREFLOP:
             if state.current_bet >= state.big_blind * 5:
                 return THREE_BET[bucket]

@@ -254,6 +254,29 @@ def test_missed_draw_on_river_does_not_bluff():
     assert bot.decide(state, 1).type == ActionType.CHECK
 
 
+def test_postflop_bb_aggressor_does_not_crash():
+    """A BB who defended preflop and bets postflop has no RFI bucket —
+    the range lookup must fall back instead of raising KeyError."""
+    bot = GTOBot()
+    hole = [C(14, Suit.SPADES), C(13, Suit.SPADES)]
+    board = [C(10, Suit.CLUBS), C(7, Suit.SPADES), C(2, Suit.HEARTS)]
+    hero = Player(name="Hero", seat_idx=0, stack=400, hole_cards=tuple(hole))
+    botp = Player(name="Bot", seat_idx=1, stack=400,
+                  hole_cards=(C(10, Suit.HEARTS), C(10, Suit.DIAMONDS)))
+    state = GameState(
+        phase=GamePhase.FLOP, players=(hero, botp),
+        community_cards=tuple(board),
+        dealer_idx=0, current_player_idx=0,
+        current_bet=20, min_raise=10,
+        small_blind=5, big_blind=10, sb_seat=0, bb_seat=1,
+        last_aggressor_idx=1,
+        pot=PotState(main_pot=60),
+    )
+    action = bot.decide(state, 0)
+    assert action.player_idx == 0
+    assert action.type in ActionType
+
+
 def test_equity_sanity():
     bot = GTOBot()
     # AA on A72 rainbow vs the aggressor's RFI range — crushing.
