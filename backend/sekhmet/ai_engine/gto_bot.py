@@ -94,13 +94,14 @@ class GTOBot(BaseBot):
         is_sb = state.sb_seat == player_idx
         bucket = self._position_bucket(player_idx, state)
 
-        # Facing a 3-bet or larger (5bb cutoff separates opens from 3-bets).
-        if state.current_bet >= state.big_blind * 5:
+        # Facing a 3-bet or larger.  7bb separates 3-bets from opens —
+        # a 2.5x–3x open (2.5–3bb) must never read as a 3-bet.
+        if state.current_bet >= state.big_blind * 7:
             if self._in(rng, hole, FOUR_BET):
                 return self._raise_action(state, player_idx, 2.5)
             if (self._in(rng, hole, CALL_VS_3BET)
                     and to_call <= state.big_blind * 12):
-                return Action(player_idx, ActionType.CALL)
+                return self._call_action(state, player_idx, to_call)
             return Action(player_idx, ActionType.FOLD)
 
         # Facing a single raise.
@@ -110,7 +111,7 @@ class GTOBot(BaseBot):
                 if self._in(rng, hole, BB_DEFEND_3BET):
                     return self._raise_action(state, player_idx, 3.0)
                 if self._in(rng, hole, BB_DEFEND_CALL):
-                    return Action(player_idx, ActionType.CALL)
+                    return self._call_action(state, player_idx, to_call)
                 return Action(player_idx, ActionType.FOLD)
             opener = self._opener_bucket(state, player_idx)
             # A big-blind raise over limpers is a strong range — model it
@@ -121,7 +122,7 @@ class GTOBot(BaseBot):
                 return self._raise_action(state, player_idx, 3.0)
             if (self._in(rng, hole, CALL_VS_OPEN[opener])
                     and to_call <= state.big_blind * 10):
-                return Action(player_idx, ActionType.CALL)
+                return self._call_action(state, player_idx, to_call)
             return Action(player_idx, ActionType.FOLD)
 
         # Unopened pot.
@@ -135,7 +136,7 @@ class GTOBot(BaseBot):
             if self._in(rng, hole, RFI["sb"]):
                 return self._raise_action(state, player_idx, 3.0)
             if self._in(rng, hole, LIMP_RANGE) and rng.random() < 0.5:
-                return Action(player_idx, ActionType.CALL)
+                return self._call_action(state, player_idx, to_call)
             return Action(player_idx, ActionType.FOLD)
         # Open-raise from position.
         if self._in(rng, hole, RFI[bucket]):
@@ -183,10 +184,10 @@ class GTOBot(BaseBot):
             # Raise the very top for value half the time.
             if equity >= 0.78 and rng.random() < 0.5:
                 return self._raise_action(state, player_idx, 3.0)
-            return Action(player_idx, ActionType.CALL)
+            return self._call_action(state, player_idx, to_call)
         # Draws may chase slightly under the direct price (implied odds).
         if live_draw and equity >= required * 0.6:
-            return Action(player_idx, ActionType.CALL)
+            return self._call_action(state, player_idx, to_call)
         return Action(player_idx, ActionType.FOLD)
 
     # ------------------------------------------------------------------
@@ -267,18 +268,26 @@ class GTOBot(BaseBot):
         if aggressor is None or aggressor == player_idx or aggressor not in opps:
             aggressor = opps[0]
         bucket = self._position_bucket(aggressor, state)
-        # The charts are keyed by the named RFI positions; a big-blind
-        # aggressor raised over limpers (strong — model as UTG) or
-        # defended then bet postflop (wide — the defend range below).
-        if bucket == "bb":
-            bucket = "utg"
+        # A big blind who *raised* preflop is strong (model as UTG, the
+        # tightest chart); a big blind who only defended and then bet
+        # postflop is wide — the defend range.  We cannot tell the two
+        # apart from the flat action log, so postflop uses the wide
+        # defend range (the far more common case) and preflop the tight
+        # one (where a BB bet means they raised).
         if state.phase == GamePhase.PREFLOP:
-            if state.current_bet >= state.big_blind * 5:
+            if bucket == "bb":
+                bucket = "utg"
+            if state.current_bet >= state.big_blind * 7:
                 return THREE_BET[bucket]
             if state.current_bet > state.big_blind:
                 return RFI[bucket]
             return LIMP_RANGE
-        if state.pot.main_pot >= (state.small_blind + state.big_blind) * 3:
+        if bucket == "bb":
+            return BB_DEFEND_CALL
+        # Raised pot (a 2.5bb+ open HU already yields 60+ chips): model
+        # the aggressor with their RFI chart.  A 4-way limped pot stays
+        # below this cutoff and keeps the wide limp range.
+        if state.pot.main_pot >= (state.small_blind + state.big_blind) * 4:
             return RFI[bucket]
         return LIMP_RANGE
 
@@ -309,7 +318,8 @@ class GTOBot(BaseBot):
 
     def _position_bucket(self, seat: int, state: GameState) -> str:
         """Named position bucket for *seat* (blinds first, then by seats
-        acting after it)."""
+        acting after it, scaled to the table size so 6-max and 9-max
+        map onto the same five buckets)."""
         if state.sb_seat == seat:
             return "sb"
         if state.bb_seat == seat:
@@ -317,9 +327,12 @@ class GTOBot(BaseBot):
         after = self._seats_after(seat, state)
         if after == 0:
             return "btn"
-        if after == 1:
+        live = len([p for p in state.players
+                    if p.is_active or p.is_all_in])
+        frac = after / max(live - 1, 1)
+        if frac < 0.35:
             return "co"
-        if after <= 3:
+        if frac < 0.6:
             return "mp"
         return "utg"
 
@@ -344,16 +357,36 @@ class GTOBot(BaseBot):
     @staticmethod
     def _raise_action(state: GameState, player_idx: int, sizing: float) -> Action:
         """RAISE to *sizing* × the bet to match (× big blind when opening),
-        or ALL_IN when that exceeds the stack."""
+        or ALL_IN when that exceeds the stack.
+
+        When an under-raise closed the action for us (we already acted
+        at or above the last full-raise level), the raise is illegal —
+        fall back to a call / short all-in instead.
+        """
+        p = state.player(player_idx)
+        assert p is not None
+        if (player_idx in state.acted_seats
+                and p.current_bet >= state.last_full_raise):
+            to_call = state.current_bet - p.current_bet
+            if to_call == 0:
+                return Action(player_idx, ActionType.CHECK)
+            return GTOBot._call_action(state, player_idx, to_call)
         if state.current_bet > state.big_blind:
             target = int(state.current_bet * sizing)
         else:
             target = int(state.big_blind * sizing)
         target = max(target, state.current_bet + state.min_raise)
-        stack = state.player(player_idx).stack  # type: ignore[union-attr]
-        if target >= stack:
+        if target >= p.stack:
             return Action(player_idx, ActionType.ALL_IN)
         return Action(player_idx, ActionType.RAISE, amount=target)
+
+    @staticmethod
+    def _call_action(state: GameState, player_idx: int, to_call: int) -> Action:
+        """CALL, or ALL_IN when the stack cannot cover the full call."""
+        stack = state.player(player_idx).stack  # type: ignore[union-attr]
+        if to_call >= stack:
+            return Action(player_idx, ActionType.ALL_IN)
+        return Action(player_idx, ActionType.CALL)
 
     @staticmethod
     def _bet_action(

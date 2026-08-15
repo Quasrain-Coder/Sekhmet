@@ -177,6 +177,115 @@ def test_four_bets_and_calls_vs_three_bet():
     assert bot.decide(trash, 1).type == ActionType.FOLD
 
 
+def test_position_buckets_scale_with_table_size():
+    """6-max and 9-max must land on the same five buckets."""
+    bot = GTOBot()
+    hole = [C(14, Suit.HEARTS), C(14, Suit.DIAMONDS)]
+
+    def nine_handed(seat):
+        players = []
+        for i in range(9):
+            players.append(Player(
+                name=f"P{i}", seat_idx=i, stack=400,
+                hole_cards=tuple(hole) if i == seat else (
+                    C(14, Suit.SPADES), C(13, Suit.SPADES))))
+        return GameState(
+            phase=GamePhase.PREFLOP, players=tuple(players),
+            dealer_idx=8, current_player_idx=seat,
+            current_bet=10, min_raise=10,
+            small_blind=5, big_blind=10, sb_seat=0, bb_seat=1,
+            pot=PotState(main_pot=15),
+        )
+
+    # 6-max: seats after button: SB=0 BB=1 UTG=2 MP=3 CO=4 BTN=5
+    assert bot._position_bucket(2, _six_handed(2, hole)) == "utg"
+    assert bot._position_bucket(3, _six_handed(3, hole)) == "mp"
+    assert bot._position_bucket(4, _six_handed(4, hole)) == "co"
+    assert bot._position_bucket(5, _six_handed(5, hole)) == "btn"
+    # 9-max: UTG=3, MP=5, HJ=7, BTN=8
+    assert bot._position_bucket(3, nine_handed(3)) == "utg"
+    assert bot._position_bucket(5, nine_handed(5)) == "mp"
+    assert bot._position_bucket(7, nine_handed(7)) == "co"
+    assert bot._position_bucket(8, nine_handed(8)) == "btn"
+
+
+def test_large_open_is_not_a_three_bet():
+    """A 5bb open (50) must go through the BB-defend charts, not 4-bet."""
+    bot = GTOBot()
+    state = _hu_facing_raise([C(12, Suit.HEARTS), C(8, Suit.CLUBS)],
+                             raise_to=50)
+    assert bot.decide(state, 1).type == ActionType.CALL
+
+
+def test_short_stack_call_becomes_all_in():
+    """Calling when the stack cannot cover the bet must be a short all-in."""
+    bot = GTOBot()
+    hole = [C(14, Suit.HEARTS), C(12, Suit.HEARTS)]  # AQs
+    state = _hu_facing_raise(hole, raise_to=90)
+    players = list(state.players)
+    players[1] = Player(name="Bot", seat_idx=1, stack=30,
+                        hole_cards=tuple(hole),
+                        current_bet=10, total_bet=10)
+    state = GameState(
+        phase=state.phase, players=tuple(players),
+        dealer_idx=state.dealer_idx, current_player_idx=1,
+        current_bet=90, min_raise=10,
+        small_blind=5, big_blind=10, sb_seat=0, bb_seat=1,
+        pot=PotState(main_pot=95),
+    )
+    assert bot.decide(state, 1).type == ActionType.ALL_IN
+
+
+def test_under_raise_no_reopen_falls_back_to_call():
+    """An under-raise closes the action — a wanted raise becomes a call."""
+    from sekhmet.game_engine.action_processor import validate
+    bot = GTOBot()
+    hole = [C(14, Suit.HEARTS), C(13, Suit.HEARTS)]  # AKs: strong draw+overs
+    board = [C(12, Suit.HEARTS), C(11, Suit.HEARTS), C(2, Suit.CLUBS)]
+    state = _postflop(hole, board, current_bet=150, pot=60)
+    players = list(state.players)
+    players[1] = Player(name="Bot", seat_idx=1, stack=400,
+                        hole_cards=tuple(hole),
+                        current_bet=100, total_bet=100)
+    state = GameState(
+        phase=state.phase, players=tuple(players),
+        community_cards=state.community_cards, dealer_idx=0,
+        current_player_idx=1, current_bet=150, min_raise=10,
+        small_blind=5, big_blind=10, sb_seat=0, bb_seat=1,
+        last_aggressor_idx=0, last_full_raise=100,
+        acted_seats=(0, 1), pot=PotState(main_pot=260),
+    )
+    action = bot.decide(state, 1)
+    validate(state, action)  # must be legal — never the illegal raise
+    assert action.type == ActionType.CALL
+
+
+def _bb_aggressor_postflop(bot_hole):
+    """Bot at seat 0 faces a flop bet from the BB (seat 1) in a raised pot."""
+    board = [C(10, Suit.CLUBS), C(7, Suit.SPADES), C(2, Suit.HEARTS)]
+    hero = Player(name="Hero", seat_idx=0, stack=400,
+                  hole_cards=tuple(bot_hole))
+    botp = Player(name="Bot", seat_idx=1, stack=400,
+                  hole_cards=(C(10, Suit.HEARTS), C(10, Suit.DIAMONDS)))
+    return GameState(
+        phase=GamePhase.FLOP, players=(hero, botp),
+        community_cards=tuple(board),
+        dealer_idx=0, current_player_idx=0,
+        current_bet=20, min_raise=10,
+        small_blind=5, big_blind=10, sb_seat=0, bb_seat=1,
+        last_aggressor_idx=1,
+        pot=PotState(main_pot=60),
+    )
+
+
+def test_bb_aggressor_postflop_uses_defend_range():
+    """A BB who defended preflop and bets the flop is wide, not UTG-tight."""
+    bot = GTOBot()
+    hole = [C(14, Suit.SPADES), C(13, Suit.SPADES)]
+    state = _bb_aggressor_postflop(hole)
+    assert bot._opponent_range(state, 0) is BB_DEFEND_CALL
+
+
 def test_bb_option_checks_limped_pot():
     bot = GTOBot()
     hole = [C(9, Suit.HEARTS), C(8, Suit.CLUBS)]
@@ -259,19 +368,7 @@ def test_postflop_bb_aggressor_does_not_crash():
     the range lookup must fall back instead of raising KeyError."""
     bot = GTOBot()
     hole = [C(14, Suit.SPADES), C(13, Suit.SPADES)]
-    board = [C(10, Suit.CLUBS), C(7, Suit.SPADES), C(2, Suit.HEARTS)]
-    hero = Player(name="Hero", seat_idx=0, stack=400, hole_cards=tuple(hole))
-    botp = Player(name="Bot", seat_idx=1, stack=400,
-                  hole_cards=(C(10, Suit.HEARTS), C(10, Suit.DIAMONDS)))
-    state = GameState(
-        phase=GamePhase.FLOP, players=(hero, botp),
-        community_cards=tuple(board),
-        dealer_idx=0, current_player_idx=0,
-        current_bet=20, min_raise=10,
-        small_blind=5, big_blind=10, sb_seat=0, bb_seat=1,
-        last_aggressor_idx=1,
-        pot=PotState(main_pot=60),
-    )
+    state = _bb_aggressor_postflop(hole)
     action = bot.decide(state, 0)
     assert action.player_idx == 0
     assert action.type in ActionType
