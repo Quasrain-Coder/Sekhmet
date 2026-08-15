@@ -188,6 +188,56 @@ def test_bot_sitdown_does_not_hijack_human_seat():
         assert acted, "human never got a turn"
 
 
+async def test_reclaim_rearms_action_timer():
+    """Reclaiming mid-hand restarts the action countdown — the auto-fold
+    must not fire on the stale timer from before the disconnect."""
+    import random
+    from sekhmet.api import table_manager as tm
+
+    random.seed(7)  # deterministic deal: bot calls preflop, hero gets a turn
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+
+    with client.websocket_connect(f"/ws/{tid}") as ws1:
+        ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        token = None
+        for _ in range(10):
+            m = ws1.receive_json()
+            if m["type"] == "reclaim_token":
+                token = m["token"]
+            if m["type"] == "table_state":
+                break
+        assert token is not None
+        ws1.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot",
+                       "buyin": 200, "is_human": False})
+        ws1.send_json({"type": "start_hand"})
+        for _ in range(30):
+            m = ws1.receive_json()
+            if m["type"] == "game_state_update" and m["current_player_idx"] == 0:
+                break
+
+    session = await tm.get_table(tid)
+    old_timer = session.action_timer
+    assert old_timer is not None  # hero's turn → timer armed
+
+    # TestClient never pumps the server-side close frame, so simulate what
+    # the server does when it notices the dead socket.
+    await tm.handle_disconnect(tid, 0)
+    session = await tm.get_table(tid)
+    assert 0 in session.disconnected
+
+    with client.websocket_connect(f"/ws/{tid}") as ws2:
+        ws2.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero",
+                       "reclaim_token": token})
+        for _ in range(10):
+            m = ws2.receive_json()
+            if m["type"] == "reclaim_token":
+                break
+
+    session = await tm.get_table(tid)
+    assert session.action_timer is not None
+    assert session.action_timer is not old_timer  # re-armed, not the stale one
+    session.action_timer.cancel()
 def test_non_owner_cannot_add_bots():
     """Only the table owner may add bot seats — strangers can't spam a room."""
     client = TestClient(app)

@@ -82,6 +82,11 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         await tm.send_to_player(
                             table_id, seat, tm._state_broadcast(session),
                         )
+                        # Re-arm the action timer: the countdown kept ticking
+                        # through the disconnect, and the auto check/fold
+                        # would otherwise fire mid-thought (still counting
+                        # as a timeout against the reclaimer).
+                        tm.schedule_action_timeout(session)
                         continue
 
                     # Only the room owner may fill seats with bots —
