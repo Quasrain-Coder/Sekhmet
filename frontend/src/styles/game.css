@@ -171,10 +171,32 @@ select.input { width: auto; }
 .card .pip { font-size: 1.3rem; }
 .card-black { border: 1.5px solid var(--cyan); color: var(--text); box-shadow: 0 0 12px rgba(34, 211, 238, 0.4); }
 .card-red { border: 1.5px solid var(--rose); color: var(--rose); box-shadow: 0 0 12px rgba(251, 113, 133, 0.4); }
+/* 牌背（暗夜霓虹）：深蓝渐变底 + 青色菱格纹 + 发光黑桃徽记 + 内框 */
 .card-back {
-  border: 1.5px solid #155e75;
-  background: repeating-linear-gradient(45deg, #0b1424, #0b1424 4px, #0e1a2e 4px, #0e1a2e 8px);
+  border: 1px solid rgba(34, 211, 238, 0.5);
+  background: linear-gradient(135deg, #0e2240 0%, #081120 55%, #0c1c36 100%);
+  box-shadow:
+    0 0 10px rgba(34, 211, 238, 0.28),
+    inset 0 0 0 1px rgba(34, 211, 238, 0.12),
+    inset 0 0 14px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
 }
+.card-back::before {  /* 菱格纹（双向斜线交叉） */
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 4px, rgba(34, 211, 238, 0.14) 4px 5px),
+    repeating-linear-gradient(-45deg, transparent 0 4px, rgba(34, 211, 238, 0.14) 4px 5px);
+}
+.card-back::after {  /* 中央黑桃徽记 */
+  content: '♠';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(165, 243, 252, 0.85);
+  text-shadow: 0 0 7px rgba(34, 211, 238, 0.85);
+  font-size: 20px;
+}
+.card-back.small::after { font-size: 14px; }
 .card.big { width: 52px; height: 74px; }
 .card.big .pip { font-size: 1.6rem; }
 .card.big .corner { font-size: 0.72rem; }
@@ -229,8 +251,28 @@ select.input { width: auto; }
 }
 .hole-card {
   width: 24px; height: 34px; border-radius: 4px; display: inline-block;
-  border: 1.5px solid #155e75;
-  background: repeating-linear-gradient(45deg, #0b1424, #0b1424 4px, #0e1a2e 4px, #0e1a2e 8px);
+  position: relative; overflow: hidden;
+  border: 1px solid rgba(34, 211, 238, 0.5);
+  background: linear-gradient(135deg, #0e2240 0%, #081120 55%, #0c1c36 100%);
+  box-shadow:
+    0 0 6px rgba(34, 211, 238, 0.25),
+    inset 0 0 0 1px rgba(34, 211, 238, 0.12),
+    inset 0 0 10px rgba(0, 0, 0, 0.55);
+}
+.hole-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 3px, rgba(34, 211, 238, 0.16) 3px 4px),
+    repeating-linear-gradient(-45deg, transparent 0 3px, rgba(34, 211, 238, 0.16) 3px 4px);
+}
+.hole-card::after {
+  content: '♠';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(165, 243, 252, 0.85);
+  text-shadow: 0 0 5px rgba(34, 211, 238, 0.8);
+  font-size: 10px;
 }
 /* 摊牌亮牌：对手牌背翻成明牌 */
 .revealed-cards .card {
@@ -469,6 +511,8 @@ select.input { width: auto; }
   .card.big { width: 40px; height: 57px; }
   .card.big .pip { font-size: 1.2rem; }
   .hole-card { width: 18px; height: 26px; }
+  .hole-card::after { font-size: 8px; }
+  .card-back::after { font-size: 14px; }
 
   /* 动作栏：垂直堆叠，拇指友好 */
   .action-bar { flex-direction: column; align-items: stretch; width: 100%; }
