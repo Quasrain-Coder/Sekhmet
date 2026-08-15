@@ -186,3 +186,31 @@ def test_bot_sitdown_does_not_hijack_human_seat():
 
         assert saw_error is None, f"server error: {saw_error}"
         assert acted, "human never got a turn"
+
+
+def test_broadcasts_carry_min_raise_and_activity_flags():
+    """hand_start/game_state_update must include min_raise and per-player
+    activity flags — the frontend renders the action slider floor and the
+    folded styling from these fields."""
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        ws.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot",
+                      "buyin": 200, "is_human": False})
+        ws.send_json({"type": "start_hand"})
+        saw_hand_start = saw_update = False
+        for _ in range(30):
+            msg = ws.receive_json()
+            if msg["type"] == "hand_start":
+                saw_hand_start = True
+                assert msg["min_raise"] > 0
+                for p in msg["players"]:
+                    assert p["is_active"] is True
+                    assert p["is_all_in"] is False
+            elif msg["type"] in ("game_state_update", "hand_result"):
+                saw_update = True
+                assert msg["min_raise"] > 0
+                break
+        assert saw_hand_start, "never received hand_start"
+        assert saw_update, "never received game_state_update"

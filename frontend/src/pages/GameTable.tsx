@@ -258,6 +258,7 @@ export default function GameTablePage() {
       <ActionBar
         isMyTurn={state.currentPlayerIdx === state.mySeat}
         currentBet={state.currentBet}
+        minRaise={state.minRaise}
         myStack={me?.stack ?? 0}
         myCurrentBet={me?.current_bet ?? 0}
         bigBlind={state.config?.big_blind ?? 10}
