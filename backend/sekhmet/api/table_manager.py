@@ -278,12 +278,8 @@ async def sit_down(
     return _table_summary(session)
 
 
-async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
-    """Remove a player from the table."""
-    session = await get_table(table_id)
-    if session is None:
-        raise GameError(f"Table {table_id} not found")
-
+def _stand_up_locked(session: TableSession, seat_idx: int) -> None:
+    """Remove a seat from *session* — caller must hold ``session.lock``."""
     session.player_names.pop(seat_idx, None)
     session.clients.pop(seat_idx, None)
     session.bot_levels.pop(seat_idx, None)
@@ -295,6 +291,23 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
     players = tuple(p for p in session.game_state.players if p.seat_idx != seat_idx)
     session.game_state = session.game_state.with_players(players)
     _reassign_owner(session)
+
+
+async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
+    """Remove a player from the table (between hands only).
+
+    Ripping a seat out of ``game_state.players`` mid-hand would wedge the
+    betting round — the caller must check the phase first; this guard is
+    the backstop that closes the race with a concurrent ``start_hand``.
+    """
+    session = await get_table(table_id)
+    if session is None:
+        raise GameError(f"Table {table_id} not found")
+
+    async with session.lock:
+        if session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+            raise GameError("Table is mid-hand — cannot remove a seat")
+        _stand_up_locked(session, seat_idx)
 
     return _table_summary(session)
 
@@ -376,7 +389,13 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
     mid_hand = gs.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN)
 
     if not mid_hand:
-        await stand_up(table_id, seat_idx)
+        # stand_up re-checks the phase under the lock — a start_hand that
+        # slips in between this check and the removal loses the race and
+        # the seat stays until the next expiry attempt.
+        try:
+            await stand_up(table_id, seat_idx)
+        except GameError:
+            return
         await broadcast(table_id, _table_summary(session))
         return
 
@@ -388,7 +407,10 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
         # auto_bot_actions both do read → modify → write on game_state;
         # interleaving them double-pays the pot or resurrects pre-surgery
         # state.  Re-read the state inside the lock — the hand may have
-        # ended (runout finished) while we waited.
+        # ended (runout finished) while we waited.  The identity mappings
+        # are popped under the same lock so a concurrent start_hand (which
+        # now also takes the lock) can never deal a ghost seat whose
+        # identity vanished between its purge check and the deal.
         async with session.lock:
             gs = session.game_state
             was_showdown = gs.phase == GamePhase.SHOWDOWN
@@ -410,12 +432,27 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
                         if gs.n_active <= 1:
                             gs = gs.with_phase(GamePhase.SHOWDOWN)
                     session.game_state = gs
+            # Identity mappings go now; the folded shell stays in
+            # game_state.players until the hand ends (start_hand purges it
+            # before the next deal).
+            session.player_names.pop(seat_idx, None)
+            session.stats.pop(seat_idx, None)
+            session.total_buyin.pop(seat_idx, None)
+            session.bot_levels.pop(seat_idx, None)
+            session.reclaim_tokens.pop(seat_idx, None)
+            session.consecutive_timeouts.pop(seat_idx, None)
+            # Drop the kicked player's socket or they keep receiving
+            # broadcasts for a seat they no longer hold (the 'kicked'
+            # notice already went out at entry).  Grace expiry popped it
+            # in handle_disconnect, so this is a no-op on that path.
+            session.clients.pop(seat_idx, None)
+            _reassign_owner(session)
 
-            # Resolve only a showdown we just caused under the lock —
-            # if the hand was already at SHOWDOWN when we acquired it,
-            # the runout/action path that got it there owns the payout.
-            if not was_showdown and session.game_state.phase == GamePhase.SHOWDOWN:
-                result = _resolve_showdown(session)
+        # Resolve only a showdown we just caused under the lock —
+        # if the hand was already at SHOWDOWN when we acquired it,
+        # the runout/action path that got it there owns the payout.
+        if not was_showdown and session.game_state.phase == GamePhase.SHOWDOWN:
+            result = _resolve_showdown(session)
         await broadcast(table_id, _state_broadcast(session, result))
         # after_action → auto_bot_actions takes session.lock itself; it must
         # be called only after the critical section above has released it.
@@ -426,22 +463,6 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
             seat_idx, table_id,
         )
     finally:
-        # Identity mappings go now; the folded shell stays until the hand ends
-        # (start_hand purges it before the next deal).  This cleanup must run
-        # even if the engine calls above raised — otherwise the seat ends up
-        # neither reclaimable nor removable.
-        session.player_names.pop(seat_idx, None)
-        session.stats.pop(seat_idx, None)
-        session.total_buyin.pop(seat_idx, None)
-        session.bot_levels.pop(seat_idx, None)
-        session.reclaim_tokens.pop(seat_idx, None)
-        session.consecutive_timeouts.pop(seat_idx, None)
-        # Drop the kicked player's socket or they keep receiving broadcasts
-        # for a seat they no longer hold (the 'kicked' notice already went
-        # out at entry).  Grace expiry popped it in handle_disconnect, so
-        # this is a no-op on that path.
-        session.clients.pop(seat_idx, None)
-        _reassign_owner(session)
         await broadcast(table_id, _table_summary(session))
 
 
@@ -484,41 +505,48 @@ async def start_hand(table_id: str) -> dict[str, Any]:
     if session is None:
         raise GameError(f"Table {table_id} not found")
 
-    if session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
-        raise GameError(f"Cannot start hand during {session.game_state.phase.name}")
+    # The whole deal is one critical section: a grace-expiry popping its
+    # identity mappings between our purge check and the deal would deal a
+    # ghost seat into the new hand (a player who no longer exists acts
+    # out the hand via the action timer).  _expire_seat now does its
+    # surgery + identity pops under the same lock, so the interleaving
+    # window is closed.
+    async with session.lock:
+        if session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+            raise GameError(f"Cannot start hand during {session.game_state.phase.name}")
 
-    if len(session.player_seats()) < 2:
-        raise GameError("Need at least 2 players to start a hand")
+        if len(session.player_seats()) < 2:
+            raise GameError("Need at least 2 players to start a hand")
 
-    # Purge shells of players removed mid-hand (grace expiry) before dealing.
-    live = tuple(
-        p for p in session.game_state.players
-        if p.seat_idx in session.player_names
-    )
-    if len(live) != len(session.game_state.players):
-        session.game_state = session.game_state.with_players(live)
+        # Purge shells of players removed mid-hand (grace expiry) before dealing.
+        live = tuple(
+            p for p in session.game_state.players
+            if p.seat_idx in session.player_names
+        )
+        if len(live) != len(session.game_state.players):
+            session.game_state = session.game_state.with_players(live)
 
-    # Fresh deck, shuffle, deal
-    session.deck = Deck()
-    session.deck.shuffle()
-    dealer = session.game_state.dealer_idx
+        # Fresh deck, shuffle, deal
+        session.deck = Deck()
+        session.deck.shuffle()
+        dealer = session.game_state.dealer_idx
 
-    # Advance dealer button
-    seats = session.player_seats()
-    if dealer in seats:
-        idx = seats.index(dealer)
-        dealer = seats[(idx + 1) % len(seats)]
+        # Advance dealer button
+        seats = session.player_seats()
+        if dealer in seats:
+            idx = seats.index(dealer)
+            dealer = seats[(idx + 1) % len(seats)]
 
-    session.game_state = deal_new_hand(
-        session.game_state,
-        session.deck.cards[:],
-        dealer_idx=dealer,
-    )
-    session.deck.cards = list(session.game_state.deck)
+        session.game_state = deal_new_hand(
+            session.game_state,
+            session.deck.cards[:],
+            dealer_idx=dealer,
+        )
+        session.deck.cards = list(session.game_state.deck)
 
-    for p in session.game_state.players:
-        if p.seat_idx in session.stats:
-            session.stats[p.seat_idx].hands += 1
+        for p in session.game_state.players:
+            if p.seat_idx in session.stats:
+                session.stats[p.seat_idx].hands += 1
 
     return _hand_start_broadcast(session)
 
@@ -541,13 +569,16 @@ async def handle_player_action(
 
     at = ActionType[action_type.upper()]
     action = Action(player_idx=seat_idx, type=at, amount=amount)
-    session.game_state = execute(session.game_state, action)
-    session.consecutive_timeouts[seat_idx] = 0  # 主动行动清零连续超时计数
+    # Same critical section as auto_bot_actions/_expire_seat — a human
+    # action must not interleave with the bot loop or the grace surgery.
+    async with session.lock:
+        session.game_state = execute(session.game_state, action)
+        session.consecutive_timeouts[seat_idx] = 0  # 主动行动清零连续超时计数
 
-    # If we reached showdown, evaluate hands and award pot
-    result = None
-    if session.game_state.phase == GamePhase.SHOWDOWN:
-        result = _resolve_showdown(session)
+        # If we reached showdown, evaluate hands and award pot
+        result = None
+        if session.game_state.phase == GamePhase.SHOWDOWN:
+            result = _resolve_showdown(session)
 
     return _state_broadcast(session, result)
 
@@ -741,7 +772,9 @@ async def broadcast(table_id: str, message: dict[str, Any]) -> None:
         return
 
     dead: list[int] = []
-    for seat, ws in session.clients.items():
+    # Snapshot: a sit_down/reclaim can mutate clients while we await
+    # send_json below, and mutating a dict mid-iteration raises.
+    for seat, ws in list(session.clients.items()):
         try:
             await ws.send_json(message)
         except Exception:
