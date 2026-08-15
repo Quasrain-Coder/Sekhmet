@@ -42,6 +42,7 @@ from ..game_engine import (
     runout_step,
 )
 from ..game_engine.pot_manager import PotAward, create_side_pots, award_pot
+from ..ai_engine.stats_tracker import OpponentStatsTracker
 from ..models import recorder
 
 
@@ -103,6 +104,8 @@ class TableSession:
     config: TableConfig = field(default_factory=TableConfig)
     bot_levels: dict[int, int] = field(default_factory=dict)  # seat_idx → 1-3
     stats: dict[int, PlayerStats] = field(default_factory=dict)      # seat_idx → stats
+    # Cross-hand opponent model fed to the bots (VPIP/PFR/fold rates).
+    tracker: OpponentStatsTracker = field(default_factory=OpponentStatsTracker)
     # Seats occupied while a hand was in progress — they join the roster at
     # the next deal (never added to game_state mid-hand).
     pending_seats: set[int] = field(default_factory=set)
@@ -335,6 +338,7 @@ def _stand_up_locked(session: TableSession, seat_idx: int) -> None:
     session.send_locks.pop(seat_idx, None)
     session.bot_levels.pop(seat_idx, None)
     session.stats.pop(seat_idx, None)
+    session.tracker.stats.pop(seat_idx, None)
     session.total_buyin.pop(seat_idx, None)
     session.reclaim_tokens.pop(seat_idx, None)
     session.consecutive_timeouts.pop(seat_idx, None)
@@ -514,6 +518,7 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
             # before the next deal).
             session.player_names.pop(seat_idx, None)
             session.stats.pop(seat_idx, None)
+            session.tracker.stats.pop(seat_idx, None)
             session.total_buyin.pop(seat_idx, None)
             session.bot_levels.pop(seat_idx, None)
             session.reclaim_tokens.pop(seat_idx, None)
@@ -643,6 +648,12 @@ async def start_hand(table_id: str) -> dict[str, Any]:
             if p.seat_idx in session.stats:
                 session.stats[p.seat_idx].hands += 1
 
+        # Start a fresh hand in the opponent model (folds the previous
+        # hand's scratch flags into the VPIP/PFR counters).
+        session.tracker.new_hand(
+            [p.seat_idx for p in session.game_state.players]
+        )
+
     return _hand_start_broadcast(session)
 
 
@@ -667,7 +678,9 @@ async def handle_player_action(
     # Same critical section as auto_bot_actions/_expire_seat — a human
     # action must not interleave with the bot loop or the grace surgery.
     async with session.lock:
+        pre = session.game_state
         session.game_state = execute(session.game_state, action)
+        session.tracker.observe(pre, action)
         session.consecutive_timeouts[seat_idx] = 0  # 主动行动清零连续超时计数
 
         # If we reached showdown, evaluate hands and award pot
@@ -749,9 +762,11 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
             bot_name = session.player_names.get(cur_idx, f"Bot{cur_idx}")
             level = session.bot_levels.get(cur_idx, 2)
             try:
-                bot = create_bot(f"rule_lv{level}")
+                bot = create_bot(f"rule_lv{level}", stats=session.tracker)
                 action = bot.decide(gs, cur_idx)
+                pre_gs = gs
                 gs = execute(gs, action)
+                session.tracker.observe(pre_gs, action)
             except GameError:
                 logger.warning(
                     "Bot %s produced an illegal action at table %s — falling back",
