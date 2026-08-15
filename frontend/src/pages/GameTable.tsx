@@ -337,76 +337,81 @@ export default function GameTablePage() {
         </button>
       </div>
 
-      <OvalTable
-        seats={state.seats}
-        players={state.players}
-        maxSeats={state.maxSeats}
-        communityCards={state.communityCards}
-        pot={state.pot}
-        currentPlayerIdx={state.currentPlayerIdx}
-        dealerIdx={state.dealerIdx}
-        sbSeat={state.sbSeat}
-        bbSeat={state.bbSeat}
-        mySeat={state.mySeat}
-        holeCards={state.holeCards}
-        phase={state.phase}
-        showdownHoleCards={state.showdown?.hole_cards}
-        onAddBot={addBot}
-        onKickBot={kickBot}
-      />
+      <div className="table-area">
+        <OvalTable
+          seats={state.seats}
+          players={state.players}
+          maxSeats={state.maxSeats}
+          communityCards={state.communityCards}
+          pot={state.pot}
+          currentPlayerIdx={state.currentPlayerIdx}
+          dealerIdx={state.dealerIdx}
+          sbSeat={state.sbSeat}
+          bbSeat={state.bbSeat}
+          mySeat={state.mySeat}
+          holeCards={state.holeCards}
+          phase={state.phase}
+          showdownHoleCards={state.showdown?.hole_cards}
+          onAddBot={addBot}
+          onKickBot={kickBot}
+        />
 
-      <Leaderboard seats={state.seats} />
-
-      <ActionBar
-        isMyTurn={state.currentPlayerIdx === state.mySeat}
-        turnEpoch={state.turnEpoch}
-        currentBet={state.currentBet}
-        minRaise={state.minRaise}
-        pot={state.pot}
-        myStack={me?.stack ?? 0}
-        myCurrentBet={me?.current_bet ?? 0}
-        bigBlind={state.config?.big_blind ?? 10}
-        onAction={handleAction}
-      />
-
-      {me && me.stack === 0 && (state.phase === 'WAITING' || state.phase === 'SHOWDOWN') && (
-        <div className="rebuy-panel">
-          <span className="rebuy-label">You're busted.</span>
-          <input className="input" type="number" value={rebuyAmount}
-                 onChange={e => setRebuyAmount(Number(e.target.value))} />
-          <button className="btn gold"
-                  onClick={() => send({ type: 'rebuy', amount: rebuyAmount })}>
-            Rebuy
-          </button>
-        </div>
-      )}
-
-      {state.showdown && (
-        <div className="hand-result">
-          <h3>Showdown</h3>
-          {Object.entries(state.showdown.hands).map(([s, h]) => (
-            <div key={s}>Seat {s}: {h}</div>
-          ))}
-          {state.showdown.awards.map((a, i) => (
-            <div key={i} className="award">
-              <span className="winner">Seat {a.seat_idx} wins {a.amount}</span>
-              <span>{a.hand}</span>
-            </div>
-          ))}
-          {state.phase === 'SHOWDOWN' && (
-            <button className="btn gold next-hand"
-                    onClick={() => send({ type: 'start_hand' })}>
-              Next Hand
+        {me && me.stack === 0 && (state.phase === 'WAITING' || state.phase === 'SHOWDOWN') && (
+          <div className="rebuy-panel">
+            <span className="rebuy-label">You're busted.</span>
+            <input className="input" type="number" value={rebuyAmount}
+                   onChange={e => setRebuyAmount(Number(e.target.value))} />
+            <button className="btn gold"
+                    onClick={() => send({ type: 'rebuy', amount: rebuyAmount })}>
+              Rebuy
             </button>
-          )}
-        </div>
-      )}
+          </div>
+        )}
 
-      <div className="history">
-        {state.roundHistory.map((h, i) => (
-          <span key={i}>P{h.seat} {h.action}{h.amount > 0 ? ` ${h.amount}` : ''} · </span>
-        ))}
+        {state.showdown && (
+          <div className="hand-result">
+            <h3>Showdown</h3>
+            {Object.entries(state.showdown.hands).map(([s, h]) => (
+              <div key={s}>Seat {s}: {h}</div>
+            ))}
+            {state.showdown.awards.map((a, i) => (
+              <div key={i} className="award">
+                <span className="winner">Seat {a.seat_idx} wins {a.amount}</span>
+                <span>{a.hand}</span>
+              </div>
+            ))}
+            {state.phase === 'SHOWDOWN' && (
+              <button className="btn gold next-hand"
+                      onClick={() => send({ type: 'start_hand' })}>
+                Next Hand
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      <div className="action-area">
+        <ActionBar
+          isMyTurn={state.currentPlayerIdx === state.mySeat}
+          turnEpoch={state.turnEpoch}
+          currentBet={state.currentBet}
+          minRaise={state.minRaise}
+          pot={state.pot}
+          myStack={me?.stack ?? 0}
+          myCurrentBet={me?.current_bet ?? 0}
+          bigBlind={state.config?.big_blind ?? 10}
+          onAction={handleAction}
+        />
+      </div>
+
+      <aside className="side-panel">
+        <Leaderboard seats={state.seats} />
+        <div className="history">
+          {state.roundHistory.map((h, i) => (
+            <span key={i}>P{h.seat} {h.action}{h.amount > 0 ? ` ${h.amount}` : ''} · </span>
+          ))}
+        </div>
+      </aside>
 
       <Toast items={toasts} onDismiss={dismissToast} />
     </div>

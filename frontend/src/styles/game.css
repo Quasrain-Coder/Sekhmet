@@ -23,7 +23,7 @@ body {
 }
 
 /* ---- Layout ---- */
-.app { max-width: 960px; margin: 0 auto; padding: 16px; }
+.app { max-width: 1440px; margin: 0 auto; padding: 16px; }
 .page-title {
   font-size: 1.2rem; color: var(--cyan-text); letter-spacing: 4px;
   margin-bottom: 16px; text-transform: uppercase;
@@ -103,8 +103,23 @@ select.input { width: auto; }
 .join-panel .lobby-actions { justify-content: center; margin-top: 14px; }
 .join-hint { color: var(--gold-text); font-size: 0.85rem; margin-top: 10px; }
 
-/* ---- Game table page ---- */
-.game-table { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+/* ---- Game table page ----
+   宽屏：牌桌占主体（左侧，随窗口放大），排行榜与牌局记录在右侧栏，
+   动作栏紧贴牌桌下方。窄屏（<1024px）回退为垂直堆叠。 */
+.game-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-areas:
+    "head    head"
+    "table   side"
+    "actions side";
+  gap: 16px;
+  align-items: start;
+}
+.table-head { grid-area: head; }
+.table-area { grid-area: table; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.action-area { grid-area: actions; display: flex; justify-content: center; }
+.side-panel { grid-area: side; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
 .table-head { display: flex; justify-content: space-between; width: 100%; align-items: center; }
 .table-head .logo {
   font-size: 0.75rem; letter-spacing: 3px; color: var(--cyan-text);
@@ -114,7 +129,7 @@ select.input { width: auto; }
 
 /* ---- The table: capsule racetrack shape ---- */
 .table-felt {
-  position: relative; width: 100%; max-width: 780px; aspect-ratio: 2.35 / 1;
+  position: relative; width: 100%; max-width: 1100px; aspect-ratio: 2.35 / 1;
   border-radius: 999px;
   background: #0a1018;                                   /* 扶手垫基底 */
   box-shadow:
@@ -396,9 +411,19 @@ select.input { width: auto; }
 .award { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 2px 0; }
 .award .winner { color: var(--gold-text); }
 .history { font-size: 0.75rem; color: var(--text-dim); max-height: 80px; overflow-y: auto; }
+/* 侧栏中的行动记录：加高成小日志面板 */
+.side-panel .history {
+  max-height: 300px;
+  background: rgba(34, 211, 238, 0.04);
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  border-radius: 8px;
+  padding: 8px 12px;
+  line-height: 1.6;
+}
 
 /* ---- Leaderboard ---- */
 .leaderboard { width: 100%; max-width: 780px; }
+.side-panel .leaderboard { max-width: none; }
 .lb-toggle {
   background: transparent; border: 1.5px solid var(--cyan-dim); color: var(--cyan-text);
   border-radius: 6px; padding: 5px 14px; font-size: 0.75rem; cursor: pointer;
@@ -518,6 +543,23 @@ select.input { width: auto; }
 .toast-error { border: 1.5px solid var(--rose); color: #fecdd3; box-shadow: 0 0 14px rgba(251, 113, 133, 0.25); }
 .toast-info { border: 1.5px solid var(--cyan); color: var(--cyan-text); box-shadow: 0 0 14px rgba(34, 211, 238, 0.25); }
 @keyframes toast-in { from { transform: translateX(30px); opacity: 0; } }
+
+/* ---- 窄屏（<1024px）：牌桌页回退为垂直堆叠 ---- */
+@media (max-width: 1023px) {
+  .game-table { display: flex; flex-direction: column; align-items: center; }
+  .table-area, .action-area, .side-panel { width: 100%; }
+  .side-panel .history { max-height: 80px; }
+}
+
+/* ---- 宽屏（≥1200px）：随牌桌放大座位与牌面 ---- */
+@media (min-width: 1200px) {
+  .card { width: 48px; height: 68px; }
+  .card.big { width: 58px; height: 82px; }
+  .player-seat .avatar { width: 46px; height: 46px; }
+  .player-seat.me .avatar { width: 54px; height: 54px; }
+  /* hero 悬出的手牌更高，留足下方空间 */
+  .table-felt { margin-bottom: 92px; }
+}
 
 /* ---- Mobile (≤768px) ---- */
 @media (max-width: 768px) {
