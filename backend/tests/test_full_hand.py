@@ -209,7 +209,7 @@ def test_side_pots_with_uneven_all_ins():
         for p in state.players
         if p.is_active
     }
-    awards = award_pot(pots, state.players, hands)
+    awards = award_pot(pots, state.players, hands, state.dealer_idx)
     assert sum(a.amount for a in awards) == 450  # every chip awarded
 
 
