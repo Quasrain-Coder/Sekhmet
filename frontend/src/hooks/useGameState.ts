@@ -88,6 +88,7 @@ interface AppState {
   tableId: string | null;
   maxSeats: number;
   connected: boolean;
+  turnEpoch: number;
   seats: SeatInfo[];
   config: TableConfigData | null;
   dealerIdx: number | null;
@@ -103,7 +104,8 @@ type Action =
   | { type: 'GAME_UPDATE'; data: GameMsg & { type: 'game_state_update' } }
   | { type: 'HAND_RESULT'; data: GameMsg & { type: 'hand_result' } }
   | { type: 'SET_MY_SEAT'; seat: number | null }
-  | { type: 'SET_CONNECTED'; connected: boolean };
+  | { type: 'SET_CONNECTED'; connected: boolean }
+  | { type: 'BUMP_TURN_EPOCH' };
 
 export const initialState: AppState = {
   phase: 'WAITING',
@@ -119,6 +121,7 @@ export const initialState: AppState = {
   tableId: null,
   maxSeats: 9,
   connected: false,
+  turnEpoch: 0,
   seats: [],
   config: null,
   dealerIdx: null,
@@ -180,6 +183,10 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, mySeat: action.seat };
     case 'SET_CONNECTED':
       return { ...state, connected: action.connected };
+    case 'BUMP_TURN_EPOCH':
+      // Server re-armed the action countdown (reclaim mid-turn) — the
+      // ActionBar restarts its local clock when this changes.
+      return { ...state, turnEpoch: state.turnEpoch + 1 };
     default:
       return state;
   }

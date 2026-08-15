@@ -89,6 +89,7 @@ export default function GameTablePage() {
         case 'game_state_update': dispatch({ type: 'GAME_UPDATE', data: m as any }); break;
         case 'hand_result': dispatch({ type: 'HAND_RESULT', data: m as any }); break;
         case 'reclaim_token':
+          dispatch({ type: 'BUMP_TURN_EPOCH' });
           localStorage.setItem(`reclaimToken_${tableId}`, m.token);
           // The server assigns the seat authoritatively — on reclaim it is
           // the OLD seat, which may differ from the picker selection.
@@ -257,6 +258,7 @@ export default function GameTablePage() {
 
       <ActionBar
         isMyTurn={state.currentPlayerIdx === state.mySeat}
+        turnEpoch={state.turnEpoch}
         currentBet={state.currentBet}
         myStack={me?.stack ?? 0}
         myCurrentBet={me?.current_bet ?? 0}
