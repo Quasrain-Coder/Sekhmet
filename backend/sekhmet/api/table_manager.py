@@ -284,8 +284,8 @@ async def sit_down(
 
     if not is_human:
         level = 2 if bot_level is None else int(bot_level)
-        if level not in (1, 2, 3):
-            raise GameError(f"bot_level must be 1-3, got {bot_level}")
+        if level not in (1, 2, 3, 4):
+            raise GameError(f"bot_level must be 1-4, got {bot_level}")
         session.bot_levels[seat_idx] = level
 
     stack = buyin if buyin is not None else session.config.default_buyin
@@ -762,7 +762,8 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
             bot_name = session.player_names.get(cur_idx, f"Bot{cur_idx}")
             level = session.bot_levels.get(cur_idx, 2)
             try:
-                bot = create_bot(f"rule_lv{level}", stats=session.tracker)
+                bot_name = "gto_lv4" if level == 4 else f"rule_lv{level}"
+                bot = create_bot(bot_name, stats=session.tracker)
                 action = bot.decide(gs, cur_idx)
                 pre_gs = gs
                 gs = execute(gs, action)
