@@ -51,8 +51,9 @@ export default function OvalTable({
   }, [canAddBot]);
   const total = Math.min(Math.max(maxSeats, 2), 9);
   const occupied = new Map(seats.map(s => [s.seat_idx, s]));
-  // Card backs exist from deal through showdown; they clear in WAITING.
-  const handLive = phase !== 'WAITING' && phase !== 'SHOWDOWN';
+  // Card backs persist from the deal through showdown (players are still
+  // holding their cards); they clear once the table returns to WAITING.
+  const handLive = phase !== 'WAITING';
   // Deal-animation trigger: fires on the WAITING/SHOWDOWN → DEALING/PREFLOP
   // transition (a new hand).  Reclaims mid-hand never fire it — prevPhase
   // initialises to the current phase, so only a real transition counts.
