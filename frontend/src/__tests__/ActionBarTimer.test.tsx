@@ -6,6 +6,7 @@ const baseProps = {
   myStack: 200,
   myCurrentBet: 0,
   bigBlind: 10,
+  minRaise: 20,
   onAction: vi.fn(),
 };
 
