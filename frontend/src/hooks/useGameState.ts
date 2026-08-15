@@ -21,6 +21,10 @@ export interface SeatInfo {
   net_chips: number;
   connected: boolean;
   is_owner: boolean;
+  // Live in-hand flags (table_info detail, join-panel preview)
+  current_bet?: number;
+  is_active?: boolean;
+  is_all_in?: boolean;
 }
 
 export interface TableConfigData {

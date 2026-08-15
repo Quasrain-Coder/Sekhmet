@@ -317,3 +317,46 @@ def test_rest_create_returns_owner_token_and_ws_claims_it():
         assert msg["type"] == "table_state"
         owner = [s for s in msg["seats"] if s["is_owner"]]
         assert owner[0]["seat_idx"] == 5
+
+
+async def test_table_info_exposes_live_public_state():
+    """REST detail (join panel) carries the public in-hand state: community
+    cards, pot, position tags and per-seat in-hand flags."""
+    from sekhmet.api import table_manager as tm
+    from sekhmet.game_engine import GamePhase
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+
+    # Between hands: empty board, no pot, no one to act (the dealer button
+    # is already assigned)
+    info = tm.table_info(await tm.get_table(tid))
+    assert info["community_cards"] == []
+    assert info["pot"] == 0
+    assert info["current_player_idx"] is None
+    assert info["dealer_idx"] == 0
+
+    # Check/call down to the flop (drives bots directly — the engine's
+    # after_action cascade handles their turns too)
+    await tm.start_hand(tid)
+    session = await tm.get_table(tid)
+    gs = session.game_state
+    while gs.phase == GamePhase.PREFLOP:
+        cur = gs.current_player_idx
+        p = gs.player(cur)
+        await tm.handle_player_action(tid, cur,
+                                      "CALL" if gs.current_bet > p.current_bet else "CHECK")
+        session = await tm.get_table(tid)
+        gs = session.game_state
+
+    info = tm.table_info(session)
+    assert info["phase"] == "FLOP"
+    assert len(info["community_cards"]) == 3
+    assert info["pot"] == 20
+    assert info["dealer_idx"] is not None
+    assert info["sb_seat"] is not None and info["bb_seat"] is not None
+    seat0 = next(s for s in info["seats"] if s["seat_idx"] == 0)
+    assert seat0["is_active"] is True
+    assert seat0["is_all_in"] is False
+    assert seat0["current_bet"] == 0  # fresh street

@@ -66,7 +66,10 @@ def test_complete_game_journey():
             "bot_level": None, "stack": 2000,
             "hands": 0, "wins": 0, "net_chips": 0, "connected": True,
             "is_owner": True,
+            "current_bet": 0, "is_active": True, "is_all_in": False,
         }]
+        # public in-hand state is exposed for the join-panel preview
+        assert ts["community_cards"] == [] and ts["pot"] == 0
         assert ts["config"]["big_blind"] == 20
 
         # ---- 4. Add two bots with levels ("+ Bot" → L1 / L3) ----

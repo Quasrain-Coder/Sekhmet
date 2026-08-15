@@ -58,6 +58,6 @@ test('reload with a reclaim token preselects the disconnected seat', async () =>
 
   await screen.findByRole('button', { name: 'Sit Down' });
   // our old seat (2) is selected, not the first free seat (0)
-  expect(document.querySelector('.picker-seat.seat-2')).toHaveClass('selected');
-  expect(document.querySelector('.picker-seat.seat-0')).not.toHaveClass('selected');
+  expect(document.querySelector('[data-seat="2"]')).toHaveClass('selected');
+  expect(document.querySelector('[data-seat="0"]')).not.toHaveClass('selected');
 });

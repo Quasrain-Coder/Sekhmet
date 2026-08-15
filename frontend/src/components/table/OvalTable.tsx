@@ -21,6 +21,11 @@ interface Props {
   showdownHoleCards?: Record<number, string[]>;
   onAddBot: (seatIdx: number, level: number) => void;
   onKickBot: (seatIdx: number) => void;
+  // Viewer mode (join panel): seats become clickable and empty seats render
+  // as selectable markers instead of "+ Bot" buttons.  The caller decides
+  // which seats are actually selectable (occupied seats are ignored).
+  onSeatSelect?: (seatIdx: number) => void;
+  selectedSeat?: number | null;
 }
 
 /** Map a seat index to an oval display slot, rotating so *mySeat* is at
@@ -40,11 +45,14 @@ export default function OvalTable({
   seats, players, maxSeats, communityCards, pot, currentPlayerIdx,
   dealerIdx, sbSeat, bbSeat,
   mySeat, holeCards, phase, showdownHoleCards, onAddBot, onKickBot,
+  onSeatSelect, selectedSeat,
 }: Props) {
   const showCommunity = phase !== 'WAITING' && phase !== 'PREFLOP' && phase !== 'DEALING';
   // Mid-hand seating changes corrupt the engine — only offer bot seats
   // between hands (the server enforces this too; this is the UI half).
   const canAddBot = phase === 'WAITING' || phase === 'SHOWDOWN';
+  // Join-panel preview: seats are selectable, bot management is hidden.
+  const viewer = !!onSeatSelect;
   const [pendingSeat, setPendingSeat] = useState<number | null>(null);
   // Close a stale level picker when a hand starts — it must not
   // resurrect on its own when bot seats unlock again at SHOWDOWN.
@@ -96,8 +104,9 @@ export default function OvalTable({
           is_human: seat.is_human,
         };
         return (
-          <div key={seat.seat_idx}
-               className={`seat-wrap seat-${slot}${seat.connected === false ? ' offline' : ''}`}>
+          <div key={seat.seat_idx} data-seat={seat.seat_idx}
+               className={`seat-wrap seat-${slot}${seat.connected === false ? ' offline' : ''}${viewer ? ' selectable' : ''}${viewer && selectedSeat === seat.seat_idx ? ' selected' : ''}`}
+               onClick={viewer ? () => onSeatSelect!(seat.seat_idx) : undefined}>
             <PlayerSeat
               player={merged}
               isCurrent={currentPlayerIdx === seat.seat_idx}
@@ -116,8 +125,10 @@ export default function OvalTable({
             {!seat.is_human && (
               <span className="bot-badge">
                 L{seat.bot_level ?? 2}
-                <button className="kick-btn" title="Remove bot"
-                        onClick={() => onKickBot(seat.seat_idx)}>×</button>
+                {!viewer && (
+                  <button className="kick-btn" title="Remove bot"
+                          onClick={() => onKickBot(seat.seat_idx)}>×</button>
+                )}
               </span>
             )}
             {seat.is_owner && <span className="owner-crown">👑</span>}
@@ -125,24 +136,34 @@ export default function OvalTable({
         );
       })}
 
-      {canAddBot && Array.from({ length: maxSeats }, (_, i) => i)
-        .filter(i => !occupied.has(i))
-        .map(i => (
-          <div key={`empty-${i}`} className={`empty-seat seat-${displaySlot(i, total, mySeat)}`}>
-            {pendingSeat === i ? (
-              <span className="bot-level-picker">
-                {[1, 2, 3].map(lv => (
-                  <button key={lv} className="btn btn-sm"
-                          onClick={() => { onAddBot(i, lv); setPendingSeat(null); }}>
-                    L{lv}
-                  </button>
-                ))}
-              </span>
-            ) : (
-              <button className="add-bot-btn" onClick={() => setPendingSeat(i)}>+ Bot</button>
-            )}
-          </div>
-        ))}
+      {viewer
+        ? Array.from({ length: maxSeats }, (_, i) => i)
+          .filter(i => !occupied.has(i))
+          .map(i => (
+            <button key={`empty-${i}`} data-seat={i}
+                    className={`empty-seat-btn seat-${displaySlot(i, total, mySeat)}${selectedSeat === i ? ' selected' : ''}`}
+                    onClick={() => onSeatSelect!(i)}>
+              {i}
+            </button>
+          ))
+        : canAddBot && Array.from({ length: maxSeats }, (_, i) => i)
+          .filter(i => !occupied.has(i))
+          .map(i => (
+            <div key={`empty-${i}`} className={`empty-seat seat-${displaySlot(i, total, mySeat)}`}>
+              {pendingSeat === i ? (
+                <span className="bot-level-picker">
+                  {[1, 2, 3].map(lv => (
+                    <button key={lv} className="btn btn-sm"
+                            onClick={() => { onAddBot(i, lv); setPendingSeat(null); }}>
+                      L{lv}
+                    </button>
+                  ))}
+                </span>
+              ) : (
+                <button className="add-bot-btn" onClick={() => setPendingSeat(i)}>+ Bot</button>
+              )}
+            </div>
+          ))}
     </div>
   );
 }
