@@ -5,12 +5,12 @@ const WARN_AT_S = 10;
 
 // Quick "fraction of the pot" presets.  Pot is measured AFTER calling
 // (pot + toCall) — the standard convention — so a full-pot raise is
-// call + (pot + call).
-const POT_PRESETS: { label: string; fraction: number }[] = [
-  { label: '1/3 pot', fraction: 1 / 3 },
-  { label: '1/2 pot', fraction: 1 / 2 },
-  { label: '2/3 pot', fraction: 2 / 3 },
-  { label: 'Pot', fraction: 1 },
+// call + (pot + call).  Labels stay terse so all four fit one row.
+const POT_PRESETS: { label: string; title: string; fraction: number }[] = [
+  { label: '1/3', title: 'Raise to 1/3 pot', fraction: 1 / 3 },
+  { label: '1/2', title: 'Raise to 1/2 pot', fraction: 1 / 2 },
+  { label: '2/3', title: 'Raise to 2/3 pot', fraction: 2 / 3 },
+  { label: 'Pot', title: 'Raise to full pot', fraction: 1 },
 ];
 
 interface Props {
@@ -131,6 +131,7 @@ export default function ActionBar({ isMyTurn, currentBet, myStack, myCurrentBet,
         <div className="raise-presets">
           {POT_PRESETS.map(p => (
             <button key={p.label} className="btn btn-sm" disabled={!canRaise}
+                    title={p.title}
                     onClick={() => applyPreset(p.fraction)}>
               {p.label}
             </button>
