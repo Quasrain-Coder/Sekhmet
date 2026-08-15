@@ -116,10 +116,15 @@ async def test_only_logged_in_players_feed_the_profile():
         await tm.handle_player_action(tid, cur, "FOLD")
         session = await tm.get_table(tid)
 
-    await asyncio.sleep(0.05)  # fire-and-forget 落库
-
+    # fire-and-forget 落库 — 轮询等待而不是固定 sleep：全量跑时事件
+    # 循环里堆着其它测试的挂起任务，单次 50ms 经常不够（偶发 flaky）。
     async with db.SessionLocal() as s:
-        rows = (await s.execute(select(records.UserStatsRecord))).scalars().all()
+        rows = []
+        for _ in range(100):  # 最多等 2s
+            rows = (await s.execute(select(records.UserStatsRecord))).scalars().all()
+            if rows:
+                break
+            await asyncio.sleep(0.02)
         legacy = (await s.execute(select(records.PlayerStatsRecord))).scalars().all()
     # only the logged-in player is recorded — the guest is not counted
     assert len(rows) == 1
