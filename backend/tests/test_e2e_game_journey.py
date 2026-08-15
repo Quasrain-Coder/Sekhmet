@@ -132,6 +132,14 @@ def test_complete_game_journey():
             showdown = result["showdown"]
             if showdown["hands"]:
                 assert len(result["community_cards"]) == 5
+                # every revealed hand comes with its two hole cards so the
+                # frontend can flip the seat backs face-up
+                assert set(showdown["hole_cards"].keys()) == set(showdown["hands"].keys())
+                for cards in showdown["hole_cards"].values():
+                    assert len(cards) == 2
+            else:
+                # fold-out: no cards revealed
+                assert showdown.get("hole_cards", {}) == {}
             assert showdown["awards"], "pot was not awarded"
             assert sum(a["amount"] for a in showdown["awards"]) > 0
 

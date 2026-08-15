@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import CardView from './CardView';
 import type { PlayerInfo } from '../../hooks/useGameState';
 
@@ -9,18 +9,21 @@ interface Props {
   avatarLabel: string;
   isMe: boolean;
   positionTag?: 'D' | 'SB' | 'BB';
-  // A hand is in progress (not WAITING/SHOWDOWN): active opponents show two
-  // face-down cards.  The hero's own cards are `holeCards`.
+  // Phase-based: a hand is in progress (not WAITING).  PlayerSeat combines
+  // it with player.is_active — folded players never show backs.
   inHand: boolean;
   // Increments on every deal.  The card elements are keyed by it, so a new
   // hand remounts them and replays the deal animation.  0 (e.g. reclaim
   // mid-hand) renders static cards with no animation.
   dealSeq: number;
+  // At showdown the server reveals every live player's hole cards — render
+  // them face-up in place of the backs.
+  revealedCards?: string[];
 }
 
 const FOLD_ANIM_MS = 800;  // matches the CSS fold-fly-out duration + stagger
 
-export default function PlayerSeat({ player, isCurrent, holeCards, avatarLabel, isMe, positionTag, inHand, dealSeq }: Props) {
+export default function PlayerSeat({ player, isCurrent, holeCards, avatarLabel, isMe, positionTag, inHand, dealSeq, revealedCards }: Props) {
   // `=== false` (not `!`) — a missing field must never render everyone
   // folded, which happened when hand_start omitted is_active.
   const folded = player.is_active === false;
@@ -51,21 +54,35 @@ export default function PlayerSeat({ player, isCurrent, holeCards, avatarLabel, 
     isMe ? 'me' : '',
   ].filter(Boolean).join(' ');
 
-  const showBacks = !isMe && (inHand || justFolded);
+  // Folded players keep no cards once the fold animation finishes.  Without
+  // the `!folded` guard, inHand (phase-based, true for the whole hand)
+  // kept the backs mounted after folding — the class flip folding→dealing
+  // replayed the deal fly-in and the cards "flew back" for good.
+  const showBacks = !isMe && ((inHand && !folded) || justFolded);
+  const showRevealed = !folded && !!revealedCards && revealedCards.length > 0;
 
   return (
     <div className={cls}>
-      <div className="avatar">{avatarLabel}
+      <div className="avatar">
+        {avatarLabel}
         {positionTag && <span className={`pos-tag pos-${positionTag.toLowerCase()}`}>{positionTag}</span>}
+        {showRevealed ? (
+          <div className="revealed-cards">
+            {revealedCards!.map((c, i) => (
+              <span key={i} style={{ '--deal-delay': `${i * 120}ms` } as CSSProperties}>
+                <CardView card={c} />
+              </span>
+            ))}
+          </div>
+        ) : showBacks && (
+          <div className={`hole-cards${justFolded ? ' folding' : dealSeq > 0 ? ' dealing' : ''}`}>
+            {[0, 1].map(i => (
+              <span key={`${dealSeq}-${i}`} className="hole-card"
+                    style={{ animationDelay: `${i * 70}ms` }} />
+            ))}
+          </div>
+        )}
       </div>
-      {showBacks && (
-        <div className={`hole-cards${justFolded ? ' folding' : dealSeq > 0 ? ' dealing' : ''}`}>
-          {[0, 1].map(i => (
-            <span key={`${dealSeq}-${i}`} className="hole-card"
-                  style={{ animationDelay: `${i * 70}ms` }} />
-          ))}
-        </div>
-      )}
       <div className="name">{player.name}</div>
       <div className="stack">{player.stack}</div>
       {player.current_bet > 0 && <div className="bet">{player.current_bet}</div>}

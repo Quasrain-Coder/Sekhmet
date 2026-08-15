@@ -62,6 +62,9 @@ interface HandStartData {
 interface ShowdownData {
   hands: Record<number, string>;
   awards: { seat_idx: number; amount: number; hand: string }[];
+  // Seats that reached showdown → their hole cards, revealed by the server
+  // so the frontend can flip the seat backs face-up.
+  hole_cards?: Record<number, string[]>;
 }
 
 export type GameMsg =

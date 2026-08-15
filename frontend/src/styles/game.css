@@ -215,15 +215,26 @@ select.input { width: auto; }
 .player-seat .cards { display: flex; gap: 5px; margin-top: 4px; }
 
 /* ---- Hole-card backs (in-hand players) + deal/fold animations ---- */
-.hole-cards { display: flex; gap: 4px; margin-top: 4px; }
+/* 锚定头像的绝对定位（在 .avatar 内）——不进 flex 列流，不撑高座位盒，
+   避免顶排座位的 name/stack 与底池显示、底排座位与下注胶囊重叠。 */
+.hole-cards, .revealed-cards {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  top: calc(100% + 4px); display: flex; gap: 4px; z-index: 2;
+  pointer-events: none;
+}
+/* 底排座位面朝桌面中央：牌悬于头像上方（+20px 缝隙避开下注胶囊） */
+.seat-0 .hole-cards, .seat-1 .hole-cards, .seat-7 .hole-cards,
+.seat-0 .revealed-cards, .seat-1 .revealed-cards, .seat-7 .revealed-cards {
+  top: auto; bottom: calc(100% + 20px);
+}
 .hole-card {
   width: 24px; height: 34px; border-radius: 4px; display: inline-block;
   border: 1.5px solid #155e75;
   background: repeating-linear-gradient(45deg, #0b1424, #0b1424 4px, #0e1a2e 4px, #0e1a2e 8px);
 }
-/* 底排座位面朝桌面中央，牌背放在头像上方（朝向桌面） */
-.seat-0 .hole-cards, .seat-1 .hole-cards, .seat-7 .hole-cards {
-  order: -1; margin-top: 0; margin-bottom: 4px;
+/* 摊牌亮牌：对手牌背翻成明牌 */
+.revealed-cards .card {
+  animation: card-flip-in 0.35s ease-out var(--deal-delay, 0ms) backwards;
 }
 /* 发牌：牌背从桌面中央飞向座位 */
 .hole-cards.dealing .hole-card,

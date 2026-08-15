@@ -322,6 +322,7 @@ export default function GameTablePage() {
         mySeat={state.mySeat}
         holeCards={state.holeCards}
         phase={state.phase}
+        showdownHoleCards={state.showdown?.hole_cards}
         onAddBot={addBot}
         onKickBot={kickBot}
       />

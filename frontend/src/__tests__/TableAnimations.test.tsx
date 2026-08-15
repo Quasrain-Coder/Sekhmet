@@ -68,11 +68,15 @@ describe('fold animation', () => {
       <PlayerSeat player={player()} isCurrent={false} avatarLabel="L2"
                   isMe={false} inHand dealSeq={0} />,
     );
+    // inHand stays true for the whole hand in the real app (OvalTable
+    // passes a phase-based flag) — a folded player must lose the backs
+    // anyway, and they must NOT remount with the deal fly-in.
     rerender(
       <PlayerSeat player={player({ is_active: false })} isCurrent={false}
-                  avatarLabel="L2" isMe={false} inHand={false} dealSeq={0} />,
+                  avatarLabel="L2" isMe={false} inHand dealSeq={1} />,
     );
     expect(container.querySelector('.hole-cards')!.className).toContain('folding');
+    expect(container.querySelector('.hole-cards')!.className).not.toContain('dealing');
     expect(container.querySelector('.folded-tag')!.textContent).toBe('Fold');
 
     act(() => { vi.advanceTimersByTime(900); });
@@ -101,12 +105,43 @@ describe('fold animation', () => {
   });
 
   test('mounting with an already-folded player skips the animation', () => {
+    // inHand is true mid-hand even for a folded seat (phase-based flag)
     const { container } = render(
       <PlayerSeat player={player({ is_active: false })} isCurrent={false}
-                  avatarLabel="L2" isMe={false} inHand={false} dealSeq={0} />,
+                  avatarLabel="L2" isMe={false} inHand dealSeq={1} />,
     );
     expect(container.querySelector('.hole-cards')).toBeNull();
     expect(container.querySelector('.folded-tag')).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Showdown reveal
+// ---------------------------------------------------------------------------
+
+describe('showdown reveal', () => {
+  test('revealedCards render face-up cards instead of backs', () => {
+    const { container } = render(
+      <PlayerSeat player={player()} isCurrent={false} avatarLabel="L2"
+                  isMe={false} inHand dealSeq={1}
+                  revealedCards={['A♠', 'K♥']} />,
+    );
+    expect(container.querySelector('.hole-cards')).toBeNull();
+    const faces = container.querySelectorAll('.revealed-cards .card');
+    expect(faces).toHaveLength(2);
+    expect(faces[0].getAttribute('title')).toBe('A♠');
+    expect(faces[1].getAttribute('title')).toBe('K♥');
+  });
+
+  test('a folded player never gets revealed cards', () => {
+    const { container } = render(
+      <PlayerSeat player={player({ is_active: false })} isCurrent={false}
+                  avatarLabel="L2" isMe={false} inHand dealSeq={1}
+                  revealedCards={['A♠', 'K♥']} />,
+    );
+    // the fold badge stays; the seat shows no cards (reveal or backs)
+    expect(container.querySelector('.folded-tag')).not.toBeNull();
+    expect(container.querySelectorAll('.revealed-cards .card, .hole-cards .hole-card')).toHaveLength(0);
   });
 });
 
