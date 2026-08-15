@@ -14,8 +14,11 @@ async def create_table(body: dict | None = None):
         cfg = tm.TableConfig.from_dict(body or {})
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except tm.GameError as e:
+        raise HTTPException(status_code=429, detail=str(e))
     tid = await tm.create_table(cfg)
-    return {"table_id": tid}
+    session = await tm.get_table(tid)
+    return {"table_id": tid, "owner_token": session.owner_token}
 
 
 @router.get("/tables/{table_id}")

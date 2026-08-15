@@ -1046,3 +1046,46 @@ async def test_manual_action_resets_timeout_counter():
     await tm.auto_bot_actions(tid)       # bot 先行动（SB）
     await tm.handle_player_action(tid, 0, "CHECK")  # 人类主动行动
     assert session.consecutive_timeouts[0] == 0
+
+
+async def test_buyin_bounds_enforced():
+    """Buy-in outside 20bb–200bb (incl. 0/negative grief seats) is rejected."""
+    tid = await tm.create_table()  # blinds 5/10 → lo=200, hi=2000
+    for bad in (0, -5, 10, 199, 2001, 99999):
+        with pytest.raises(tm.GameError, match="Buy-in must be between"):
+            await tm.sit_down(tid, 0, "A", buyin=bad)
+    await tm.sit_down(tid, 0, "A", buyin=200)   # exactly 20bb — ok
+    await tm.sit_down(tid, 1, "B", buyin=2000)  # exactly 200bb — ok
+    session = await tm.get_table(tid)
+    assert session.game_state.player(0).stack == 200
+    assert session.game_state.player(1).stack == 2000
+
+
+async def test_owner_token_claims_ownership():
+    """The creator's token wins ownership even when a stranger sits first."""
+    tid = await tm.create_table()
+    token = (await tm.get_table(tid)).owner_token
+    assert token is not None and len(token) == 32
+
+    await tm.sit_down(tid, 0, "Stranger")               # no token
+    assert (await tm.get_table(tid)).owner_seat == 0
+    # token holder sits later at a higher seat — takes over the room
+    await tm.sit_down(tid, 5, "Creator", owner_token=token)
+    assert (await tm.get_table(tid)).owner_seat == 5
+
+
+async def test_owner_token_claims_ownership_when_first():
+    tid = await tm.create_table()
+    token = (await tm.get_table(tid)).owner_token
+    await tm.sit_down(tid, 5, "Creator", owner_token=token)
+    await tm.sit_down(tid, 0, "Stranger")
+    assert (await tm.get_table(tid)).owner_seat == 5  # token beats lowest-human
+
+
+async def test_table_creation_cap(monkeypatch):
+    from sekhmet.config import app_config
+    tm._tables.clear()
+    monkeypatch.setattr(app_config.game, "max_tables", 1)
+    await tm.create_table()
+    with pytest.raises(tm.GameError, match="limit"):
+        await tm.create_table()
