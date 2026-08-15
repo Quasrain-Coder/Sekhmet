@@ -1076,3 +1076,116 @@ async def test_concurrent_broadcasts_serialize_per_client():
     )
     # without the lock the two sends overlap inside the sleep window
     assert slow.max_concurrent == 1
+async def test_stand_up_mid_hand_rejected_direct():
+    """tm.stand_up is the backstop: even a race that slips past the
+    transport-level phase check cannot rip a seat out mid-hand."""
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "A", buyin=200)
+    await tm.sit_down(tid, 1, "B", buyin=200)
+    await tm.start_hand(tid)
+    with pytest.raises(tm.GameError, match="mid-hand"):
+        await tm.stand_up(tid, 0)
+    # seat intact
+    session = await tm.get_table(tid)
+    assert session.game_state.player(0) is not None
+    assert 0 in session.player_names
+
+
+async def test_expire_seat_identity_cleared_under_lock(monkeypatch):
+    """Grace expiry between hands removes identity + players atomically —
+    start_hand afterwards must not deal a ghost seat."""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.handle_disconnect(tid, 0)
+    await asyncio.sleep(0.15)
+
+    # only the bot remains — start_hand refuses; and no ghost seat lingers
+    with pytest.raises(tm.GameError, match="Need at least 2 players"):
+        await tm.start_hand(tid)
+    session = await tm.get_table(tid)
+    assert len(session.game_state.players) == 1
+    assert session.game_state.player(0) is None  # hero fully removed
+async def test_crashing_bot_does_not_freeze_game(monkeypatch):
+    """A bot whose decide() raises must fall back, not wedge the table."""
+    from sekhmet.ai_engine import bot_registry
+    from sekhmet.game_engine import GamePhase
+
+    class CrashBot:
+        def decide(self, state, player_idx):
+            raise RuntimeError("bot bug")
+
+    monkeypatch.setattr(bot_registry, "create", lambda name: CrashBot())
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False, bot_level=1)
+    await tm.start_hand(tid)
+
+    # dealer advances to seat 1 → bot is SB and acts first; it faces the
+    # big blind's 10 with 5 posted → the crash fallback folds it out and
+    # the hand completes instead of freezing mid-round.
+    await tm.auto_bot_actions(tid)
+    session = await tm.get_table(tid)
+    assert session.game_state.phase == GamePhase.SHOWDOWN
+    assert session.game_state.player(0).stack == 205  # hero collected the blinds
+
+
+async def test_after_action_survives_bot_phase_crash(monkeypatch):
+    """Even if the bot phase blows up, the action timer still gets armed."""
+    async def boom(table_id):
+        raise RuntimeError("unexpected")
+
+    monkeypatch.setattr(tm, "auto_bot_actions", boom)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 1, "Hero", buyin=200)   # seat 1: dealer→1, hero acts first
+    await tm.sit_down(tid, 0, "Bot", buyin=200, is_human=False, bot_level=1)
+    await tm.start_hand(tid)
+
+    await tm.after_action(tid)  # must not raise
+    session = await tm.get_table(tid)
+    assert session.action_timer is not None  # human-to-act timer armed
+    session.action_timer.cancel()
+async def test_buyin_bounds_enforced():
+    """Buy-in outside 20bb–200bb (incl. 0/negative grief seats) is rejected."""
+    tid = await tm.create_table()  # blinds 5/10 → lo=200, hi=2000
+    for bad in (0, -5, 10, 199, 2001, 99999):
+        with pytest.raises(tm.GameError, match="Buy-in must be between"):
+            await tm.sit_down(tid, 0, "A", buyin=bad)
+    await tm.sit_down(tid, 0, "A", buyin=200)   # exactly 20bb — ok
+    await tm.sit_down(tid, 1, "B", buyin=2000)  # exactly 200bb — ok
+    session = await tm.get_table(tid)
+    assert session.game_state.player(0).stack == 200
+    assert session.game_state.player(1).stack == 2000
+
+
+async def test_owner_token_claims_ownership():
+    """The creator's token wins ownership even when a stranger sits first."""
+    tid = await tm.create_table()
+    token = (await tm.get_table(tid)).owner_token
+    assert token is not None and len(token) == 32
+
+    await tm.sit_down(tid, 0, "Stranger")               # no token
+    assert (await tm.get_table(tid)).owner_seat == 0
+    # token holder sits later at a higher seat — takes over the room
+    await tm.sit_down(tid, 5, "Creator", owner_token=token)
+    assert (await tm.get_table(tid)).owner_seat == 5
+
+
+async def test_owner_token_claims_ownership_when_first():
+    tid = await tm.create_table()
+    token = (await tm.get_table(tid)).owner_token
+    await tm.sit_down(tid, 5, "Creator", owner_token=token)
+    await tm.sit_down(tid, 0, "Stranger")
+    assert (await tm.get_table(tid)).owner_seat == 5  # token beats lowest-human
+
+
+async def test_table_creation_cap(monkeypatch):
+    from sekhmet.config import app_config
+    tm._tables.clear()
+    monkeypatch.setattr(app_config.game, "max_tables", 1)
+    await tm.create_table()
+    with pytest.raises(tm.GameError, match="limit"):
+        await tm.create_table()
