@@ -90,44 +90,47 @@ export default function ActionBar({ isMyTurn, currentBet, myStack, myCurrentBet,
 
   return (
     <div className="action-bar">
-      <span className={`action-timer${remaining <= WARN_AT_S ? ' warn' : ''}`}>
-        ⏱ {remaining}s
-      </span>
-      <button className="btn fold" onClick={() => onAction('FOLD')}>Fold</button>
-      {canCheck ? (
-        <button className="btn check" onClick={() => onAction('CHECK')}>Check</button>
-      ) : (
-        <button className="btn check" onClick={() => onAction('CALL')} disabled={toCall > myStack}>
-          Call {toCall}
+      <div className="action-row">
+        <span className={`action-timer${remaining <= WARN_AT_S ? ' warn' : ''}`}>
+          ⏱ {remaining}s
+        </span>
+        <button className="btn fold" onClick={() => onAction('FOLD')}>Fold</button>
+        {canCheck ? (
+          <button className="btn check" onClick={() => onAction('CHECK')}>Check</button>
+        ) : (
+          <button className="btn check" onClick={() => onAction('CALL')} disabled={toCall > myStack}>
+            Call {toCall}
+          </button>
+        )}
+        <button className="btn allin" onClick={() => onAction('ALL_IN')} disabled={myStack <= 0}>
+          All-in
         </button>
-      )}
-      <div className="raise-controls">
-        <div className="raise-row">
-          <input
-            className="raise-slider"
-            type="range"
-            min={minRaiseTo}
-            max={Math.max(maxRaise, minRaiseTo)}
-            value={raiseTo}
-            onChange={e => commitRaise(Number(e.target.value))}
-            disabled={!canRaise}
-          />
-          <input
-            className="input raise-input"
-            type="number"
-            min={minRaiseTo}
-            max={maxRaise}
-            value={raiseText}
-            disabled={!canRaise}
-            onChange={e => setRaiseText(e.target.value)}
-            onBlur={() => {
-              const n = Number(raiseText);
-              if (Number.isFinite(n) && n > 0) commitRaise(n);
-              else setRaiseText(String(raiseTo));  // revert garbage to committed value
-            }}
-            onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }}
-          />
-        </div>
+      </div>
+      <div className="raise-panel">
+        <input
+          className="raise-slider"
+          type="range"
+          min={minRaiseTo}
+          max={Math.max(maxRaise, minRaiseTo)}
+          value={raiseTo}
+          onChange={e => commitRaise(Number(e.target.value))}
+          disabled={!canRaise}
+        />
+        <input
+          className="input raise-input"
+          type="number"
+          min={minRaiseTo}
+          max={maxRaise}
+          value={raiseText}
+          disabled={!canRaise}
+          onChange={e => setRaiseText(e.target.value)}
+          onBlur={() => {
+            const n = Number(raiseText);
+            if (Number.isFinite(n) && n > 0) commitRaise(n);
+            else setRaiseText(String(raiseTo));  // revert garbage to committed value
+          }}
+          onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+        />
         <div className="raise-presets">
           {POT_PRESETS.map(p => (
             <button key={p.label} className="btn btn-sm" disabled={!canRaise}
@@ -137,17 +140,14 @@ export default function ActionBar({ isMyTurn, currentBet, myStack, myCurrentBet,
             </button>
           ))}
         </div>
+        <button
+          className="btn raise"
+          onClick={() => onAction(currentBet > 0 ? 'RAISE' : 'BET', displayRaise)}
+          disabled={!canRaise}
+        >
+          {currentBet > 0 ? `Raise to ${displayRaise}` : `Bet ${displayRaise}`}
+        </button>
       </div>
-      <button
-        className="btn raise"
-        onClick={() => onAction(currentBet > 0 ? 'RAISE' : 'BET', displayRaise)}
-        disabled={!canRaise}
-      >
-        {currentBet > 0 ? `Raise to ${displayRaise}` : `Bet ${displayRaise}`}
-      </button>
-      <button className="btn allin" onClick={() => onAction('ALL_IN')} disabled={myStack <= 0}>
-        All-in
-      </button>
     </div>
   );
 }
