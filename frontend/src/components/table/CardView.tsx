@@ -6,6 +6,10 @@ interface CardViewProps {
 
 const RED_SUITS = ['♥', '♦'];
 
+// ♠ 与 ♣ 同为黑色系，小尺寸下容易混淆——草花单独用绿色系渲染。
+const suitClass = (suit: string) =>
+  suit === '♣' ? 'suit-club' : RED_SUITS.includes(suit) ? 'card-red' : 'card-black';
+
 export default function CardView({ card, small, big }: CardViewProps) {
   const size = big ? 'big' : small ? 'small' : '';
   if (!card) {
@@ -14,10 +18,9 @@ export default function CardView({ card, small, big }: CardViewProps) {
 
   const suit = card.slice(-1);
   const rank = card.slice(0, -1);
-  const isRed = RED_SUITS.includes(suit);
 
   return (
-    <span className={`card ${isRed ? 'card-red' : 'card-black'} ${size}`} title={card}>
+    <span className={`card ${suitClass(suit)} ${size}`} title={card}>
       <span className="corner">{rank}<br />{suit}</span>
       <span className="pip">{suit}</span>
     </span>

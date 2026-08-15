@@ -176,17 +176,22 @@ select.input { width: auto; }
 
 /* ---- Card (角标式) ---- */
 .card {
-  width: 42px; height: 60px; border-radius: 6px;
+  width: 52px; height: 74px; border-radius: 6px;
   background: var(--surface); position: relative;
   display: flex; align-items: center; justify-content: center;
 }
 .card .corner {
   position: absolute; top: 3px; left: 4px;
-  font-size: 0.62rem; font-weight: 700; line-height: 1.05; text-align: center;
+  font-size: 0.72rem; font-weight: 700; line-height: 1.05; text-align: center;
 }
-.card .pip { font-size: 1.3rem; }
+.card .pip { font-size: 1.6rem; }
 .card-black { border: 1.5px solid var(--cyan); color: var(--text); box-shadow: 0 0 12px rgba(34, 211, 238, 0.4); }
 .card-red { border: 1.5px solid var(--rose); color: var(--rose); box-shadow: 0 0 12px rgba(251, 113, 133, 0.4); }
+/* 草花：绿色系渲染，与黑桃一眼区分 */
+.suit-club {
+  border: 1.5px solid rgba(110, 231, 183, 0.65); color: #6ee7b7;
+  box-shadow: 0 0 12px rgba(110, 231, 183, 0.35);
+}
 /* 牌背（暗夜霓虹）：深蓝渐变底 + 青色菱格纹 + 发光黑桃徽记 + 内框 */
 .card-back {
   border: 1px solid rgba(34, 211, 238, 0.5);
@@ -213,12 +218,12 @@ select.input { width: auto; }
   font-size: 20px;
 }
 .card-back.small::after { font-size: 14px; }
-.card.big { width: 52px; height: 74px; }
-.card.big .pip { font-size: 1.6rem; }
-.card.big .corner { font-size: 0.72rem; }
-.card.small { width: 30px; height: 42px; }
-.card.small .pip { font-size: 0.9rem; }
-.card.small .corner { font-size: 0.5rem; }
+.card.big { width: 62px; height: 88px; }
+.card.big .pip { font-size: 1.9rem; }
+.card.big .corner { font-size: 0.85rem; }
+.card.small { width: 36px; height: 51px; }
+.card.small .pip { font-size: 1.1rem; }
+.card.small .corner { font-size: 0.55rem; }
 
 /* ---- Player seat (头像式) ---- */
 .player-seat { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; }
@@ -453,7 +458,7 @@ select.input { width: auto; }
   margin-top: 6px;
 }
 /* 给悬出的手牌留出页面空间 */
-.table-felt { margin-bottom: 70px; }
+.table-felt { margin-bottom: 96px; }
 
 /* ---- Join table preview (live view of the game, pickable seats) ---- */
 .join-table { max-width: 900px; margin: 14px auto 4px; }
@@ -580,12 +585,12 @@ select.input { width: auto; }
 
 /* ---- 宽屏（≥1200px）：随牌桌放大座位与牌面 ---- */
 @media (min-width: 1200px) {
-  .card { width: 48px; height: 68px; }
-  .card.big { width: 58px; height: 82px; }
+  .card { width: 58px; height: 82px; }
+  .card.big { width: 68px; height: 96px; }
   .player-seat .avatar { width: 46px; height: 46px; }
   .player-seat.me .avatar { width: 54px; height: 54px; }
   /* hero 悬出的手牌更高，留足下方空间 */
-  .table-felt { margin-bottom: 92px; }
+  .table-felt { margin-bottom: 104px; }
 }
 
 /* ---- Mobile (≤768px) ---- */
@@ -602,11 +607,11 @@ select.input { width: auto; }
   .player-seat .avatar { width: 32px; height: 32px; font-size: 0.5rem; }
   .player-seat.me .avatar { width: 38px; height: 38px; }
   .player-seat .name, .player-seat .stack { font-size: 0.55rem; }
-  .card { width: 30px; height: 43px; }
-  .card .pip { font-size: 0.9rem; }
-  .card .corner { font-size: 0.45rem; }
-  .card.big { width: 40px; height: 57px; }
-  .card.big .pip { font-size: 1.2rem; }
+  .card { width: 36px; height: 51px; }
+  .card .pip { font-size: 1.1rem; }
+  .card .corner { font-size: 0.5rem; }
+  .card.big { width: 46px; height: 65px; }
+  .card.big .pip { font-size: 1.4rem; }
   .hole-card { width: 18px; height: 26px; }
   .hole-card::after { font-size: 8px; }
   .card-back::after { font-size: 14px; }
