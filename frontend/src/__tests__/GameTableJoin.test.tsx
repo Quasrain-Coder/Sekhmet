@@ -50,6 +50,36 @@ afterEach(() => {
   delete (globalThis as any).WebSocket;
 });
 
+test('tapping Sit Down without a connection explains itself instead of dying silently', async () => {
+  render(
+    <MemoryRouter initialEntries={['/game/abc']}>
+      <Routes>
+        <Route path="/game/:tableId" element={<GameTablePage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+  const sitButton = await screen.findByRole('button', { name: 'Sit Down' });
+  // the socket never opened — the tap must give feedback, not die silently
+  fireEvent.click(sitButton);
+  expect(await screen.findByText('Connecting to the table… try again in a moment')).toBeTruthy();
+  // the inline hint names the blocker too
+  expect(screen.getByText('Connecting to the table…')).toBeTruthy();
+});
+
+test('seat name prefills from the logged-in account when no poker name is set', async () => {
+  localStorage.removeItem('pokerName');
+  localStorage.setItem('authUser', 'alice');
+  render(
+    <MemoryRouter initialEntries={['/game/abc']}>
+      <Routes>
+        <Route path="/game/:tableId" element={<GameTablePage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+  const input = (await screen.findByPlaceholderText('Your name')) as HTMLInputElement;
+  expect(input.value).toBe('alice');
+});
+
 test('a sit_down dropped by a dead socket is resent after reconnect', async () => {
   render(
     <MemoryRouter initialEntries={['/game/abc']}>

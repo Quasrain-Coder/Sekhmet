@@ -35,7 +35,10 @@ export default function GameTablePage() {
   const [state, dispatch] = useGameState();
   const { connected, reconnectIn, send, onMessage } = useWebSocket(tableId);
   const [detail, setDetail] = useState<TableDetail | null | 'not-found'>(null);
-  const [name, setName] = useState(() => localStorage.getItem('pokerName') || '');
+  // Prefill the seat name: last used name, else the logged-in account name
+  // (mobile users may never have set a poker name).
+  const [name, setName] = useState(() =>
+    localStorage.getItem('pokerName') || localStorage.getItem('authUser') || '');
   const [buyin, setBuyin] = useState(200);
   const [rebuyAmount, setRebuyAmount] = useState(200);
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
@@ -291,6 +294,33 @@ export default function GameTablePage() {
       if (occ && !reclaimable) return;
       setSelectedSeat(idx);
     };
+    // The button stays tappable and explains itself: a disabled button on
+    // mobile gives zero feedback when the ws is reconnecting or no seat is
+    // picked — the user just sees a dead button.
+    const handleJoinClick = () => {
+      if (!name.trim()) {
+        pushToast('error', 'Enter your name first');
+        return;
+      }
+      if (!connected) {
+        pushToast('error', 'Connecting to the table… try again in a moment');
+        return;
+      }
+      if (selectedSeat === null) {
+        pushToast('error', seatsNow.length >= detail.max_seats
+          ? 'No free seats — wait for one to open'
+          : 'Pick a seat first');
+        return;
+      }
+      joinTable();
+    };
+    const joinBlocker = !name.trim() ? 'Enter your name to sit down'
+      : !connected ? (reconnectIn > 0
+          ? `Connecting… retrying in ${Math.ceil(reconnectIn / 1000)}s`
+          : 'Connecting to the table…')
+      : selectedSeat === null
+          ? (seatsNow.length >= detail.max_seats ? 'No free seats right now' : 'Pick a seat')
+          : null;
     return (
       <div className="join-panel">
         <h2>Table {detail.table_id}</h2>
@@ -325,8 +355,7 @@ export default function GameTablePage() {
                  onChange={e => setName(e.target.value)} />
           <input className="input" type="number" value={buyin} style={{ width: 110 }}
                  onChange={e => setBuyin(Number(e.target.value))} />
-          <button className="btn" onClick={joinTable}
-                  disabled={!name || !connected || selectedSeat === null}>
+          <button className="btn" onClick={handleJoinClick}>
             Sit Down
           </button>
           <button className="btn btn-sm" onClick={() => navigate('/')}>← Lobby</button>
@@ -337,6 +366,7 @@ export default function GameTablePage() {
         {midHand && selectedOcc && !selectedIsReclaimable && !selectedOcc.connected && (
           <p className="join-hint">Seat taken — pick a free seat</p>
         )}
+        {joinBlocker && <p className="join-hint">{joinBlocker}</p>}
         <Toast items={toasts} onDismiss={dismissToast} />
       </div>
     );
