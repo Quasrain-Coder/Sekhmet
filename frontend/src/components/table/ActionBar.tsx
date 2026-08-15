@@ -6,21 +6,25 @@ interface Props {
   myStack: number;
   myCurrentBet: number;
   bigBlind: number;
+  // Server-authoritative minimum raise-to (current_bet + engine min_raise,
+  // which grows with the last full raise).  Fall back to the blind-based
+  // approximation only until the first broadcast arrives.
+  minRaise: number;
   onAction: (action: string, amount?: number) => void;
 }
 
-export default function ActionBar({ isMyTurn, currentBet, myStack, myCurrentBet, bigBlind, onAction }: Props) {
+export default function ActionBar({ isMyTurn, currentBet, myStack, myCurrentBet, bigBlind, minRaise, onAction }: Props) {
   const toCall = Math.max(0, currentBet - myCurrentBet);
   const canCheck = toCall === 0;
-  const minRaise = currentBet > 0 ? currentBet + bigBlind : bigBlind;
+  const minRaiseTo = minRaise > 0 ? minRaise : (currentBet > 0 ? currentBet + bigBlind : bigBlind);
   const maxRaise = myStack + myCurrentBet;  // total commit this street
-  const [raiseTo, setRaiseTo] = useState(minRaise);
+  const [raiseTo, setRaiseTo] = useState(minRaiseTo);
 
   if (!isMyTurn) {
     return <div className="action-bar"><span className="waiting-text">Waiting for others...</span></div>;
   }
 
-  const effectiveRaise = Math.min(Math.max(raiseTo, minRaise), maxRaise);
+  const effectiveRaise = Math.min(Math.max(raiseTo, minRaiseTo), maxRaise);
 
   return (
     <div className="action-bar">
@@ -35,16 +39,16 @@ export default function ActionBar({ isMyTurn, currentBet, myStack, myCurrentBet,
       <input
         className="raise-slider"
         type="range"
-        min={minRaise}
-        max={Math.max(maxRaise, minRaise)}
+        min={minRaiseTo}
+        max={Math.max(maxRaise, minRaiseTo)}
         value={effectiveRaise}
         onChange={e => setRaiseTo(Number(e.target.value))}
-        disabled={maxRaise < minRaise}
+        disabled={maxRaise < minRaiseTo}
       />
       <button
         className="btn raise"
         onClick={() => onAction(currentBet > 0 ? 'RAISE' : 'BET', effectiveRaise)}
-        disabled={maxRaise < minRaise}
+        disabled={maxRaise < minRaiseTo}
       >
         {currentBet > 0 ? `Raise to ${effectiveRaise}` : `Bet ${effectiveRaise}`}
       </button>

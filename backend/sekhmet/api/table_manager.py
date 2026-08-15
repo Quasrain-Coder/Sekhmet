@@ -918,11 +918,14 @@ def _hand_start_broadcast(session: TableSession) -> dict[str, Any]:
                 "stack": p.stack,
                 "current_bet": p.current_bet,
                 "is_human": p.is_human,
+                "is_active": p.is_active,
+                "is_all_in": p.is_all_in,
             }
             for p in session.game_state.players
         ],
         "small_blind": session.game_state.small_blind,
         "big_blind": session.game_state.big_blind,
+        "min_raise": session.game_state.min_raise,
         "sb_seat": session.game_state.sb_seat,
         "bb_seat": session.game_state.bb_seat,
         "pot": session.game_state.pot.main_pot,
@@ -943,6 +946,7 @@ def _state_broadcast(
         "community_cards": [str(c) for c in gs.community_cards],
         "pot": gs.pot.main_pot,
         "current_bet": gs.current_bet,
+        "min_raise": gs.min_raise,
         "current_player_idx": gs.current_player_idx,
         "dealer_idx": gs.dealer_idx,
         "sb_seat": gs.sb_seat,
