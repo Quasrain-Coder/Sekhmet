@@ -419,6 +419,15 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
     session = await get_table(table_id)
     if session is None or (not force and seat_idx not in session.disconnected):
         return
+
+    # A spectator parked outside the running hand (mid-hand sit) never
+    # blocks the game — a phone blip must not cost them the seat.  Keep
+    # the seat in `disconnected` so they can reclaim it whenever they
+    # return; it joins the roster at the next deal.  (Force-kicks only
+    # target acting players, so pending seats never reach this path.)
+    if seat_idx in session.pending_seats:
+        return
+
     session.disconnected.discard(seat_idx)
     timer = session.grace_timers.pop(seat_idx, None)
     # A force-kick can orphan a still-pending grace timer — cancel it or it
@@ -446,6 +455,10 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
     mid_hand = gs.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN)
 
     if not mid_hand:
+        # A parked spectator keeps the seat for reclaim — they were never
+        # part of a hand, nothing to fold out or clean up.
+        if seat_idx in session.pending_seats:
+            return
         # stand_up re-checks the phase under the lock — a start_hand that
         # slips in between this check and the removal loses the race and
         # the seat stays until the next expiry attempt.

@@ -43,6 +43,11 @@ export default function GameTablePage() {
   // confirmed (table_state echo).  An 'error' while pending means the sit
   // was rejected — revert mySeat so the user is not stranded at the table.
   const pendingSeat = useRef<number | null>(null);
+  // Last sit_down payload — resent when the socket reconnects while the
+  // sit is still unconfirmed (a send during a dead socket is silently
+  // dropped by useWebSocket, which would strand the user on the join
+  // panel with no feedback).
+  const pendingSitRef = useRef<{ seat: number; name: string; buyin: number } | null>(null);
 
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const toastId = useRef(0);
@@ -142,6 +147,7 @@ export default function GameTablePage() {
           // Receiving the token also confirms the sit, so drop pendingSeat
           // (its table_state/error handlers are no-ops once null).
           pendingSeat.current = null;
+          pendingSitRef.current = null;
           dispatch({ type: 'SET_MY_SEAT', seat: m.seat });
           break;
         case 'room_closed':
@@ -175,6 +181,7 @@ export default function GameTablePage() {
           }
           if (pendingSeat.current !== null) {
             pendingSeat.current = null;
+            pendingSitRef.current = null;
             dispatch({ type: 'SET_MY_SEAT', seat: null });
           }
           pushToast('error', m.message);  // never fail silently
@@ -190,10 +197,23 @@ export default function GameTablePage() {
   useEffect(() => {
     const wasDown = prevConnected.current === false;
     prevConnected.current = connected;
-    if (!connected || !wasDown || state.mySeat === null) return;
+    if (!connected || !wasDown) return;
+    if (pendingSitRef.current !== null) {
+      // Our sit_down may have been dropped while the socket was down —
+      // resend it so the join is not silently lost.  (mySeat is already
+      // set optimistically, so this must run before the auto-reclaim.)
+      const p = pendingSitRef.current;
+      const reclaimToken = localStorage.getItem(`reclaimToken_${tableId}`);
+      const ownerToken = localStorage.getItem(`ownerToken_${tableId}`);
+      send({ type: 'sit_down', seat_idx: p.seat, name: p.name, buyin: p.buyin,
+             ...(reclaimToken ? { reclaim_token: reclaimToken } : {}),
+             ...(ownerToken ? { owner_token: ownerToken } : {}) });
+      return;
+    }
+    if (state.mySeat === null) return;
     autoReclaim.current = { active: true, attempts: 0, timer: null };
     attemptReclaimRef.current();
-  }, [connected, state.mySeat]);
+  }, [connected, state.mySeat, send, tableId]);
 
   useEffect(() => stopAutoReclaim, [stopAutoReclaim]);
 
@@ -206,6 +226,7 @@ export default function GameTablePage() {
     if (!detail || detail === 'not-found' || selectedSeat === null) return;
     localStorage.setItem('pokerName', name);
     pendingSeat.current = selectedSeat;
+    pendingSitRef.current = { seat: selectedSeat, name, buyin };
     const reclaimToken = localStorage.getItem(`reclaimToken_${tableId}`);
     const ownerToken = localStorage.getItem(`ownerToken_${tableId}`);
     send({ type: 'sit_down', seat_idx: selectedSeat, name, buyin,
@@ -312,7 +333,7 @@ export default function GameTablePage() {
         </div>
         {midHand && (selectedIsReclaimable
           ? <p className="join-hint">Rejoining your seat — back into this hand</p>
-          : <p className="join-hint">Hand in progress — you'll watch as a spectator and join the next hand</p>)}
+          : <p className="join-hint">Hand in progress — press Sit Down now to watch and be dealt in next hand</p>)}
         {midHand && selectedOcc && !selectedIsReclaimable && !selectedOcc.connected && (
           <p className="join-hint">Seat taken — pick a free seat</p>
         )}
