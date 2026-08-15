@@ -1046,3 +1046,33 @@ async def test_manual_action_resets_timeout_counter():
     await tm.auto_bot_actions(tid)       # bot 先行动（SB）
     await tm.handle_player_action(tid, 0, "CHECK")  # 人类主动行动
     assert session.consecutive_timeouts[0] == 0
+
+
+async def test_concurrent_broadcasts_serialize_per_client():
+    """Two overlapping broadcasts must not interleave frames on one socket —
+    the per-seat send lock serializes them."""
+    import asyncio
+
+    class SlowWS:
+        def __init__(self):
+            self.max_concurrent = 0
+            self.concurrent = 0
+
+        async def send_json(self, message):
+            self.concurrent += 1
+            self.max_concurrent = max(self.max_concurrent, self.concurrent)
+            await asyncio.sleep(0.02)  # interleave window
+            self.concurrent -= 1
+
+    tid = await tm.create_table()
+    session = await tm.get_table(tid)
+    slow = SlowWS()
+    session.clients[0] = slow
+
+    await asyncio.gather(
+        tm.broadcast(tid, {"type": "a"}),
+        tm.broadcast(tid, {"type": "b"}),
+        tm.send_to_player(tid, 0, {"type": "c"}),
+    )
+    # without the lock the two sends overlap inside the sleep window
+    assert slow.max_concurrent == 1

@@ -110,6 +110,10 @@ class TableSession:
     reclaim_tokens: dict[int, str] = field(default_factory=dict)  # seat_idx → token
     action_timer: asyncio.Task | None = None
     owner_seat: int | None = None
+    # Serializes sends per client socket: concurrent broadcast/send_to_player
+    # calls (runout street + reclaim catch-up + kick notices can overlap)
+    # would interleave frames on one websocket otherwise.
+    send_locks: dict[int, asyncio.Lock] = field(default_factory=dict)
     last_activity: float = field(default_factory=time.monotonic)
     # Serializes every read-modify-write of ``game_state`` that can race:
     # the auto_bot_actions loop (incl. the all-in runout, whose per-street
@@ -286,6 +290,7 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
 
     session.player_names.pop(seat_idx, None)
     session.clients.pop(seat_idx, None)
+    session.send_locks.pop(seat_idx, None)
     session.bot_levels.pop(seat_idx, None)
     session.stats.pop(seat_idx, None)
     session.total_buyin.pop(seat_idx, None)
@@ -436,6 +441,7 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
         session.bot_levels.pop(seat_idx, None)
         session.reclaim_tokens.pop(seat_idx, None)
         session.consecutive_timeouts.pop(seat_idx, None)
+        session.send_locks.pop(seat_idx, None)
         # Drop the kicked player's socket or they keep receiving broadcasts
         # for a seat they no longer hold (the 'kicked' notice already went
         # out at entry).  Grace expiry popped it in handle_disconnect, so
@@ -741,14 +747,19 @@ async def broadcast(table_id: str, message: dict[str, Any]) -> None:
         return
 
     dead: list[int] = []
-    for seat, ws in session.clients.items():
+    # Snapshot: a sit_down/reclaim can mutate clients while we await
+    # send_json below, and mutating a dict mid-iteration raises.
+    for seat, ws in list(session.clients.items()):
+        lock = session.send_locks.setdefault(seat, asyncio.Lock())
         try:
-            await ws.send_json(message)
+            async with lock:
+                await ws.send_json(message)
         except Exception:
             dead.append(seat)
 
     for seat in dead:
         session.clients.pop(seat, None)
+        session.send_locks.pop(seat, None)
 
 
 async def send_to_player(table_id: str, seat_idx: int, message: dict[str, Any]) -> None:
@@ -758,10 +769,13 @@ async def send_to_player(table_id: str, seat_idx: int, message: dict[str, Any]) 
         return
     ws = session.clients.get(seat_idx)
     if ws is not None:
+        lock = session.send_locks.setdefault(seat_idx, asyncio.Lock())
         try:
-            await ws.send_json(message)
+            async with lock:
+                await ws.send_json(message)
         except Exception:
             session.clients.pop(seat_idx, None)
+            session.send_locks.pop(seat_idx, None)
 
 
 # ---------------------------------------------------------------------------
