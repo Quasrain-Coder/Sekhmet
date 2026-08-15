@@ -55,9 +55,17 @@ async def test_recording_failure_does_not_raise():
 
 
 async def test_hand_recorded_after_showdown():
-    """真实打一手牌（fold-out）→ 落库一条 HandRecord，战绩累计。"""
+    """真实打一手牌（fold-out）→ 落库一条 HandRecord；登录玩家的战绩
+    计入个人档案（user_stats），游客不计。"""
     tid = await tm.create_table()
-    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    async with db.SessionLocal() as s:
+        s.add(records.UserRecord(username="hero_acct", password_hash="h", salt="s"))
+        await s.commit()
+        uid = (await s.execute(
+            select(records.UserRecord.id).where(records.UserRecord.username == "hero_acct")
+        )).scalar()
+
+    await tm.sit_down(tid, 0, "Hero", buyin=200, user_id=uid)
     await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
     await tm.start_hand(tid)
     session = await tm.get_table(tid)
@@ -67,11 +75,12 @@ async def test_hand_recorded_after_showdown():
 
     async with db.SessionLocal() as s:
         hands = (await s.execute(select(records.HandRecord))).scalars().all()
-        stats = (await s.execute(select(records.PlayerStatsRecord))).scalars().all()
+        stats = (await s.execute(select(records.UserStatsRecord))).scalars().all()
     assert len(hands) == 1
     assert hands[0].table_id == tid
-    assert len(stats) == 1 and stats[0].name == "Hero"  # bot 不入库
-    assert stats[0].hands == 1
+    # 登录账号入档案（bot 与游客均不入）
+    assert len(stats) == 1 and stats[0].user_id == uid
+    assert stats[0].username == "hero_acct" and stats[0].hands == 1
 
 
 async def test_grace_expiry_does_not_resolve_already_settled_showdown():
@@ -79,8 +88,16 @@ async def test_grace_expiry_does_not_resolve_already_settled_showdown():
     手牌已被 runout/动作路径推进到 SHOWDOWN 并结算 —— 不得二次 resolve，
     否则重复 HandRecord、重复累计 PlayerStatsRecord、重复派彩。"""
     tid = await tm.create_table()
-    await tm.sit_down(tid, 0, "Hero", buyin=200)
-    await tm.sit_down(tid, 1, "Villain", buyin=200)
+    async with db.SessionLocal() as s:
+        for uname in ("hero_acct", "villain_acct"):
+            s.add(records.UserRecord(username=uname, password_hash="h", salt="s"))
+        await s.commit()
+        uids = (await s.execute(
+            select(records.UserRecord).order_by(records.UserRecord.id)
+        )).scalars().all()
+        ids = [u.id for u in uids]
+    await tm.sit_down(tid, 0, "Hero", buyin=200, user_id=ids[0])
+    await tm.sit_down(tid, 1, "Villain", buyin=200, user_id=ids[1])
     await tm.start_hand(tid)
 
     # 一路 check/call 推进到 RIVER（双方 active、公共牌 5 张，仍 mid-hand）
@@ -130,7 +147,7 @@ async def test_grace_expiry_does_not_resolve_already_settled_showdown():
         async with db.SessionLocal() as s:
             hands = (await s.execute(select(records.HandRecord))).scalars().all()
             stats = (await s.execute(
-                select(records.PlayerStatsRecord)
+                select(records.UserStatsRecord)
             )).scalars().all()
         if len(hands) == 1 and len(stats) == 2:
             break
@@ -182,9 +199,17 @@ def test_history_endpoints(mem_db_sync_client):
                 actions=[{"seat": 1, "action": "FOLD", "amount": 0}],
                 awards=[{"seat_idx": 0, "amount": 15, "hand": "Won without showdown"}],
             )
-            await recorder.upsert_player_stats([
-                {"name": "Hero", "is_human": True, "won": True, "delta": 15},
-                {"name": "Villain", "is_human": True, "won": False, "delta": -5},
+            async with db.SessionLocal() as s:
+                for uname in ("Hero", "Villain"):
+                    s.add(records.UserRecord(username=uname, password_hash="h", salt="s"))
+                await s.commit()
+                uids = (await s.execute(
+                    select(records.UserRecord).order_by(records.UserRecord.id)
+                )).scalars().all()
+                ids = [u.id for u in uids]
+            await recorder.upsert_user_stats([
+                {"user_id": ids[0], "username": "Hero", "won": True, "delta": 15},
+                {"user_id": ids[1], "username": "Villain", "won": False, "delta": -5},
             ])
         finally:
             await db.engine.dispose()  # 释放种子循环的池连接，客户端线程自行重建

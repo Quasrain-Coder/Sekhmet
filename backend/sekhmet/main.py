@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from contextlib import asynccontextmanager
 
-from .api import game, history, trainer, ws
+from .api import auth, game, history, trainer, ws
 from .api import table_manager as tm
 
 
@@ -44,6 +44,7 @@ app.add_middleware(
 )
 
 # Routes
+app.include_router(auth.router)
 app.include_router(game.router)
 app.include_router(trainer.router)
 app.include_router(history.router)

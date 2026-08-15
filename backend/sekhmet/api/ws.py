@@ -11,7 +11,7 @@ import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from ..game_engine import GameError, GamePhase
-from . import table_manager as tm
+from . import auth, table_manager as tm
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -22,6 +22,9 @@ async def game_websocket(websocket: WebSocket, table_id: str):
     await websocket.accept()
     logger.info("WebSocket connected to table %s", table_id)
 
+    # A logged-in client sends its session token as a query param; seats
+    # taken through this socket then feed the account profile stats.
+    user_id = auth.resolve_token(websocket.query_params.get("token"))
     my_seat: int | None = None
 
     try:
@@ -109,6 +112,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                     summary = await tm.sit_down(
                         table_id, seat_idx, name, buyin, is_human,
                         bot_level=bot_level, owner_token=owner_token,
+                        user_id=user_id,
                     )
 
                     # Only human seats claim the connection.  A bot seated

@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from sqlalchemy import select
 
 from ..models import db
-from ..models.records import HandRecord, PlayerStatsRecord
+from ..models.records import HandRecord, UserStatsRecord
 
 router = APIRouter(prefix="/api/history", tags=["history"])
 
@@ -31,12 +31,13 @@ async def list_hands(limit: int = 20, table_id: str | None = None):
 
 @router.get("/players")
 async def list_players():
+    """Ranked per-account stats — guest play is never recorded."""
     async with db.SessionLocal() as s:
         rows = (await s.execute(
-            select(PlayerStatsRecord).order_by(PlayerStatsRecord.net_chips.desc())
+            select(UserStatsRecord).order_by(UserStatsRecord.net_chips.desc())
         )).scalars().all()
     return {"players": [
-        {"name": r.name, "hands": r.hands, "wins": r.wins,
+        {"name": r.username, "hands": r.hands, "wins": r.wins,
          "net_chips": r.net_chips, "updated_at": r.updated_at.isoformat()}
         for r in rows
     ]}

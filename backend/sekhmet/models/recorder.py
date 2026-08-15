@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from . import db
-from .records import HandRecord, PlayerStatsRecord
+from .records import HandRecord, PlayerStatsRecord, UserRecord, UserStatsRecord
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +60,43 @@ async def upsert_player_stats(deltas: list[dict]) -> None:
             await s.commit()
     except Exception:
         logger.exception("failed to upsert player stats")
+
+
+async def upsert_user_stats(deltas: list[dict]) -> None:
+    """Accumulate per-account stats for logged-in players.  Never raises.
+
+    Guest seats (no ``user_id``) are skipped entirely — guest play is not
+    counted anywhere.  The upsert is atomic for the same reason as
+    upsert_player_stats: hands at different tables finish concurrently.
+    """
+    try:
+        async with db.SessionLocal() as s:
+            for d in deltas:
+                user_id = d.get("user_id")
+                if user_id is None:
+                    continue
+                username = (await s.execute(
+                    select(UserRecord.username).where(UserRecord.id == user_id)
+                )).scalar()
+                stmt = sqlite_insert(UserStatsRecord).values(
+                    user_id=user_id,
+                    username=username if username is not None else d.get("username", ""),
+                    hands=1,
+                    wins=1 if d.get("won") else 0,
+                    net_chips=d.get("delta", 0),
+                )
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=["user_id"],
+                    set_={
+                        "hands": UserStatsRecord.hands + stmt.excluded.hands,
+                        "wins": UserStatsRecord.wins + stmt.excluded.wins,
+                        "net_chips": UserStatsRecord.net_chips + stmt.excluded.net_chips,
+                    },
+                )
+                await s.execute(stmt)
+            await s.commit()
+    except Exception:
+        logger.exception("failed to upsert user stats")
 
 
 def schedule_recording(coro) -> None:

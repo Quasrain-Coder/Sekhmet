@@ -43,6 +43,60 @@ export default function Lobby() {
     setToasts(ts => ts.filter(t => t.id !== id));
   }, []);
 
+  // ---- Account (login/register): logged-in play feeds the profile, guests don't ----
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem('authToken') ?? '');
+  const [authUser, setAuthUser] = useState(() => localStorage.getItem('authUser') ?? '');
+  const [authStats, setAuthStats] = useState<{ hands: number; wins: number; net_chips: number } | null>(null);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authName, setAuthName] = useState('');
+  const [authPass, setAuthPass] = useState('');
+
+  const refreshProfile = useCallback(async (token: string) => {
+    try {
+      const resp = await fetch(`/api/auth/me?token=${encodeURIComponent(token)}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        setAuthUser(data.username);
+        setAuthStats(data.stats);
+      }
+    } catch { /* server may not be running */ }
+  }, []);
+
+  useEffect(() => {
+    if (authToken) refreshProfile(authToken);
+  }, [authToken, refreshProfile]);
+
+  const submitAuth = async () => {
+    try {
+      const resp = await fetch(`/api/auth/${authMode}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: authName.trim(), password: authPass }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        pushToast('error', data.detail ?? 'Authentication failed');
+        return;
+      }
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('authUser', data.username);
+      setAuthToken(data.token);
+      setAuthUser(data.username);
+      setAuthPass('');
+      refreshProfile(data.token);
+      pushToast('info', `${authMode === 'register' ? 'Registered' : 'Welcome back'}, ${data.username}`);
+    } catch { pushToast('error', 'Cannot reach server'); }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    setAuthToken('');
+    setAuthUser('');
+    setAuthStats(null);
+    pushToast('info', 'Logged out — playing as guest (stats not recorded)');
+  };
+
   const refresh = useCallback(async () => {
     try {
       const resp = await fetch('/api/game/tables');
@@ -86,6 +140,39 @@ export default function Lobby() {
         <div className="spade">♠</div>
         <h1>SEKHMET</h1>
         <div className="sub">Poker Trainer</div>
+      </div>
+
+      <div className="lobby-panel">
+        <div className="panel-label">Account</div>
+        {authToken ? (
+          <div className="lobby-actions">
+            <span className="auth-user">👤 {authUser}</span>
+            {authStats && (
+              <span className="profile-stats">
+                Hands {authStats.hands} · Wins {authStats.wins}
+                {' '}· Net {authStats.net_chips >= 0 ? '+' : ''}{authStats.net_chips}
+              </span>
+            )}
+            <button className="btn btn-sm" onClick={logout}>Logout</button>
+          </div>
+        ) : (
+          <div className="lobby-actions">
+            <input className="input" placeholder="Username" value={authName}
+                   onChange={e => setAuthName(e.target.value)} />
+            <input className="input" type="password" placeholder="Password" value={authPass}
+                   onChange={e => setAuthPass(e.target.value)}
+                   onKeyDown={e => { if (e.key === 'Enter') submitAuth(); }} />
+            <button className="btn gold" onClick={submitAuth}
+                    disabled={!authName.trim() || !authPass}>
+              {authMode === 'login' ? 'Login' : 'Register'}
+            </button>
+            <button className="btn btn-sm"
+                    onClick={() => setAuthMode(m => m === 'login' ? 'register' : 'login')}>
+              {authMode === 'login' ? 'No account? Register' : 'Have an account? Login'}
+            </button>
+            <span className="waiting-text">Guest play is not recorded</span>
+          </div>
+        )}
       </div>
 
       <div className="lobby-panel">
