@@ -571,9 +571,9 @@ select.input { width: auto; }
   .table-head .btn { padding: 6px 12px; font-size: 0.75rem; }
   .phase-label { font-size: 0.65rem; }
 
-  /* 动作栏吸底：滚动时贴住视口底部，始终在拇指区 */
+  /* 动作栏紧随牌桌（普通文档流，不吸底）：吸底会盖住牌桌下方
+     hero 悬出的手牌——轮到行动时按钮变高，正好把底牌遮住。 */
   .action-area {
-    position: sticky; bottom: 0; z-index: 60;
     display: block; width: 100%;
   }
   .action-area .action-bar {
@@ -581,7 +581,7 @@ select.input { width: auto; }
     border: 1px solid rgba(34, 211, 238, 0.25);
     border-radius: 12px;
     padding: 8px;
-    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 0 14px rgba(0, 0, 0, 0.45);
   }
 
   /* 信息区沉底（排行榜 + 行动记录），把屏幕留给牌桌 */
