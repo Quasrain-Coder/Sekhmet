@@ -133,6 +133,16 @@ describe('showdown reveal', () => {
     expect(faces[1].getAttribute('title')).toBe('K♥');
   });
 
+  test('hero never gets the reveal row — their own cards are already face-up', () => {
+    const { container } = render(
+      <PlayerSeat player={player({ seat_idx: 0, is_human: true })}
+                  holeCards={['A♠', 'K♥']} isCurrent={false} avatarLabel="你"
+                  isMe inHand dealSeq={1} revealedCards={['A♠', 'K♥']} />,
+    );
+    expect(container.querySelector('.revealed-cards')).toBeNull();
+    expect(container.querySelectorAll('.cards .card')).toHaveLength(2);
+  });
+
   test('a folded player never gets revealed cards', () => {
     const { container } = render(
       <PlayerSeat player={player({ is_active: false })} isCurrent={false}
