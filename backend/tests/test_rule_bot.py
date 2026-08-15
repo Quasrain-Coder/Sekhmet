@@ -3,10 +3,13 @@
 import pytest
 from sekhmet.game_engine.deck import Card, Rank, Suit
 from sekhmet.game_engine.game_state import (
-    GameState, GamePhase, Player, ActionType,
+    GameState, GamePhase, Player, ActionType, PotState,
 )
 from sekhmet.game_engine.action_processor import deal_new_hand
-from sekhmet.ai_engine.rule_bot import RuleBot, _preflop_strength
+from sekhmet.ai_engine.rule_bot import (
+    RuleBot, _preflop_strength, _made_hand_strength, _draw_outs,
+    _postflop_equity,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -202,6 +205,169 @@ def test_position_folded_anchor_falls_back():
     assert RuleBot._position(1, state) == 0.0
     assert RuleBot._position(2, state) == 1.0
 
+# ---------------------------------------------------------------------------
+# Postflop assessment — made-hand equity scale
+# ---------------------------------------------------------------------------
+
+
+def test_made_hand_strength_scale():
+    """Category index is not equity: top pair is medium, trips strong."""
+    board = [C(14, Suit.DIAMONDS), C(9, Suit.CLUBS), C(3, Suit.SPADES)]
+    top_pair = _made_hand_strength(
+        [C(14, Suit.HEARTS), C(13, Suit.HEARTS)], board)  # A + K kicker
+    assert 0.45 < top_pair < 0.75
+
+    bottom_pair = _made_hand_strength(
+        [C(3, Suit.HEARTS), C(2, Suit.CLUBS)], board)
+    assert bottom_pair < top_pair
+
+    trips = _made_hand_strength(
+        [C(9, Suit.HEARTS), C(9, Suit.DIAMONDS)], board)
+    assert trips > 0.75  # strong
+
+    high_card = _made_hand_strength(
+        [C(7, Suit.HEARTS), C(2, Suit.CLUBS)],
+        [C(14, Suit.DIAMONDS), C(10, Suit.CLUBS), C(5, Suit.SPADES)],
+    )
+    assert high_card < 0.45
+
+
+# ---------------------------------------------------------------------------
+# Draw outs
+# ---------------------------------------------------------------------------
+
+
+def test_draw_outs_flush_draw():
+    hole = [C(2, Suit.HEARTS), C(3, Suit.HEARTS)]
+    board = [C(10, Suit.HEARTS), C(11, Suit.HEARTS), C(5, Suit.DIAMONDS)]
+    assert _draw_outs(hole, board) == 9
+
+
+def test_draw_outs_oesd():
+    hole = [C(7, Suit.HEARTS), C(8, Suit.CLUBS)]
+    board = [C(9, Suit.DIAMONDS), C(10, Suit.SPADES), C(2, Suit.HEARTS)]
+    assert _draw_outs(hole, board) == 8
+
+
+def test_draw_outs_gutshot():
+    hole = [C(5, Suit.HEARTS), C(6, Suit.CLUBS)]
+    board = [C(8, Suit.DIAMONDS), C(9, Suit.SPADES), C(14, Suit.HEARTS)]
+    assert _draw_outs(hole, board) == 4
+
+
+def test_draw_outs_combo_not_double_counted():
+    """FD+OESD: 9 flush outs + 6 non-flush straight outs = 15."""
+    hole = [C(5, Suit.HEARTS), C(6, Suit.HEARTS)]
+    board = [C(7, Suit.HEARTS), C(8, Suit.HEARTS), C(2, Suit.DIAMONDS)]
+    assert _draw_outs(hole, board) == 15
+
+
+def test_draw_outs_wheel():
+    """A-2 with 3-4 on board: a 5 completes the wheel — 4 outs."""
+    hole = [C(14, Suit.HEARTS), C(2, Suit.CLUBS)]
+    board = [C(3, Suit.DIAMONDS), C(4, Suit.SPADES), C(9, Suit.HEARTS)]
+    assert _draw_outs(hole, board) == 4
+
+
+def test_postflop_equity_rule_of_four():
+    """Flop (two cards to come) gives roughly double the draw equity."""
+    assert _postflop_equity(0.1, 9, GamePhase.FLOP) > _postflop_equity(
+        0.1, 9, GamePhase.TURN)
+
+
+def test_postflop_equity_zero_on_river():
+    """No cards to come on the river — draws contribute no equity."""
+    assert _postflop_equity(0.1, 9, GamePhase.RIVER) == pytest.approx(0.1)
+
+
+def test_draw_outs_made_straight_has_no_straight_outs():
+    """A made straight does not count phantom straight outs."""
+    hole = [C(7, Suit.HEARTS), C(4, Suit.CLUBS)]
+    board = [C(14, Suit.HEARTS), C(10, Suit.CLUBS), C(5, Suit.DIAMONDS),
+             C(3, Suit.SPADES), C(2, Suit.HEARTS)]
+    assert _draw_outs(hole, board) == 0  # wheel already made
+
+
+# ---------------------------------------------------------------------------
+# Postflop decisions — draws and made hands vs pot odds
+# ---------------------------------------------------------------------------
+
+
+def _facing_bet_state(phase, bot_hole, board, bet, pot, seat=1):
+    """Two-player state where the bot faces *bet* into *pot*."""
+    hero = Player(name="Hero", seat_idx=0, stack=500,
+                  hole_cards=(C(14, Suit.SPADES), C(13, Suit.SPADES)),
+                  is_human=True)
+    botp = Player(name="Bot", seat_idx=seat, stack=500,
+                  hole_cards=tuple(bot_hole))
+    return GameState(
+        phase=phase,
+        players=(hero, botp),
+        community_cards=tuple(board),
+        dealer_idx=0,
+        current_player_idx=seat,
+        current_bet=bet,
+        min_raise=10,
+        small_blind=5,
+        big_blind=10,
+        pot=PotState(main_pot=pot),
+    )
+
+
+def test_bot_l2_draw_calls_with_correct_odds():
+    """L2 flush draw: calls a half-pot bet, folds to an overbet."""
+    bot = RuleBot(level=2)
+    hole = [C(2, Suit.HEARTS), C(3, Suit.HEARTS)]
+    board = [C(10, Suit.HEARTS), C(11, Suit.HEARTS), C(5, Suit.DIAMONDS)]
+    cheap = _facing_bet_state(GamePhase.FLOP, hole, board, bet=10, pot=20)
+    assert bot.decide(cheap, 1).type == ActionType.CALL  # required 0.33
+
+    over = _facing_bet_state(GamePhase.FLOP, hole, board, bet=100, pot=20)
+    assert bot.decide(over, 1).type == ActionType.FOLD  # required 0.83
+
+
+def test_bot_l1_chases_cheap_draw_only():
+    """L1 has no pot odds: chases ≤3bb draws, folds to big bets."""
+    bot = RuleBot(level=1)
+    hole = [C(2, Suit.HEARTS), C(3, Suit.HEARTS)]
+    board = [C(10, Suit.HEARTS), C(11, Suit.HEARTS), C(5, Suit.DIAMONDS)]
+    cheap = _facing_bet_state(GamePhase.FLOP, hole, board, bet=10, pot=20)
+    assert bot.decide(cheap, 1).type == ActionType.CALL
+
+    big = _facing_bet_state(GamePhase.FLOP, hole, board, bet=60, pot=20)
+    assert bot.decide(big, 1).type == ActionType.FOLD
+
+
+def test_bot_top_pair_calls_small_bet():
+    """Top pair is no longer treated as weak — calls a half-pot bet."""
+    bot = RuleBot(level=2)
+    hole = [C(14, Suit.SPADES), C(13, Suit.SPADES)]  # A + K kicker
+    board = [C(14, Suit.HEARTS), C(10, Suit.CLUBS), C(5, Suit.DIAMONDS)]
+    state = _facing_bet_state(GamePhase.FLOP, hole, board, bet=10, pot=20)
+    assert bot.decide(state, 1).type == ActionType.CALL
+
+
+def test_bot_two_pair_never_folds_reasonable_bet():
+    """Two pair facing a half-pot bet: call at both L1 and L2."""
+    hole = [C(14, Suit.SPADES), C(10, Suit.SPADES)]
+    board = [C(14, Suit.HEARTS), C(10, Suit.CLUBS), C(5, Suit.DIAMONDS)]
+    for level in (1, 2):
+        bot = RuleBot(level=level)
+        state = _facing_bet_state(GamePhase.FLOP, hole, board, bet=10, pot=20)
+        assert bot.decide(state, 1).type == ActionType.CALL
+
+
+def test_bot_gutshot_calls_with_good_odds():
+    """L2 gutshot (4 outs): calls a tiny bet, folds a pot-sized bet."""
+    bot = RuleBot(level=2)
+    hole = [C(5, Suit.SPADES), C(6, Suit.CLUBS)]
+    board = [C(8, Suit.HEARTS), C(9, Suit.DIAMONDS), C(14, Suit.CLUBS)]
+    cheap = _facing_bet_state(GamePhase.FLOP, hole, board, bet=2, pot=20)
+    assert bot.decide(cheap, 1).type == ActionType.CALL  # required 0.09
+
+    big = _facing_bet_state(GamePhase.FLOP, hole, board, bet=20, pot=20)
+    assert bot.decide(big, 1).type == ActionType.FOLD  # required 0.50
+
 
 # ---------------------------------------------------------------------------
 # RuleBot — basic
@@ -285,10 +451,11 @@ def test_bot_level3_can_bluff():
     """Level 3 bot occasionally calls with weak hands (bluff catch)."""
     bot = RuleBot(level=3)
     state = make_postflop_state(GamePhase.RIVER)
-    # Give bot very weak hand
+    # 79o: no pair, no straight on the A-T-5-3-2 river
+    # (74o would complete the A-2-3-4-5 wheel).
     players = list(state.players)
     players[1] = Player(name="Bot", seat_idx=1, stack=190,
-                        hole_cards=(C(7, Suit.HEARTS), C(2, Suit.CLUBS)))
+                        hole_cards=(C(7, Suit.HEARTS), C(9, Suit.CLUBS)))
     state = GameState(
         phase=state.phase, players=tuple(players),
         community_cards=state.community_cards,
