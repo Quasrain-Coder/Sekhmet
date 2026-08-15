@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 
 from .base_bot import BaseBot, BotPersonality
 from ..game_engine import Action, ActionType, GamePhase, GameState
+from ..game_engine.deck import Suit
 from ..game_engine.hand_evaluator import evaluate_7_cards, HandRank
 
 if TYPE_CHECKING:
@@ -65,36 +66,103 @@ def _preflop_strength(cards: list["Card"]) -> float:
 # ---------------------------------------------------------------------------
 
 
-def _made_hand_strength(hole: list["Card"], community: list["Card"]) -> float:
-    """Return 0–1 score for current made-hand strength.
+# Approximate made-hand equity vs a typical betting range, per category.
+# NOT a raw category index: rank/8 made one pair score 0.125 and put top
+# pair below the "medium" threshold — the bot folded two pair and trips
+# to a single bet.  Base values are deliberately conservative.
+_RANK_EQUITY: dict[HandRank, float] = {
+    HandRank.HIGH_CARD: 0.10,
+    HandRank.ONE_PAIR: 0.45,
+    HandRank.TWO_PAIR: 0.70,
+    HandRank.THREE_OF_A_KIND: 0.85,
+    HandRank.STRAIGHT: 0.90,
+    HandRank.FLUSH: 0.92,
+    HandRank.FULL_HOUSE: 0.96,
+    HandRank.FOUR_OF_A_KIND: 0.99,
+    HandRank.STRAIGHT_FLUSH: 1.0,
+}
 
-    Uses the evaluator to find the best 5-card hand and maps the
-    HandRank to a normalized 0–1 scale.
+
+def _made_hand_strength(hole: list["Card"], community: list["Card"]) -> float:
+    """Return 0–1 made-hand strength as an equity proxy.
+
+    Category base value plus rank/kicker refinements: top pair with a
+    big kicker is a real hand, bottom pair is not.
     """
     score = evaluate_7_cards(hole + community)
-    rank_count = len(HandRank)  # 9 categories
-    base = score.rank.value / (rank_count - 1)
-    # Boost by top kicker
-    kicker_bonus = score.kickers[0] / 14 * 0.05 if score.kickers else 0
-    return min(base + kicker_bonus, 1.0)
+    base = _RANK_EQUITY[score.rank]
+    k = score.kickers
+    if score.rank == HandRank.ONE_PAIR:
+        base += (k[0] - 2) / 12 * 0.15 + k[1] / 14 * 0.05
+    elif score.rank == HandRank.TWO_PAIR:
+        base += k[0] / 14 * 0.05
+    elif score.rank == HandRank.THREE_OF_A_KIND:
+        base += (k[0] - 2) / 12 * 0.05
+    elif score.rank == HandRank.HIGH_CARD and k:
+        base += k[0] / 14 * 0.10
+    return min(base, 0.95)
 
 
-def _has_draw(hole: list["Card"], community: list["Card"]) -> tuple[bool, bool]:
-    """Check for flush draw and open-ended straight draw.
+def _ranks_make_straight(ranks: list[int]) -> bool:
+    """True if the rank set contains 5 consecutive ranks (A plays low too)."""
+    uniq = sorted(set(ranks))
+    if 14 in uniq:
+        uniq = [1] + uniq  # wheel: A-2-3-4-5
+    run = 1
+    prev = uniq[0]
+    for r in uniq[1:]:
+        if r == prev + 1:
+            run += 1
+            if run >= 5:
+                return True
+        elif r != prev:
+            run = 1
+        prev = r
+    return False
 
-    Returns (flush_draw, oesd).
+
+def _draw_outs(hole: list["Card"], community: list["Card"]) -> int:
+    """Count unseen cards that complete a flush or a straight.
+
+    Each completing card counts exactly once — a straight card that is
+    also a flush card is not double-counted.  Gutshots (4 outs) and
+    open-ended draws (8) fall out naturally.  A category that is
+    already made contributes no outs (a straight draw never improves a
+    made straight).
     """
+    current = evaluate_7_cards(hole + community)
+    known = {(c.rank.value, c.suit.value) for c in hole + community}
     suits = [c.suit for c in hole + community]
-    flush_draw = any(suits.count(s) == 4 for s in set(suits))
-
+    flush_suits = (
+        [] if current.rank >= HandRank.FLUSH
+        else [s for s in set(suits) if suits.count(s) == 4]
+    )
     ranks = sorted({c.rank.value for c in hole + community})
-    oesd = False
-    for i in range(len(ranks) - 3):
-        if ranks[i + 3] - ranks[i] == 3:
-            oesd = True
-            break
+    outs = 0
+    for r in range(2, 15):
+        for s in Suit:
+            if (r, s.value) in known:
+                continue
+            if s in flush_suits:
+                outs += 1
+                continue
+            if current.rank >= HandRank.STRAIGHT:
+                continue
+            if _ranks_make_straight(ranks + [r]):
+                outs += 1
+    return outs
 
-    return flush_draw, oesd
+
+def _postflop_equity(made: float, outs: int, phase: GamePhase) -> float:
+    """Total equity: made-hand strength plus draw improvement.
+
+    Draw equity uses the rule of 2/4 (4% per out with two cards to
+    come on the flop, 2% with one), discounted by the chance the made
+    hand already wins outright.
+    """
+    cards_to_come = {GamePhase.FLOP: 2, GamePhase.TURN: 1}.get(phase, 0)
+    draw_equity = outs * 0.02 * cards_to_come
+    return min(made + draw_equity * (1 - made), 0.95)
 
 
 # ---------------------------------------------------------------------------
@@ -202,16 +270,17 @@ class RuleBot(BaseBot):
     ) -> Action:
         community = list(state.community_cards)
         made = _made_hand_strength(hole, community)
-        flush_draw, oesd = _has_draw(hole, community)
+        outs = _draw_outs(hole, community)
         p = self._personality
         to_call = state.current_bet - state.player(player_idx).current_bet  # type: ignore[operator]
+        equity = _postflop_equity(made, outs, state.phase)
 
         # --- Determine action category ---
-        if made > 0.8:
+        if made > 0.75:
             category = "strong"
-        elif made > 0.5:
+        elif made > 0.45:
             category = "medium"
-        elif flush_draw or oesd:
+        elif outs >= 8:
             category = "draw"
         else:
             category = "weak"
@@ -242,14 +311,22 @@ class RuleBot(BaseBot):
                     sizing = self._bet_size(state, made, is_preflop=False)
                     return Action(player_idx, ActionType.BET, amount=sizing)
                 return Action(player_idx, ActionType.CHECK)
-            # Call if price is right (Level 2+ uses pot odds)
+            # Call if the price is right (Level 2+ uses pot odds against
+            # estimated equity — Level 1 simply calls with made hands).
             if self._level >= 2 and p.use_pot_odds:
-                pot = state.pot.main_pot
-                odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 0
-                if made > odds:
-                    return Action(player_idx, ActionType.CALL)
-                return Action(player_idx, ActionType.FOLD)
+                return self._call_or_fold(state, player_idx, to_call, equity)
             return Action(player_idx, ActionType.CALL)
+
+        if category == "draw":
+            # Free card if nobody bet; otherwise chase with the right
+            # price (Level 1: only chase cheap draws).
+            if to_call == 0:
+                return Action(player_idx, ActionType.CHECK)
+            if self._level >= 2:
+                return self._call_or_fold(state, player_idx, to_call, equity)
+            if to_call <= state.big_blind * 3:
+                return Action(player_idx, ActionType.CALL)
+            return Action(player_idx, ActionType.FOLD)
 
         # category == "weak"
         if to_call == 0:
@@ -258,11 +335,24 @@ class RuleBot(BaseBot):
                 sizing = state.big_blind * 2
                 return Action(player_idx, ActionType.BET, amount=sizing)
             return Action(player_idx, ActionType.CHECK)
-        else:
-            # Bluff catch or fold
-            if self._level >= 3 and random.random() < p.bluff_frequency:
-                return Action(player_idx, ActionType.CALL)
-            return Action(player_idx, ActionType.FOLD)
+        # Gutshots and weak pairs still callable at the right price.
+        if self._level >= 2 and p.use_pot_odds:
+            return self._call_or_fold(state, player_idx, to_call, equity)
+        # Bluff catch or fold
+        if self._level >= 3 and random.random() < p.bluff_frequency:
+            return Action(player_idx, ActionType.CALL)
+        return Action(player_idx, ActionType.FOLD)
+
+    @staticmethod
+    def _call_or_fold(
+        state: GameState, player_idx: int, to_call: int, equity: float,
+    ) -> Action:
+        """Call when estimated equity meets the pot odds, else fold."""
+        pot = state.pot.main_pot
+        required = to_call / (pot + to_call) if (pot + to_call) > 0 else 0.0
+        if equity >= required:
+            return Action(player_idx, ActionType.CALL)
+        return Action(player_idx, ActionType.FOLD)
 
     # ------------------------------------------------------------------
     # Helpers
