@@ -215,10 +215,13 @@ def test_broadcasts_carry_min_raise_and_activity_flags():
         assert saw_hand_start, "never received hand_start"
         assert saw_update, "never received game_state_update"
 async def test_reclaim_rearms_action_timer():
-    """Reclaiming mid-hand restarts the action countdown — the auto-fold
-    must not fire on the stale timer from before the disconnect."""
+    """断联（ws 退出）→ 回合被瞬时自动行动跳过、牌局推进；reclaim 恢复
+    座位后，新一手轮到 hero 时行动计时器正常挂载。"""
+    import asyncio
     import random
+
     from sekhmet.api import table_manager as tm
+    from sekhmet.game_engine import GamePhase
 
     random.seed(7)  # deterministic deal: bot calls preflop, hero gets a turn
     client = TestClient(app)
@@ -242,16 +245,17 @@ async def test_reclaim_rearms_action_timer():
             if m["type"] == "game_state_update" and m["current_player_idx"] == 0:
                 break
 
-    session = await tm.get_table(tid)
-    old_timer = session.action_timer
-    assert old_timer is not None  # hero's turn → timer armed
-
-    # TestClient never pumps the server-side close frame, so simulate what
-    # the server does when it notices the dead socket.
-    await tm.handle_disconnect(tid, 0)
-    session = await tm.get_table(tid)
+    # ws1 退出即断联：hero 的回合被瞬时自动行动跳过，牌局自己走完
+    for _ in range(300):
+        session = await tm.get_table(tid)
+        if session.game_state.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+            break
+        await asyncio.sleep(0.01)
+    assert session.game_state.phase == GamePhase.SHOWDOWN
     assert 0 in session.disconnected
 
+    # 回到座位，并开下一手：reclaim 后计时器机制不受陈旧计时器干扰
+    # （断言须在 ws2 存活期间读取——连接退出后会再次正确标记断联）
     with client.websocket_connect(f"/ws/{tid}") as ws2:
         ws2.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero",
                        "reclaim_token": token})
@@ -259,11 +263,17 @@ async def test_reclaim_rearms_action_timer():
             m = ws2.receive_json()
             if m["type"] == "reclaim_token":
                 break
+        random.seed(7)  # 再次固定发牌：bot 跟注，轮到 hero
+        ws2.send_json({"type": "start_hand"})
+        for _ in range(50):
+            m = ws2.receive_json()
+            if m["type"] == "game_state_update" and m["current_player_idx"] == 0:
+                break
 
-    session = await tm.get_table(tid)
-    assert session.action_timer is not None
-    assert session.action_timer is not old_timer  # re-armed, not the stale one
-    session.action_timer.cancel()
+        session = await tm.get_table(tid)
+        assert 0 not in session.disconnected
+        assert session.action_timer is not None  # hero 的回合计时器已重挂
+        session.action_timer.cancel()
 def test_non_owner_cannot_add_bots():
     """Only the table owner may add bot seats — strangers can't spam a room."""
     client = TestClient(app)
@@ -530,3 +540,52 @@ async def test_disconnected_player_auto_folds_immediately():
 
     assert session.game_state.phase == GamePhase.SHOWDOWN
     assert elapsed < 3.0, f"hand stalled {elapsed:.2f}s for a dead connection"
+
+
+async def test_disconnected_seat_never_kicked_by_auto_folds():
+    """断联自动行动不计入连续超时——误退出连打三手后座位仍在、可 reclaim，
+    不会被 3 次自动弃牌踢出。"""
+    import asyncio
+
+    from sekhmet.api import table_manager as tm
+    from sekhmet.game_engine import GamePhase
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+
+    for _ in range(3):
+        await tm.start_hand(tid)
+        session = await tm.get_table(tid)
+        # 驱动牌局到 hero 回合（若 bot 提前弃牌直接结束，跳过本手断联）
+        for _ in range(200):
+            gs = session.game_state
+            if gs.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+                break
+            if gs.current_player_idx == 0:
+                break
+            await tm.after_action(tid)
+            session = await tm.get_table(tid)
+
+        gs = session.game_state
+        if gs.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN) \
+                and gs.current_player_idx == 0:
+            await tm.handle_disconnect(tid, 0)  # 回合中误退出
+            for _ in range(300):
+                session = await tm.get_table(tid)
+                if session.game_state.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+                    break
+                await asyncio.sleep(0.01)
+
+            assert session.game_state.phase == GamePhase.SHOWDOWN
+            assert 0 in session.player_names, "断联座位不得被超时踢出"
+            assert session.consecutive_timeouts.get(0, 0) == 0
+
+        # 回到座位（reclaim），继续下一手
+        if 0 in session.disconnected:
+            token = session.reclaim_tokens.get(0)
+            seat, new_token = await tm.try_reclaim(tid, "Hero", token)
+            assert seat == 0 and new_token is not None
+
+    session = await tm.get_table(tid)
+    assert 0 in session.player_names
