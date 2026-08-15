@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useGameState } from '../hooks/useGameState';
-import type { GameMsg, TableConfigData, SeatInfo } from '../hooks/useGameState';
+import type { GameMsg, TableConfigData, SeatInfo, PlayerInfo } from '../hooks/useGameState';
 import OvalTable from '../components/table/OvalTable';
 import ActionBar from '../components/table/ActionBar';
 import Leaderboard from '../components/table/Leaderboard';
@@ -15,6 +15,15 @@ interface TableDetail {
   max_seats: number;
   config: TableConfigData;
   seats: SeatInfo[];
+  // Live public game state (same fields as game_state_update) — lets the
+  // join panel preview the action without leaking private info.
+  community_cards?: string[];
+  pot?: number;
+  current_bet?: number;
+  current_player_idx?: number | null;
+  dealer_idx?: number | null;
+  sb_seat?: number | null;
+  bb_seat?: number | null;
 }
 
 const MAX_RECLAIM_ATTEMPTS = 6;
@@ -232,12 +241,31 @@ export default function GameTablePage() {
     const seatsNow = detail.seats;
     const phaseNow = detail.phase;
     const midHand = phaseNow !== 'WAITING' && phaseNow !== 'SHOWDOWN';
-    // Reclaim must stay reachable mid-hand (that's its core value: a
-    // disconnected player rejoins the hand in progress).  The midHand
-    // disable only blocks FRESH joins.
+    // The selected seat must stay pickable mid-hand when it is our own
+    // disconnected seat (reclaim) — fresh joins are blocked by the button.
     const selectedOcc = seatsNow.find(s => s.seat_idx === selectedSeat);
     const selectedIsReclaimable = !!selectedOcc && !selectedOcc.connected
       && selectedOcc.name === name;
+    // Live preview of the public game state: seated players with card
+    // backs / fold badges, community cards and pot.  Between hands stale
+    // is_active flags are ignored (fold badges make no sense in WAITING).
+    const previewPlayers: PlayerInfo[] = seatsNow.map(s => ({
+      seat_idx: s.seat_idx,
+      name: s.name,
+      stack: s.stack,
+      current_bet: s.current_bet ?? 0,
+      is_active: phaseNow === 'WAITING' ? true : (s.is_active ?? true),
+      is_all_in: s.is_all_in ?? false,
+      is_human: s.is_human,
+    }));
+    // Occupied seats belong to someone else — only free seats and our own
+    // disconnected seat (same name) can be picked.
+    const handleSeatSelect = (idx: number) => {
+      const occ = seatsNow.find(s => s.seat_idx === idx);
+      const reclaimable = !!occ && !occ.connected && occ.name === name;
+      if (occ && !reclaimable) return;
+      setSelectedSeat(idx);
+    };
     return (
       <div className="join-panel">
         <h2>Table {detail.table_id}</h2>
@@ -245,27 +273,27 @@ export default function GameTablePage() {
            {' '}· Buy-in {detail.config.default_buyin}
            {' '}· {seatsNow.length}/{detail.max_seats} players
            {' '}· {phaseNow}</p>
-        {seatsNow.length > 0 && (
-          <p className="room-meta">Seated: {seatsNow.map(s => s.name).join(', ')}</p>
-        )}
-        <div className="seat-picker">
-          {Array.from({ length: detail.max_seats }, (_, i) => {
-            const occ = seatsNow.find(s => s.seat_idx === i);
-            // A disconnected seat whose name matches the typed name can be
-            // reclaimed — the server runs try_reclaim on same-name sit_down.
-            const reclaimable = occ && !occ.connected && occ.name === name;
-            return (
-              <button
-                key={i}
-                className={`picker-seat seat-${i}${occ ? ' taken' : ''}${reclaimable ? ' reclaim' : ''}${selectedSeat === i ? ' selected' : ''}`}
-                disabled={!!occ && !reclaimable}
-                title={occ ? occ.name : `Seat ${i}`}
-                onClick={() => setSelectedSeat(i)}
-              >
-                {occ ? occ.name.charAt(0) : i}
-              </button>
-            );
-          })}
+        <div className="join-table">
+          <OvalTable
+            seats={seatsNow}
+            players={previewPlayers}
+            maxSeats={detail.max_seats}
+            communityCards={detail.community_cards ?? []}
+            pot={detail.pot ?? 0}
+            currentPlayerIdx={detail.current_player_idx ?? null}
+            dealerIdx={detail.dealer_idx ?? null}
+            sbSeat={detail.sb_seat ?? null}
+            bbSeat={detail.bb_seat ?? null}
+            // rotate the preview so the seat we are about to pick is at the
+            // bottom (the view we will actually play from)
+            mySeat={selectedSeat}
+            holeCards={[]}
+            phase={phaseNow}
+            onAddBot={() => {}}
+            onKickBot={() => {}}
+            onSeatSelect={handleSeatSelect}
+            selectedSeat={selectedSeat}
+          />
         </div>
         <div className="lobby-actions">
           <input className="input" placeholder="Your name" value={name}

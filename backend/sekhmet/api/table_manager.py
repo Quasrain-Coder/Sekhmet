@@ -867,10 +867,16 @@ async def send_to_player(table_id: str, seat_idx: int, message: dict[str, Any]) 
 
 
 def table_info(session: TableSession) -> dict[str, Any]:
-    """Serializable public table info — shared by REST and ws summary."""
+    """Serializable public table info — shared by REST and ws summary.
+
+    Includes the live public game state (community cards, pot, in-hand
+    flags) so the join panel can preview the action.  All fields here are
+    public — the same ones the game_state_update broadcast sends.
+    """
+    gs = session.game_state
     seats = []
     for seat, name in sorted(session.player_names.items()):
-        p = session.game_state.player(seat)
+        p = gs.player(seat)
         st = session.stats.get(seat)
         buyin = session.total_buyin.get(seat, p.stack if p is not None else 0)
         seats.append({
@@ -884,10 +890,13 @@ def table_info(session: TableSession) -> dict[str, Any]:
             "net_chips": (p.stack if p is not None else 0) - buyin,
             "connected": seat not in session.disconnected,
             "is_owner": seat == session.owner_seat,
+            "current_bet": p.current_bet if p is not None else 0,
+            "is_active": p.is_active if p is not None else False,
+            "is_all_in": p.is_all_in if p is not None else False,
         })
     return {
         "table_id": session.table_id,
-        "phase": session.game_state.phase.name,
+        "phase": gs.phase.name,
         "max_seats": session.n_seats,
         "config": {
             "small_blind": session.config.small_blind,
@@ -896,6 +905,13 @@ def table_info(session: TableSession) -> dict[str, Any]:
             "max_seats": session.config.max_seats,
         },
         "seats": seats,
+        "community_cards": [str(c) for c in gs.community_cards],
+        "pot": gs.pot.main_pot,
+        "current_bet": gs.current_bet,
+        "current_player_idx": gs.current_player_idx,
+        "dealer_idx": gs.dealer_idx,
+        "sb_seat": gs.sb_seat,
+        "bb_seat": gs.bb_seat,
     }
 
 
