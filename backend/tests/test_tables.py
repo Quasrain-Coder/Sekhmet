@@ -1048,6 +1048,38 @@ async def test_manual_action_resets_timeout_counter():
     assert session.consecutive_timeouts[0] == 0
 
 
+async def test_stand_up_mid_hand_rejected_direct():
+    """tm.stand_up is the backstop: even a race that slips past the
+    transport-level phase check cannot rip a seat out mid-hand."""
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "A", buyin=200)
+    await tm.sit_down(tid, 1, "B", buyin=200)
+    await tm.start_hand(tid)
+    with pytest.raises(tm.GameError, match="mid-hand"):
+        await tm.stand_up(tid, 0)
+    # seat intact
+    session = await tm.get_table(tid)
+    assert session.game_state.player(0) is not None
+    assert 0 in session.player_names
+
+
+async def test_expire_seat_identity_cleared_under_lock(monkeypatch):
+    """Grace expiry between hands removes identity + players atomically —
+    start_hand afterwards must not deal a ghost seat."""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.handle_disconnect(tid, 0)
+    await asyncio.sleep(0.15)
+
+    # only the bot remains — start_hand refuses; and no ghost seat lingers
+    with pytest.raises(tm.GameError, match="Need at least 2 players"):
+        await tm.start_hand(tid)
+    session = await tm.get_table(tid)
+    assert len(session.game_state.players) == 1
+    assert session.game_state.player(0) is None  # hero fully removed
 async def test_crashing_bot_does_not_freeze_game(monkeypatch):
     """A bot whose decide() raises must fall back, not wedge the table."""
     from sekhmet.ai_engine import bot_registry
