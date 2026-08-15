@@ -1046,3 +1046,45 @@ async def test_manual_action_resets_timeout_counter():
     await tm.auto_bot_actions(tid)       # bot 先行动（SB）
     await tm.handle_player_action(tid, 0, "CHECK")  # 人类主动行动
     assert session.consecutive_timeouts[0] == 0
+
+
+async def test_crashing_bot_does_not_freeze_game(monkeypatch):
+    """A bot whose decide() raises must fall back, not wedge the table."""
+    from sekhmet.ai_engine import bot_registry
+    from sekhmet.game_engine import GamePhase
+
+    class CrashBot:
+        def decide(self, state, player_idx):
+            raise RuntimeError("bot bug")
+
+    monkeypatch.setattr(bot_registry, "create", lambda name: CrashBot())
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False, bot_level=1)
+    await tm.start_hand(tid)
+
+    # dealer advances to seat 1 → bot is SB and acts first; it faces the
+    # big blind's 10 with 5 posted → the crash fallback folds it out and
+    # the hand completes instead of freezing mid-round.
+    await tm.auto_bot_actions(tid)
+    session = await tm.get_table(tid)
+    assert session.game_state.phase == GamePhase.SHOWDOWN
+    assert session.game_state.player(0).stack == 205  # hero collected the blinds
+
+
+async def test_after_action_survives_bot_phase_crash(monkeypatch):
+    """Even if the bot phase blows up, the action timer still gets armed."""
+    async def boom(table_id):
+        raise RuntimeError("unexpected")
+
+    monkeypatch.setattr(tm, "auto_bot_actions", boom)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 1, "Hero", buyin=200)   # seat 1: dealer→1, hero acts first
+    await tm.sit_down(tid, 0, "Bot", buyin=200, is_human=False, bot_level=1)
+    await tm.start_hand(tid)
+
+    await tm.after_action(tid)  # must not raise
+    session = await tm.get_table(tid)
+    assert session.action_timer is not None  # human-to-act timer armed
+    session.action_timer.cancel()
