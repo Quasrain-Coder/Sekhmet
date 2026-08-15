@@ -155,7 +155,7 @@ export default function OvalTable({
             <div key={`empty-${i}`} className={`empty-seat seat-${displaySlot(i, total, mySeat)}`}>
               {pendingSeat === i ? (
                 <span className="bot-level-picker">
-                  {[1, 2, 3].map(lv => (
+                  {[1, 2, 3, 4].map(lv => (
                     <button key={lv} className="btn btn-sm"
                             onClick={() => { onAddBot(i, lv); setPendingSeat(null); }}>
                       L{lv}

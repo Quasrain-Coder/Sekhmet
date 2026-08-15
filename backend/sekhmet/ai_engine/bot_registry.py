@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Callable
 
 from .base_bot import BaseBot, BotPersonality
+from .gto_bot import GTOBot
 from .rule_bot import RuleBot
 
 
@@ -45,3 +46,5 @@ def list_bots() -> list[str]:
 register("rule_lv1", lambda **kw: RuleBot(level=1, **kw))
 register("rule_lv2", lambda **kw: RuleBot(level=2, **kw))
 register("rule_lv3", lambda **kw: RuleBot(level=3, **kw))
+
+register("gto_lv4", lambda **kw: GTOBot(**kw))
