@@ -1075,4 +1075,12 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
             }
             for a in awards_list
         ],
+        # Reveal the hole cards of everyone who reached showdown so the
+        # frontend can flip their seat backs face-up.  Fold-outs keep this
+        # empty — the winner's cards stay hidden.
+        "hole_cards": {
+            p.seat_idx: [str(c) for c in p.hole_cards]
+            for p in active
+            if p.seat_idx in hands
+        },
     }

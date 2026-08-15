@@ -17,6 +17,8 @@ interface Props {
   mySeat: number | null;
   holeCards: string[];
   phase: string;
+  // Seat → revealed hole cards, populated by hand_result at showdown.
+  showdownHoleCards?: Record<number, string[]>;
   onAddBot: (seatIdx: number, level: number) => void;
   onKickBot: (seatIdx: number) => void;
 }
@@ -37,7 +39,7 @@ function displaySlot(seatIdx: number, total: number, mySeat: number | null): num
 export default function OvalTable({
   seats, players, maxSeats, communityCards, pot, currentPlayerIdx,
   dealerIdx, sbSeat, bbSeat,
-  mySeat, holeCards, phase, onAddBot, onKickBot,
+  mySeat, holeCards, phase, showdownHoleCards, onAddBot, onKickBot,
 }: Props) {
   const showCommunity = phase !== 'WAITING' && phase !== 'PREFLOP' && phase !== 'DEALING';
   // Mid-hand seating changes corrupt the engine — only offer bot seats
@@ -109,6 +111,7 @@ export default function OvalTable({
               positionTag={tag}
               inHand={handLive}
               dealSeq={dealSeq}
+              revealedCards={showdownHoleCards?.[seat.seat_idx]}
             />
             {!seat.is_human && (
               <span className="bot-badge">
