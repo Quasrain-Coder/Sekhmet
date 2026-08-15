@@ -78,10 +78,12 @@ export default function GameTablePage() {
       const m = msg as GameMsg;
       switch (m.type) {
         case 'table_state':
-          if (pendingSeat.current !== null &&
-              m.seats.some(s => s.seat_idx === pendingSeat.current)) {
-            pendingSeat.current = null;  // sit confirmed
-          }
+          // NOTE: this broadcast is NOT a sit confirmation.  It is public —
+          // a rival who grabbed the seat first triggers the same broadcast,
+          // and clearing pendingSeat here would swallow our own rejection
+          // (the 'error' handler below would find pendingSeat already null
+          // and never revert mySeat, stranding us in the table view).
+          // The definitive confirmation is the private reclaim_token.
           dispatch({ type: 'TABLE_STATE', data: m as any });
           break;
         case 'hand_start': dispatch({ type: 'HAND_START', data: m as any }); break;
