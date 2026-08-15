@@ -4,8 +4,8 @@ Level 1 — Basic ABC poker:
     Raises premiums, calls medium hands, folds trash.
 
 Level 2 — Intermediate:
-    Adds position awareness, pot-odds consideration, and tighter
-    play against aggression.
+    Adds position awareness, pot-odds consideration, occasional
+    bluff-catching, and tighter play against aggression.
 
 Level 3 — Advanced:
     Adds range-based thinking, semi-bluffing with draws, variable
@@ -338,8 +338,9 @@ class RuleBot(BaseBot):
         # Gutshots and weak pairs still callable at the right price.
         if self._level >= 2 and p.use_pot_odds:
             return self._call_or_fold(state, player_idx, to_call, equity)
-        # Bluff catch or fold
-        if self._level >= 3 and random.random() < p.bluff_frequency:
+        # Bluff catch or fold (Level 2+ — L2's bluff_frequency was
+        # previously dead configuration, only L3 ever reached here).
+        if self._level >= 2 and random.random() < p.bluff_frequency:
             return Action(player_idx, ActionType.CALL)
         return Action(player_idx, ActionType.FOLD)
 
