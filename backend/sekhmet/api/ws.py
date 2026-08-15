@@ -241,10 +241,16 @@ async def game_websocket(websocket: WebSocket, table_id: str):
 
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected from table %s (seat %s)", table_id, my_seat)
-        if my_seat is not None:
-            try:
-                await tm.handle_disconnect(table_id, my_seat)
-            except Exception:
-                logger.exception("handle_disconnect failed for seat %s", my_seat)
     except Exception:
         logger.exception("Unexpected error in WebSocket for table %s", table_id)
+
+    # The client is gone — on a graceful close the receive loop ends
+    # WITHOUT raising in this stack, so the seat must be marked
+    # disconnected here regardless of how the connection died.  Otherwise
+    # a polite "← Lobby" click leaves the seat looking occupied forever
+    # and the player can neither re-sit nor reclaim it.
+    if my_seat is not None:
+        try:
+            await tm.handle_disconnect(table_id, my_seat)
+        except Exception:
+            logger.exception("handle_disconnect failed for seat %s", my_seat)

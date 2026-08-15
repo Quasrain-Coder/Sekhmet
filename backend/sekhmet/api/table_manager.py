@@ -836,6 +836,19 @@ async def _action_timeout(table_id: str, seat_idx: int, delay_seconds: float | N
     action_type = "CHECK" if to_call == 0 else "FOLD"
     logger.info("action timeout: auto %s for seat %s at table %s",
                 action_type, seat_idx, table_id)
+    # Kicks only apply to CONNECTED idle players.  A disconnected seat
+    # auto-folds instantly (schedule_action_timeout arms a 0s timer) — one
+    # accidental exit would otherwise rack up three strikes across three
+    # streets and boot the player's seat before they can reclaim it.
+    # Disconnected seats are cleaned up by grace expiry instead.
+    if seat_idx in session.disconnected:
+        try:
+            msg = await handle_player_action(table_id, seat_idx, action_type)
+            await broadcast(table_id, msg)
+            await after_action(table_id)
+        except GameError:
+            pass
+        return
     # Capture the count before the auto-action: handle_player_action zeroes
     # the counter (it can't distinguish auto from manual actions), so reading
     # it afterwards would always yield 1 and the kick would never fire.
