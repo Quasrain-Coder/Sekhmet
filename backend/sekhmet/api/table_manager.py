@@ -103,6 +103,9 @@ class TableSession:
     config: TableConfig = field(default_factory=TableConfig)
     bot_levels: dict[int, int] = field(default_factory=dict)  # seat_idx → 1-3
     stats: dict[int, PlayerStats] = field(default_factory=dict)      # seat_idx → stats
+    # Seats occupied while a hand was in progress — they join the roster at
+    # the next deal (never added to game_state mid-hand).
+    pending_seats: set[int] = field(default_factory=set)
     total_buyin: dict[int, int] = field(default_factory=dict)        # seat_idx → chips bought
     disconnected: set[int] = field(default_factory=set)
     consecutive_timeouts: dict[int, int] = field(default_factory=dict)  # seat_idx → count
@@ -256,10 +259,17 @@ async def sit_down(
     if seat_idx in session.player_names:
         raise GameError(f"Seat {seat_idx} is already occupied")
 
-    # Mid-hand joins corrupt the betting round (a fresh player has matched
-    # no bets and holds no cards) — only allow seating between hands.
-    if session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
-        raise GameError("Table is mid-hand — wait for the next hand")
+    mid_hand = session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN)
+    if mid_hand and not is_human:
+        # Bots are house furniture — the owner adds them between hands
+        # (the UI hides the "+ Bot" controls mid-hand too).
+        raise GameError("Bots can only be added between hands")
+    if mid_hand:
+        # A fresh human may sit while the hand runs: they spectate the
+        # current hand (their seat never enters game_state.players, which
+        # would corrupt the betting round — no matched bets, no cards) and
+        # are dealt into the next one from pending_seats at start_hand.
+        pass
 
     if not is_human:
         level = 2 if bot_level is None else int(bot_level)
@@ -282,10 +292,14 @@ async def sit_down(
     )
     session.player_names[seat_idx] = name
 
-    # Add player to GameState
-    current = list(session.game_state.players)
-    current.append(player)
-    session.game_state = session.game_state.with_players(tuple(current))
+    if mid_hand:
+        # Parked outside the running hand — dealt in at the next start_hand.
+        session.pending_seats.add(seat_idx)
+    else:
+        # Add player to GameState
+        current = list(session.game_state.players)
+        current.append(player)
+        session.game_state = session.game_state.with_players(tuple(current))
 
     # Ownership: the bearer of the room's owner_token (returned at
     # creation) claims the room — on first sit-down or by taking over
@@ -314,6 +328,7 @@ def _stand_up_locked(session: TableSession, seat_idx: int) -> None:
     session.total_buyin.pop(seat_idx, None)
     session.reclaim_tokens.pop(seat_idx, None)
     session.consecutive_timeouts.pop(seat_idx, None)
+    session.pending_seats.discard(seat_idx)
 
     players = tuple(p for p in session.game_state.players if p.seat_idx != seat_idx)
     session.game_state = session.game_state.with_players(players)
@@ -332,7 +347,11 @@ async def stand_up(table_id: str, seat_idx: int) -> dict[str, Any]:
         raise GameError(f"Table {table_id} not found")
 
     async with session.lock:
-        if session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+        mid_hand = session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN)
+        # A pending spectator (seated mid-hand, not in the running hand)
+        # may leave any time — they were never part of game_state.players.
+        in_hand = session.game_state.player(seat_idx) is not None
+        if mid_hand and in_hand:
             raise GameError("Table is mid-hand — cannot remove a seat")
         _stand_up_locked(session, seat_idx)
 
@@ -469,6 +488,7 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
             session.reclaim_tokens.pop(seat_idx, None)
             session.consecutive_timeouts.pop(seat_idx, None)
             session.send_locks.pop(seat_idx, None)
+            session.pending_seats.discard(seat_idx)
             # Drop the kicked player's socket or they keep receiving
             # broadcasts for a seat they no longer hold (the 'kicked'
             # notice already went out at entry).  Grace expiry popped it
@@ -553,6 +573,21 @@ async def start_hand(table_id: str) -> dict[str, Any]:
         )
         if len(live) != len(session.game_state.players):
             session.game_state = session.game_state.with_players(live)
+
+        # Players who sat while the previous hand was running join the
+        # roster now — they were parked outside game_state.players, which
+        # must never gain a seat mid-hand (no matched bets, no cards).
+        if session.pending_seats:
+            players = list(session.game_state.players)
+            for seat in sorted(session.pending_seats):
+                players.append(Player(
+                    name=session.player_names[seat],
+                    seat_idx=seat,
+                    stack=session.total_buyin.get(seat, session.config.default_buyin),
+                    is_human=True,
+                ))
+            session.game_state = session.game_state.with_players(tuple(players))
+            session.pending_seats.clear()
 
         # Fresh deck, shuffle, deal
         session.deck = Deck()
@@ -888,12 +923,17 @@ def table_info(session: TableSession) -> dict[str, Any]:
             "name": name,
             "is_human": p.is_human if p is not None else True,
             "bot_level": session.bot_levels.get(seat),
-            "stack": p.stack if p is not None else 0,
+            # A seat parked outside the running hand has no engine player —
+            # its buy-in is still its stack.
+            "stack": p.stack if p is not None else buyin,
             "hands": st.hands if st else 0,
             "wins": st.wins if st else 0,
-            "net_chips": (p.stack if p is not None else 0) - buyin,
+            "net_chips": (p.stack if p is not None else buyin) - buyin,
             "connected": seat not in session.disconnected,
             "is_owner": seat == session.owner_seat,
+            # True only when the seat is part of the running hand — the
+            # frontend uses it to skip card backs for parked spectators.
+            "in_hand": p is not None,
             "current_bet": p.current_bet if p is not None else 0,
             "is_active": p.is_active if p is not None else False,
             "is_all_in": p.is_all_in if p is not None else False,

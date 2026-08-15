@@ -25,6 +25,9 @@ export interface SeatInfo {
   current_bet?: number;
   is_active?: boolean;
   is_all_in?: boolean;
+  // True only when the seat is part of the running hand — false for a
+  // player who sat mid-hand and is parked until the next deal.
+  in_hand?: boolean;
 }
 
 export interface TableConfigData {

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import GameTablePage from '../pages/GameTable';
 
@@ -13,6 +13,8 @@ class MockWebSocket {
   constructor(_url: string) { MockWebSocket.instances.push(this); }
   send() {}
   close() {}
+  // test helpers
+  open() { this.readyState = 1; this.onopen?.(); }
 }
 
 const CONFIG = { small_blind: 5, big_blind: 10, default_buyin: 200, max_seats: 4 };
@@ -83,6 +85,27 @@ test('join panel previews the live table: community cards, pot, backs, folds', a
   expect(document.querySelector('.pos-tag.pos-d')!.textContent).toBe('D');
   expect(document.querySelector('.pos-tag.pos-sb')!.textContent).toBe('SB');
   expect(document.querySelector('.pos-tag.pos-bb')!.textContent).toBe('BB');
+});
+
+test('mid-hand fresh joins are allowed; parked seats render without backs', async () => {
+  renderPage({
+    ...FLOP_DETAIL,
+    max_seats: 6,
+    seats: [
+      ...FLOP_DETAIL.seats,
+      { seat_idx: 3, name: 'Late', is_human: true, bot_level: null, stack: 200,
+        hands: 0, wins: 0, net_chips: 0, connected: true, is_owner: false,
+        current_bet: 0, is_active: false, is_all_in: false, in_hand: false },
+    ],
+  });
+  const sit = (await screen.findByRole('button', { name: 'Sit Down' })) as HTMLButtonElement;
+  // a fresh join is allowed while the hand runs (parked until next deal) —
+  // free seat 4 is preselected and the socket is open
+  act(() => { MockWebSocket.instances[0].open(); });
+  expect(sit.disabled).toBe(false);
+  // the parked seat shows no card backs; the active bot still does
+  expect(document.querySelector('[data-seat="3"] .hole-cards')).toBeNull();
+  expect(document.querySelector('[data-seat="1"] .hole-cards')).not.toBeNull();
 });
 
 test('occupied seats are not pickable; free seats select on click', async () => {

@@ -197,6 +197,20 @@ describe('deal trigger', () => {
     expect(container.querySelector('.hole-cards')).toBeNull();
   });
 
+  test('a seat parked outside the running hand holds no cards', () => {
+    const props = {
+      seats: [seat(0, '你', true), seat(1, 'Bot L2', false), seat(2, 'Late', true)],
+      // seat 2 sat mid-hand — no player record in the running hand
+      players: [player({ seat_idx: 0, is_human: true }), player()],
+      maxSeats: 3, communityCards: ['A♠'], pot: 0,
+      currentPlayerIdx: null, dealerIdx: null, sbSeat: null, bbSeat: null,
+      mySeat: 0, holeCards: [], onAddBot: vi.fn(), onKickBot: vi.fn(),
+    };
+    const { container } = render(<OvalTable {...props} phase="FLOP" />);
+    expect(container.querySelector('[data-seat="2"] .hole-cards')).toBeNull();
+    expect(container.querySelector('[data-seat="1"] .hole-cards')).not.toBeNull();
+  });
+
   test('reclaim mid-hand (mount in FLOP) does not fire the deal animation', () => {
     const props = {
       seats: [seat(0, '你', true), seat(1, 'Bot L2', false)],

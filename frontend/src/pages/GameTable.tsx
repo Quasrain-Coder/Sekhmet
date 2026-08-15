@@ -241,23 +241,27 @@ export default function GameTablePage() {
     const seatsNow = detail.seats;
     const phaseNow = detail.phase;
     const midHand = phaseNow !== 'WAITING' && phaseNow !== 'SHOWDOWN';
-    // The selected seat must stay pickable mid-hand when it is our own
-    // disconnected seat (reclaim) — fresh joins are blocked by the button.
+    // Our own disconnected seat can be picked any time (reclaim re-enters
+    // the running hand); a fresh sit mid-hand parks the seat until the
+    // next deal — the server enforces that, this is the UI half.
     const selectedOcc = seatsNow.find(s => s.seat_idx === selectedSeat);
     const selectedIsReclaimable = !!selectedOcc && !selectedOcc.connected
       && selectedOcc.name === name;
     // Live preview of the public game state: seated players with card
     // backs / fold badges, community cards and pot.  Between hands stale
-    // is_active flags are ignored (fold badges make no sense in WAITING).
-    const previewPlayers: PlayerInfo[] = seatsNow.map(s => ({
-      seat_idx: s.seat_idx,
-      name: s.name,
-      stack: s.stack,
-      current_bet: s.current_bet ?? 0,
-      is_active: phaseNow === 'WAITING' ? true : (s.is_active ?? true),
-      is_all_in: s.is_all_in ?? false,
-      is_human: s.is_human,
-    }));
+    // is_active flags are ignored (fold badges make no sense in WAITING);
+    // seats parked outside the running hand render as plain spectators.
+    const previewPlayers: PlayerInfo[] = seatsNow
+      .filter(s => s.in_hand !== false)
+      .map(s => ({
+        seat_idx: s.seat_idx,
+        name: s.name,
+        stack: s.stack,
+        current_bet: s.current_bet ?? 0,
+        is_active: phaseNow === 'WAITING' ? true : (s.is_active ?? true),
+        is_all_in: s.is_all_in ?? false,
+        is_human: s.is_human,
+      }));
     // Occupied seats belong to someone else — only free seats and our own
     // disconnected seat (same name) can be picked.
     const handleSeatSelect = (idx: number) => {
@@ -301,14 +305,16 @@ export default function GameTablePage() {
           <input className="input" type="number" value={buyin} style={{ width: 110 }}
                  onChange={e => setBuyin(Number(e.target.value))} />
           <button className="btn" onClick={joinTable}
-                  disabled={!name || !connected || selectedSeat === null
-                            || (midHand && !selectedIsReclaimable)}>
+                  disabled={!name || !connected || selectedSeat === null}>
             Sit Down
           </button>
           <button className="btn btn-sm" onClick={() => navigate('/')}>← Lobby</button>
         </div>
-        {midHand && !selectedIsReclaimable && (
-          <p className="join-hint">Hand in progress — wait for it to finish</p>
+        {midHand && (selectedIsReclaimable
+          ? <p className="join-hint">Rejoining your seat — back into this hand</p>
+          : <p className="join-hint">Hand in progress — you'll watch as a spectator and join the next hand</p>)}
+        {midHand && selectedOcc && !selectedIsReclaimable && !selectedOcc.connected && (
+          <p className="join-hint">Seat taken — pick a free seat</p>
         )}
         <Toast items={toasts} onDismiss={dismissToast} />
       </div>
