@@ -258,18 +258,16 @@ select.input { width: auto; }
 .player-seat .cards { display: flex; gap: 5px; margin-top: 4px; }
 
 /* ---- Hole-card backs (in-hand players) + deal/fold animations ---- */
-/* 锚定头像的绝对定位（在 .avatar 内）——不进 flex 列流，不撑高座位盒，
-   避免顶排座位的 name/stack 与底池显示、底排座位与下注胶囊重叠。 */
-.hole-cards, .revealed-cards {
-  position: absolute; left: 50%; transform: translateX(-50%);
-  top: calc(100% + 4px); display: flex; gap: 4px; z-index: 2;
-  pointer-events: none;
+/* 牌背位于头像与 name/stack 之间的列流中——不会遮挡筹码显示，
+   座位盒随之增高，底池标签因此移到牌桌顶沿（见 .pot-display）。 */
+.hole-cards, .revealed-cards { display: flex; gap: 4px; margin-top: 4px; }
+/* 底排角落座位面朝桌面中央：牌背悬于头像上方（margin-top 给 Fold 徽标
+   留位），下注胶囊移到座位下方避免与牌背重叠 */
+.seat-1 .hole-cards, .seat-7 .hole-cards,
+.seat-1 .revealed-cards, .seat-7 .revealed-cards {
+  order: -1; margin: 8px 0 4px;
 }
-/* 底排座位面朝桌面中央：牌悬于头像上方（+20px 缝隙避开下注胶囊） */
-.seat-0 .hole-cards, .seat-1 .hole-cards, .seat-7 .hole-cards,
-.seat-0 .revealed-cards, .seat-1 .revealed-cards, .seat-7 .revealed-cards {
-  top: auto; bottom: calc(100% + 20px);
-}
+.seat-1 .bet, .seat-7 .bet { top: auto; bottom: -14px; }
 .hole-card {
   width: 24px; height: 34px; border-radius: 4px; display: inline-block;
   position: relative; overflow: hidden;
@@ -374,9 +372,11 @@ select.input { width: auto; }
 }
 
 /* ---- Pot ---- */
+/* 底池标签挂在牌桌顶沿（跨骑台边）：任何座位列增高都不会与之重叠 */
 .pot-display {
-  position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
+  position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%);
   display: flex; align-items: center; gap: 4px;
+  z-index: 5;
 }
 .pot-amount {
   color: var(--cyan-text); font-weight: 700; font-size: 0.72rem;

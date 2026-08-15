@@ -59,30 +59,32 @@ export default function PlayerSeat({ player, isCurrent, holeCards, avatarLabel, 
   // kept the backs mounted after folding — the class flip folding→dealing
   // replayed the deal fly-in and the cards "flew back" for good.
   const showBacks = !isMe && ((inHand && !folded) || justFolded);
-  const showRevealed = !folded && !!revealedCards && revealedCards.length > 0;
+  // Hero's own face-up cards already render via holeCards — never render
+  // the reveal row for them (it would duplicate the hand).
+  const showRevealed = !isMe && !folded && !!revealedCards && revealedCards.length > 0;
 
   return (
     <div className={cls}>
       <div className="avatar">
         {avatarLabel}
         {positionTag && <span className={`pos-tag pos-${positionTag.toLowerCase()}`}>{positionTag}</span>}
-        {showRevealed ? (
-          <div className="revealed-cards">
-            {revealedCards!.map((c, i) => (
-              <span key={i} style={{ '--deal-delay': `${i * 120}ms` } as CSSProperties}>
-                <CardView card={c} />
-              </span>
-            ))}
-          </div>
-        ) : showBacks && (
-          <div className={`hole-cards${justFolded ? ' folding' : dealSeq > 0 ? ' dealing' : ''}`}>
-            {[0, 1].map(i => (
-              <span key={`${dealSeq}-${i}`} className="hole-card"
-                    style={{ animationDelay: `${i * 70}ms` }} />
-            ))}
-          </div>
-        )}
       </div>
+      {showRevealed ? (
+        <div className="revealed-cards">
+          {revealedCards!.map((c, i) => (
+            <span key={i} style={{ '--deal-delay': `${i * 120}ms` } as CSSProperties}>
+              <CardView card={c} />
+            </span>
+          ))}
+        </div>
+      ) : showBacks && (
+        <div className={`hole-cards${justFolded ? ' folding' : dealSeq > 0 ? ' dealing' : ''}`}>
+          {[0, 1].map(i => (
+            <span key={`${dealSeq}-${i}`} className="hole-card"
+                  style={{ animationDelay: `${i * 70}ms` }} />
+          ))}
+        </div>
+      )}
       <div className="name">{player.name}</div>
       <div className="stack">{player.stack}</div>
       {player.current_bet > 0 && <div className="bet">{player.current_bet}</div>}
