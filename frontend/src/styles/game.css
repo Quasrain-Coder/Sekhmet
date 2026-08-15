@@ -214,16 +214,62 @@ select.input { width: auto; }
 }
 .player-seat .cards { display: flex; gap: 5px; margin-top: 4px; }
 
-/* Seat positions (逻辑不变，仍由 .seat-N 定位) */
-.seat-0 { bottom: 5%; left: 50%; transform: translateX(-50%); }
-.seat-1 { bottom: 18%; right: 8%; }
-.seat-2 { top: 35%; right: 2%; }
-.seat-3 { top: 8%; right: 20%; }
-.seat-4 { top: 5%; left: 50%; transform: translateX(-50%); }
-.seat-5 { top: 8%; left: 20%; }
-.seat-6 { top: 35%; left: 2%; }
-.seat-7 { bottom: 18%; left: 8%; }
-.seat-8 { top: 6%; left: 32%; }
+/* ---- Hole-card backs (in-hand players) + deal/fold animations ---- */
+.hole-cards { display: flex; gap: 4px; margin-top: 4px; }
+.hole-card {
+  width: 24px; height: 34px; border-radius: 4px; display: inline-block;
+  border: 1.5px solid #155e75;
+  background: repeating-linear-gradient(45deg, #0b1424, #0b1424 4px, #0e1a2e 4px, #0e1a2e 8px);
+}
+/* 底排座位面朝桌面中央，牌背放在头像上方（朝向桌面） */
+.seat-0 .hole-cards, .seat-1 .hole-cards, .seat-7 .hole-cards {
+  order: -1; margin-top: 0; margin-bottom: 4px;
+}
+/* 发牌：牌背从桌面中央飞向座位 */
+.hole-cards.dealing .hole-card,
+.cards.dealing .card {
+  animation: deal-fly 0.45s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+}
+@keyframes deal-fly {
+  from { transform: translate(var(--fly-x, 0px), var(--fly-y, -90px)) rotate(-12deg) scale(0.5); opacity: 0; }
+  to   { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+}
+/* 弃牌：牌飞回桌面中央并淡出（forwards 停在终点） */
+.hole-cards.folding .hole-card {
+  animation: fold-fly-out 0.6s ease-in forwards;
+}
+@keyframes fold-fly-out {
+  from { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  to   { transform: translate(var(--fly-x, 0px), var(--fly-y, -90px)) rotate(16deg) scale(0.4); opacity: 0; }
+}
+.folded-tag {
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%); z-index: 3;
+  font-size: 0.55rem; font-weight: 700; color: #cbd5e1;
+  background: rgba(51, 65, 85, 0.92); border: 1px solid #64748b;
+  padding: 1px 7px; border-radius: 8px; white-space: nowrap; pointer-events: none;
+}
+
+/* ---- Community card deal: flip-in for newly dealt cards ---- */
+.community-cards .dealt .card {
+  animation: card-flip-in 0.35s ease-out var(--deal-delay, 0ms) backwards;
+}
+@keyframes card-flip-in {
+  from { transform: rotateY(85deg) scale(0.6); opacity: 0; }
+  to   { transform: rotateY(0deg) scale(1); opacity: 1; }
+}
+
+/* Seat positions (逻辑不变，仍由 .seat-N 定位)。
+   --fly-x/--fly-y: 座位 → 桌面中心的向量，发牌（从中心飞出）与弃牌（飞回中心）
+   共用同一个向量，方向相反。 */
+.seat-0 { bottom: 5%; left: 50%; transform: translateX(-50%); --fly-x: 0px;    --fly-y: -110px; }
+.seat-1 { bottom: 18%; right: 8%; --fly-x: 70px;   --fly-y: -80px; }
+.seat-2 { top: 35%; right: 2%;    --fly-x: 150px;  --fly-y: 0px; }
+.seat-3 { top: 8%; right: 20%;    --fly-x: 80px;   --fly-y: 60px; }
+.seat-4 { top: 5%; left: 50%; transform: translateX(-50%); --fly-x: 0px;    --fly-y: 100px; }
+.seat-5 { top: 8%; left: 20%;     --fly-x: -80px;  --fly-y: 60px; }
+.seat-6 { top: 35%; left: 2%;     --fly-x: -150px; --fly-y: 0px; }
+.seat-7 { bottom: 18%; left: 8%;  --fly-x: -70px;  --fly-y: -80px; }
+.seat-8 { top: 6%; left: 32%;     --fly-x: -40px;  --fly-y: 80px; }
 
 /* seat-wrap 锚定机制（PR #10 修复，勿动）：wrapper (seat-wrap + seat-N) 负责绝对定位；
    内层 player-seat 仅 relative（保持在文档流，不做绝对定位），为 .bet 胶囊提供 containing block */
@@ -411,6 +457,7 @@ select.input { width: auto; }
   .card .corner { font-size: 0.45rem; }
   .card.big { width: 40px; height: 57px; }
   .card.big .pip { font-size: 1.2rem; }
+  .hole-card { width: 18px; height: 26px; }
 
   /* 动作栏：垂直堆叠，拇指友好 */
   .action-bar { flex-direction: column; align-items: stretch; width: 100%; }

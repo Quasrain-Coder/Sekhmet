@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { PlayerInfo, SeatInfo } from '../../hooks/useGameState';
 import PlayerSeat from './PlayerSeat';
 import CommunityCards from './CommunityCards';
@@ -51,6 +51,19 @@ export default function OvalTable({
   }, [canAddBot]);
   const total = Math.min(Math.max(maxSeats, 2), 9);
   const occupied = new Map(seats.map(s => [s.seat_idx, s]));
+  // Card backs exist from deal through showdown; they clear in WAITING.
+  const handLive = phase !== 'WAITING' && phase !== 'SHOWDOWN';
+  // Deal-animation trigger: fires on the WAITING/SHOWDOWN → DEALING/PREFLOP
+  // transition (a new hand).  Reclaims mid-hand never fire it — prevPhase
+  // initialises to the current phase, so only a real transition counts.
+  const prevPhase = useRef(phase);
+  const [dealSeq, setDealSeq] = useState(0);
+  useEffect(() => {
+    const started = (phase === 'DEALING' || phase === 'PREFLOP')
+      && (prevPhase.current === 'WAITING' || prevPhase.current === 'SHOWDOWN');
+    prevPhase.current = phase;
+    if (started) setDealSeq(s => s + 1);
+  }, [phase]);
 
   return (
     <div className="table-felt">
@@ -93,6 +106,8 @@ export default function OvalTable({
               }
               isMe={isMe}
               positionTag={tag}
+              inHand={handLive}
+              dealSeq={dealSeq}
             />
             {!seat.is_human && (
               <span className="bot-badge">
