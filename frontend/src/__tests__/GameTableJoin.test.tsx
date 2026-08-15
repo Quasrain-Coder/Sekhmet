@@ -23,6 +23,7 @@ class MockWebSocket {
 
   // test helpers
   open() { this.readyState = 1; this.onopen?.(); }
+  drop() { this.readyState = 3; this.onclose?.(); }
   receive(msg: unknown) { this.onmessage?.({ data: JSON.stringify(msg) }); }
 }
 
@@ -47,6 +48,35 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   delete (globalThis as any).WebSocket;
+});
+
+test('a sit_down dropped by a dead socket is resent after reconnect', async () => {
+  render(
+    <MemoryRouter initialEntries={['/game/abc']}>
+      <Routes>
+        <Route path="/game/:tableId" element={<GameTablePage />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  const sitButton = await screen.findByRole('button', { name: 'Sit Down' });
+  act(() => { MockWebSocket.instances[0].open(); });
+  fireEvent.click(sitButton);
+  expect(MockWebSocket.instances[0].sent).toHaveLength(1);
+
+  // the socket dies right after the click — the send on a dead socket is
+  // a silent no-op; the 1s backoff reconnect must resend the sit
+  vi.useFakeTimers();
+  try {
+    act(() => { MockWebSocket.instances[0].drop(); });
+    act(() => { vi.advanceTimersByTime(1000); });
+    expect(MockWebSocket.instances).toHaveLength(2);
+    act(() => { MockWebSocket.instances[1].open(); });
+
+    expect(MockWebSocket.instances[1].sent[0]).toContain('sit_down');
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test('rival grabbing the seat first must not strand us in the table view', async () => {

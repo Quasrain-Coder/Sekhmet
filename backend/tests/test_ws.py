@@ -457,3 +457,38 @@ async def test_mid_hand_sit_parks_seat_until_next_hand():
         p.hole_cards is not None and len(p.hole_cards) == 2
         for p in session.game_state.players
     )
+
+
+async def test_pending_seat_survives_grace_expiry():
+    """挂起座位的断线宽限到期：座位保留在 disconnected 供 reclaim——
+    手机切走再回来不会丢座，下一手仍会发牌入局。"""
+    import asyncio
+
+    from sekhmet.api import table_manager as tm
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+    await tm.sit_down(tid, 2, "Late", buyin=200)  # parked mid-hand
+    session = await tm.get_table(tid)
+    token = session.reclaim_tokens[2]
+
+    await tm.handle_disconnect(tid, 2)
+    session = await tm.get_table(tid)
+    timer = session.grace_timers.pop(2, None)
+    if timer is not None:
+        timer.cancel()
+        await asyncio.gather(timer, return_exceptions=True)
+    await tm._expire_seat(tid, 2)
+
+    session = await tm.get_table(tid)
+    assert 2 in session.player_names       # seat kept
+    assert 2 in session.pending_seats      # still queued for the next deal
+    assert 2 in session.disconnected       # reclaimable
+
+    # reclaim restores the seat
+    seat, new_token = await tm.try_reclaim(tid, "Late", token)
+    assert seat == 2 and new_token is not None
+    session = await tm.get_table(tid)
+    assert 2 not in session.disconnected
