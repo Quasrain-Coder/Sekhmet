@@ -276,6 +276,16 @@ select.input { width: auto; }
 .action-bar .btn.raise { border-color: var(--gold); color: var(--gold-text); box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
 .action-bar .btn.allin { border-color: #8b2020; color: #ffd0d0; box-shadow: none; }
 .raise-slider { accent-color: var(--cyan); width: 150px; }
+.raise-controls { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+.raise-row { display: flex; gap: 8px; align-items: center; }
+.raise-input { width: 88px; padding: 5px 8px; font-size: 0.8rem; }
+.raise-presets { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+.raise-presets .btn {
+  min-width: 0; padding: 3px 10px; font-size: 0.7rem;
+  border-color: #334155; color: var(--text-dim);
+  box-shadow: none; font-weight: 500;
+}
+.raise-presets .btn:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan-text); }
 
 /* ---- Status / misc ---- */
 .waiting-text { color: var(--text-dim); font-style: italic; }
@@ -405,7 +415,9 @@ select.input { width: auto; }
   /* 动作栏：垂直堆叠，拇指友好 */
   .action-bar { flex-direction: column; align-items: stretch; width: 100%; }
   .action-bar .btn { width: 100%; padding: 12px; }
-  .raise-slider { width: 100%; }
+  .raise-controls, .raise-row { width: 100%; }
+  .raise-slider { width: auto; flex: 1; }
+  .raise-input { flex: 1; width: auto; }
 
   /* 面板全宽 */
   .leaderboard, .hand-result, .join-panel { max-width: 100%; }
