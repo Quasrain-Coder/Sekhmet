@@ -405,11 +405,14 @@ select.input { width: auto; }
 .raise-controls { display: flex; flex-direction: column; gap: 5px; align-items: center; }
 .raise-row { display: flex; gap: 8px; align-items: center; }
 .raise-input { width: 88px; padding: 5px 8px; font-size: 0.8rem; }
-.raise-presets { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+.raise-presets {
+  display: flex; gap: 4px; flex-wrap: nowrap; justify-content: center;
+}
 .raise-presets .btn {
-  min-width: 0; padding: 3px 10px; font-size: 0.7rem;
+  min-width: 0; padding: 3px 8px; font-size: 0.68rem;
   border-color: #334155; color: var(--text-dim);
   box-shadow: none; font-weight: 500;
+  white-space: nowrap;
 }
 .raise-presets .btn:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan-text); }
 
