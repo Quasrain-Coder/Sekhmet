@@ -904,7 +904,7 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
             hands[p.seat_idx] = evaluate_7_cards(all_cards)
 
         # Award
-        awards_list = award_pot(pot, gs.players, hands)
+        awards_list = award_pot(pot, gs.players, hands, gs.dealer_idx)
 
     for seat in {a.winner_seat_idx for a in awards_list}:
         if seat in session.stats:
