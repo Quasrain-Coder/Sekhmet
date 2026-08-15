@@ -519,6 +519,94 @@ def test_bot_level1_never_bluff_catches():
     assert all(d == ActionType.FOLD for d in decisions)
 
 
+# ---------------------------------------------------------------------------
+# Adaptive bluff probabilities
+# ---------------------------------------------------------------------------
+
+
+class _FixedRandom:
+    """Deterministic random stub — random() always returns *value*."""
+
+    def __init__(self, value):
+        self.value = value
+
+    def random(self):
+        return self.value
+
+
+def _pot_state(phase, pot):
+    """Minimal state carrying only what the probability helpers read."""
+    return GameState(
+        phase=phase, players=(), community_cards=(),
+        dealer_idx=0, current_player_idx=None, current_bet=0,
+        min_raise=10, small_blind=5, big_blind=10,
+        pot=PotState(main_pot=pot),
+    )
+
+
+def test_semi_bluff_prob_decreases_by_street():
+    """Flop > turn > river: fewer cards to come, fewer semi-bluffs."""
+    bot = RuleBot(level=3)
+    flop = _pot_state(GamePhase.FLOP, 20)
+    turn = _pot_state(GamePhase.TURN, 20)
+    river = _pot_state(GamePhase.RIVER, 20)
+    assert bot._semi_bluff_prob(flop) > bot._semi_bluff_prob(turn)
+    assert bot._semi_bluff_prob(turn) > bot._semi_bluff_prob(river)
+
+
+def test_semi_bluff_prob_grows_with_pot():
+    """Bigger pots reward aggression — and saturate at 15bb."""
+    bot = RuleBot(level=3)
+    small = _pot_state(GamePhase.FLOP, 5)
+    mid = _pot_state(GamePhase.FLOP, 150)
+    big = _pot_state(GamePhase.FLOP, 600)
+    assert bot._semi_bluff_prob(mid) > bot._semi_bluff_prob(small)
+    assert bot._semi_bluff_prob(big) == bot._semi_bluff_prob(mid)  # capped
+
+
+def test_bluff_catch_prob_favors_cheap_bets():
+    """Small bets offer good odds → catch more; overbets → catch less."""
+    bot = RuleBot(level=3)
+    state = _pot_state(GamePhase.RIVER, 20)
+    cheap = bot._bluff_catch_prob(state, 2)
+    mid = bot._bluff_catch_prob(state, 10)
+    over = bot._bluff_catch_prob(state, 40)
+    assert cheap > mid > over
+    assert all(0.0 <= p <= 1.0 for p in (cheap, mid, over))
+
+
+def test_semi_bluff_fires_on_flop_big_pot_not_river_small(monkeypatch):
+    """The adaptive probability actually gates the semi-bluff branch."""
+    monkeypatch.setattr("sekhmet.ai_engine.rule_bot.random",
+                        _FixedRandom(0.2))
+    bot = RuleBot(level=3)
+    hole = [C(2, Suit.HEARTS), C(3, Suit.HEARTS)]
+    flop = [C(10, Suit.HEARTS), C(11, Suit.HEARTS), C(5, Suit.DIAMONDS)]
+    big = _facing_bet_state(GamePhase.FLOP, hole, flop, bet=0, pot=150)
+    assert bot.decide(big, 1).type == ActionType.BET  # prob 0.26 > 0.2
+
+    # River with the same draw but a small pot: prob ~0.06 < 0.2 → check.
+    river_board = flop + [C(9, Suit.SPADES), C(14, Suit.CLUBS)]
+    small = _facing_bet_state(GamePhase.RIVER, hole, river_board,
+                              bet=0, pot=20)
+    assert bot.decide(small, 1).type == ActionType.CHECK
+
+
+def test_bluff_catch_fires_on_cheap_bet_not_overbet(monkeypatch):
+    """The price-tuned probability gates the bluff-catch branch."""
+    monkeypatch.setattr("sekhmet.ai_engine.rule_bot.random",
+                        _FixedRandom(0.15))
+    bot = RuleBot(level=3)
+    hole = [C(7, Suit.HEARTS), C(9, Suit.CLUBS)]
+    board = [C(14, Suit.HEARTS), C(10, Suit.CLUBS), C(5, Suit.DIAMONDS),
+             C(3, Suit.SPADES), C(2, Suit.HEARTS)]
+    cheap = _facing_bet_state(GamePhase.RIVER, hole, board, bet=10, pot=20)
+    assert bot.decide(cheap, 1).type == ActionType.CALL  # prob 0.175 > 0.15
+
+    over = _facing_bet_state(GamePhase.RIVER, hole, board, bet=100, pot=20)
+    assert bot.decide(over, 1).type == ActionType.FOLD  # prob 0.10 < 0.15
+
+
 def test_bot_all_three_levels_return_valid_actions():
     """Sanity: all levels produce valid actions in common spots."""
     for lv in [1, 2, 3]:

@@ -286,8 +286,9 @@ class RuleBot(BaseBot):
             category = "weak"
 
         if self._level >= 3 and category == "draw":
-            # Semi-bluff some of the time
-            if random.random() < p.aggression * 0.4:
+            # Semi-bluff some of the time, more often with two cards to
+            # come and into bigger pots (see _semi_bluff_prob).
+            if random.random() < self._semi_bluff_prob(state):
                 sizing = self._bet_size(state, 0.5, is_preflop=False)
                 if sizing >= state.player(player_idx).stack:  # type: ignore[operator]
                     return Action(player_idx, ActionType.ALL_IN)
@@ -344,9 +345,37 @@ class RuleBot(BaseBot):
             required = to_call / (pot + to_call) if (pot + to_call) > 0 else 0.0
             if equity >= required:
                 return Action(player_idx, ActionType.CALL)
-        if self._level >= 2 and random.random() < p.bluff_frequency:
+        if self._level >= 2 and random.random() < self._bluff_catch_prob(
+            state, to_call,
+        ):
             return Action(player_idx, ActionType.CALL)
         return Action(player_idx, ActionType.FOLD)
+
+    def _semi_bluff_prob(self, state: GameState) -> float:
+        """Probability of semi-bluffing a draw, tuned by street and pot.
+
+        More cards to come (flop > turn > river) and bigger pots reward
+        aggression; the river factor keeps pure bluffs rare.  Pot scale
+        saturates at 15bb, a typical postflop pot.
+        """
+        p = self._personality
+        street = {
+            GamePhase.FLOP: 1.0, GamePhase.TURN: 0.7, GamePhase.RIVER: 0.4,
+        }[state.phase]
+        pot_scale = min(1.0, state.pot.main_pot / (state.big_blind * 15))
+        return p.aggression * 0.4 * street * (0.5 + 0.5 * pot_scale)
+
+    def _bluff_catch_prob(self, state: GameState, to_call: int) -> float:
+        """Probability of bluff-catching, tuned by the price offered.
+
+        Good pot odds (a small bet) justify catching more often; an
+        overbet makes hero-calls expensive and thus rarer.
+        """
+        p = self._personality
+        pot = state.pot.main_pot
+        odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 0.0
+        price_factor = 1.0 + 0.5 * (1.0 - 2.0 * odds)
+        return max(0.0, min(1.0, p.bluff_frequency * price_factor))
 
     @staticmethod
     def _call_or_fold(
