@@ -17,11 +17,14 @@ interface TableDetail {
   seats: SeatInfo[];
 }
 
+const MAX_RECLAIM_ATTEMPTS = 6;
+const RECLAIM_RETRY_MS = 5000;
+
 export default function GameTablePage() {
   const { tableId = '' } = useParams();
   const navigate = useNavigate();
   const [state, dispatch] = useGameState();
-  const { connected, send, onMessage } = useWebSocket(tableId);
+  const { connected, reconnectIn, send, onMessage } = useWebSocket(tableId);
   const [detail, setDetail] = useState<TableDetail | null | 'not-found'>(null);
   const [name, setName] = useState(() => localStorage.getItem('pokerName') || '');
   const [buyin, setBuyin] = useState(200);
@@ -41,6 +44,27 @@ export default function GameTablePage() {
   const dismissToast = useCallback((id: number) => {
     setToasts(ts => ts.filter(t => t.id !== id));
   }, []);
+
+  // Auto-reclaim loop: after a reconnect we re-send sit_down with the
+  // reclaim token so the server restores our seat (and re-sends private
+  // state).  The seat only becomes reclaimable once the server has noticed
+  // the dead socket, so a blip can fail with "already occupied" for a
+  // while — retry quietly, and only surface an error if we give up.
+  const autoReclaim = useRef<{
+    active: boolean; attempts: number;
+    timer: ReturnType<typeof setTimeout> | null;
+  }>({ active: false, attempts: 0, timer: null });
+  const stopAutoReclaim = useCallback(() => {
+    if (autoReclaim.current.timer !== null) clearTimeout(autoReclaim.current.timer);
+    autoReclaim.current = { active: false, attempts: 0, timer: null };
+  }, []);
+  const attemptReclaimRef = useRef<() => void>(() => {});
+  attemptReclaimRef.current = () => {
+    if (state.mySeat === null) return;
+    const token = localStorage.getItem(`reclaimToken_${tableId}`);
+    send({ type: 'sit_down', seat_idx: state.mySeat, name, buyin,
+           ...(token ? { reclaim_token: token } : {}) });
+  };
 
   // Fetch room info for the join panel
   useEffect(() => {
@@ -90,6 +114,7 @@ export default function GameTablePage() {
         case 'hand_result': dispatch({ type: 'HAND_RESULT', data: m as any }); break;
         case 'reclaim_token':
           dispatch({ type: 'BUMP_TURN_EPOCH' });
+          stopAutoReclaim();  // reclaim succeeded
           localStorage.setItem(`reclaimToken_${tableId}`, m.token);
           // The server assigns the seat authoritatively — on reclaim it is
           // the OLD seat, which may differ from the picker selection.
@@ -106,11 +131,27 @@ export default function GameTablePage() {
           // Timeout-kick: the server already dropped our seat server-side —
           // reset mySeat so we return to the join panel instead of freezing
           // in the table view.
+          stopAutoReclaim();
           pendingSeat.current = null;
           dispatch({ type: 'SET_MY_SEAT', seat: null });
           pushToast('error', m.message ?? 'Removed from table');
           break;
         case 'error':
+          if (autoReclaim.current.active) {
+            // Reclaim attempt rejected — the server may not have noticed the
+            // dead socket yet ("Seat is already occupied").  Retry quietly
+            // until we give up, then return to the join panel.
+            autoReclaim.current.attempts += 1;
+            if (autoReclaim.current.attempts >= MAX_RECLAIM_ATTEMPTS) {
+              stopAutoReclaim();
+              dispatch({ type: 'SET_MY_SEAT', seat: null });
+              pushToast('error', `Seat lost — could not reclaim: ${m.message}`);
+            } else {
+              autoReclaim.current.timer =
+                setTimeout(() => attemptReclaimRef.current(), RECLAIM_RETRY_MS);
+            }
+            break;  // retrying quietly — no toast spam
+          }
           if (pendingSeat.current !== null) {
             pendingSeat.current = null;
             dispatch({ type: 'SET_MY_SEAT', seat: null });
@@ -119,7 +160,21 @@ export default function GameTablePage() {
           break;
       }
     });
-  }, [onMessage, dispatch, tableId, navigate, pushToast]);
+  }, [onMessage, dispatch, tableId, navigate, pushToast, stopAutoReclaim]);
+
+  // Reconnected while seated → try to reclaim our seat automatically.
+  // The server restores the seat (and re-sends hole cards + game state)
+  // once it has noticed the dropped socket.
+  const prevConnected = useRef(false);
+  useEffect(() => {
+    const wasDown = prevConnected.current === false;
+    prevConnected.current = connected;
+    if (!connected || !wasDown || state.mySeat === null) return;
+    autoReclaim.current = { active: true, attempts: 0, timer: null };
+    attemptReclaimRef.current();
+  }, [connected, state.mySeat]);
+
+  useEffect(() => stopAutoReclaim, [stopAutoReclaim]);
 
   useEffect(() => {
     dispatch({ type: 'SET_TABLE', tableId });
@@ -131,8 +186,10 @@ export default function GameTablePage() {
     localStorage.setItem('pokerName', name);
     pendingSeat.current = selectedSeat;
     const reclaimToken = localStorage.getItem(`reclaimToken_${tableId}`);
+    const ownerToken = localStorage.getItem(`ownerToken_${tableId}`);
     send({ type: 'sit_down', seat_idx: selectedSeat, name, buyin,
-           ...(reclaimToken ? { reclaim_token: reclaimToken } : {}) });
+           ...(reclaimToken ? { reclaim_token: reclaimToken } : {}),
+           ...(ownerToken ? { owner_token: ownerToken } : {}) });
     dispatch({ type: 'SET_MY_SEAT', seat: selectedSeat });
   };
 
@@ -228,7 +285,10 @@ export default function GameTablePage() {
         <button className="btn btn-sm" onClick={() => navigate('/')}>← Lobby</button>
         <span className="logo">♠ Sekhmet</span>
         <span className="phase-label">
-          {tableId} · {state.phase}{!connected && ' (disconnected)'}
+          {tableId} · {state.phase}
+          {!connected && (reconnectIn > 0
+            ? ` (reconnecting in ${Math.ceil(reconnectIn / 1000)}s…)`
+            : ' (disconnected)')}
         </span>
         <button className="btn btn-sm gold" onClick={() => send({ type: 'start_hand' })}
                 disabled={!isOwner || (state.phase !== 'WAITING' && state.phase !== 'SHOWDOWN')}
@@ -260,6 +320,7 @@ export default function GameTablePage() {
         isMyTurn={state.currentPlayerIdx === state.mySeat}
         turnEpoch={state.turnEpoch}
         currentBet={state.currentBet}
+        minRaise={state.minRaise}
         myStack={me?.stack ?? 0}
         myCurrentBet={me?.current_bet ?? 0}
         bigBlind={state.config?.big_blind ?? 10}

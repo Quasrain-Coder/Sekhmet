@@ -60,7 +60,10 @@ def score_decision(
     weights = app_config.scoring
 
     ptype = player_action.get("type", "").upper()
-    pamount = player_action.get("amount", 0)
+    raw_amount = player_action.get("amount", 0)
+    # Client-controlled input: negative or non-numeric amounts must not
+    # produce negative scores (or a TypeError from min/max).
+    pamount = max(0, raw_amount) if isinstance(raw_amount, (int, float)) else 0
     optimal = scenario.optimal_action
     otype = optimal["type"].upper()
     oamount = optimal.get("amount", 0)

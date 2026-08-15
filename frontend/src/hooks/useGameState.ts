@@ -35,6 +35,7 @@ export interface GameStateData {
   community_cards: string[];
   pot: number;
   current_bet: number;
+  min_raise: number;
   current_player_idx: number | null;
   players: PlayerInfo[];
   round_history: { seat: number; action: string; amount: number }[];
@@ -52,6 +53,7 @@ interface HandStartData {
   players: PlayerInfo[];
   small_blind: number;
   big_blind: number;
+  min_raise: number;
   pot: number;
   sb_seat: number | null;
   bb_seat: number | null;
@@ -80,6 +82,7 @@ interface AppState {
   communityCards: string[];
   pot: number;
   currentBet: number;
+  minRaise: number;
   currentPlayerIdx: number | null;
   roundHistory: GameStateData['round_history'];
   holeCards: string[];
@@ -113,6 +116,7 @@ export const initialState: AppState = {
   communityCards: [],
   pot: 0,
   currentBet: 0,
+  minRaise: 0,
   currentPlayerIdx: null,
   roundHistory: [],
   holeCards: [],
@@ -151,6 +155,7 @@ function reducer(state: AppState, action: Action): AppState {
         showdown: null,
         roundHistory: [],
         currentBet: action.data.current_bet ?? 0,
+        minRaise: action.data.min_raise ?? 0,
         currentPlayerIdx: action.data.current_player_idx ?? null,
         dealerIdx: action.data.dealer_idx ?? null,
         sbSeat: action.data.sb_seat ?? null,
@@ -166,6 +171,7 @@ function reducer(state: AppState, action: Action): AppState {
         communityCards: action.data.community_cards,
         pot: action.data.pot,
         currentBet: action.data.current_bet,
+        minRaise: action.data.min_raise ?? 0,
         currentPlayerIdx: action.data.current_player_idx,
         roundHistory: action.data.round_history,
         dealerIdx: action.data.dealer_idx ?? null,
@@ -177,6 +183,7 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         ...action.data,
         phase: action.data.phase,
+        minRaise: action.data.min_raise ?? 0,
         showdown: action.data.showdown,
       };
     case 'SET_MY_SEAT':

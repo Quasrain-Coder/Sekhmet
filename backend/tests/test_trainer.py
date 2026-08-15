@@ -231,3 +231,62 @@ def test_trainer_get_hint(client):
     resp = client.get("/api/trainer/scenarios/preflop-utg-marginal/hint?level=0")
     assert resp.status_code == 200
     assert "hint" in resp.json()
+
+
+def test_scorer_negative_amount_clamped():
+    """Negative/absurd client amounts must not produce negative scores."""
+    from sekhmet.trainer.scorer import score_decision
+    from sekhmet.trainer.scenario_library import Scenario, ScenarioCategory
+
+    s = Scenario(
+        id="x", title="t", description="d",
+        category=ScenarioCategory.PREFLOP_RANGE, difficulty=1,
+        optimal_action={"type": "RAISE", "amount": 30},
+    )
+    r = score_decision(s, {"type": "RAISE", "amount": -50})
+    assert r.total >= 0
+    # non-numeric amount must not crash the scorer
+    r2 = score_decision(s, {"type": "RAISE", "amount": "banana"})
+    assert r2.total >= 0
+
+
+def test_hint_negative_level_returns_first_hint():
+    from sekhmet.trainer.scenario_library import Scenario, ScenarioCategory
+    from sekhmet.trainer.scenario_runner import ScenarioRunner
+
+    lib = ScenarioLibrary()
+    s = Scenario(
+        id="x", title="t", description="d",
+        category=ScenarioCategory.PREFLOP_RANGE, difficulty=1,
+        optimal_action={"type": "FOLD", "amount": 0},
+        hints=["first", "second"],
+    )
+    lib.add(s)
+    runner = ScenarioRunner(lib)
+    assert runner.get_hint("x", level=-5) == "first"
+    assert runner.get_hint("x", level=0) == "first"
+
+
+def test_scenario_detail_starts_decision_timer(monkeypatch):
+    """GET /scenarios/{id} marks the timing start; a 60s ponder must lose
+    part of the timing score (previously elapsed was always ~0)."""
+    from sekhmet.api import trainer as trainer_api
+
+    rest_client = TestClient(app)
+    resp = rest_client.get("/api/trainer/scenarios/preflop-utg-marginal")
+    assert resp.status_code == 200
+    assert "preflop-utg-marginal" in trainer_api._runner._start_times
+
+    # simulate a 60-second think
+    started = trainer_api._runner._start_times["preflop-utg-marginal"]
+    monkeypatch.setattr(
+        "sekhmet.trainer.scenario_runner.time.time",
+        lambda: started + 60.0,
+    )
+    resp2 = rest_client.post("/api/trainer/scenarios/preflop-utg-marginal/submit",
+                             json={"type": "FOLD", "amount": 0})
+    assert resp2.status_code == 200
+    score = resp2.json()["score"]
+    # 60s → timing component halved: 60 + 25 + 7.5 = 92.5 (not the old 100)
+    assert score["timing_judgment"] == 7.5
+    assert score["total"] == 92.5
