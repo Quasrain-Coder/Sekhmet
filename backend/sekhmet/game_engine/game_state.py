@@ -176,6 +176,11 @@ class GameState:
     current_bet: int = 0          # the "bet to match" this street
     min_raise: int = 0            # minimum raise size
     last_aggressor_idx: int | None = None
+    # The ``current_bet`` level at the most recent FULL raise (a raise of
+    # at least ``min_raise``).  An under-raise (short all-in) updates
+    # ``current_bet`` but NOT this — players who already matched this level
+    # may then only call or fold, which is the standard no-reopen rule.
+    last_full_raise: int = 0
 
     # Blinds
     small_blind: int = 5
@@ -235,6 +240,7 @@ class GameState:
             current_bet=self.current_bet,
             min_raise=self.min_raise,
             last_aggressor_idx=self.last_aggressor_idx,
+            last_full_raise=self.last_full_raise,
             small_blind=self.small_blind,
             big_blind=self.big_blind,
             sb_seat=self.sb_seat,
@@ -256,6 +262,7 @@ class GameState:
             current_bet=0,
             min_raise=self.big_blind,
             last_aggressor_idx=None,
+            last_full_raise=0,
             small_blind=self.small_blind,
             big_blind=self.big_blind,
             sb_seat=self.sb_seat,
