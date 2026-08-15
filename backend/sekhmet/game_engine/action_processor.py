@@ -98,6 +98,14 @@ def validate(state: GameState, action: Action) -> None:
     if at == ActionType.RAISE:
         if state.current_bet == 0:
             raise InvalidActionError("Nothing to raise — bet instead")
+        # A player who already acted at (or above) the last full-raise
+        # level is only re-acting because of an under-raise — a short
+        # all-in does not reopen the action, so call/fold only.
+        if (player.seat_idx in state.acted_seats
+                and player.current_bet >= state.last_full_raise):
+            raise InvalidActionError(
+                "Under-raise does not reopen the action — call or fold"
+            )
         # *amount* is the total the player wants to commit this street
         total_bet = action.amount
         min_total = state.current_bet + state.min_raise
@@ -112,7 +120,16 @@ def validate(state: GameState, action: Action) -> None:
         return
 
     if at == ActionType.ALL_IN:
-        return  # always legal (provided player is active and not already all-in)
+        # An all-in that merely matches the current bet is a (short) call
+        # and always legal; one that exceeds it is a raise, subject to the
+        # same no-reopen rule as RAISE above.
+        if (player.seat_idx in state.acted_seats
+                and player.current_bet >= state.last_full_raise
+                and player.stack + player.current_bet > state.current_bet):
+            raise InvalidActionError(
+                "Under-raise does not reopen the action — call or fold"
+            )
+        return
 
     raise InvalidActionError(f"Unknown action type: {at}")
 
@@ -198,6 +215,7 @@ def execute(state: GameState, action: Action) -> GameState:
     new_current_bet = state.current_bet
     new_min_raise = state.min_raise
     new_last_aggressor = state.last_aggressor_idx
+    new_last_full_raise = state.last_full_raise
     acted_this_round: tuple[int, ...]
 
     if at in (ActionType.BET, ActionType.RAISE, ActionType.ALL_IN):
@@ -208,6 +226,11 @@ def execute(state: GameState, action: Action) -> GameState:
             raise_amount = effective_bet - state.current_bet
             if raise_amount > state.min_raise:
                 new_min_raise = raise_amount
+            # A full raise reopens the action; a short all-in raise does
+            # not (players who already matched the old level can only
+            # call or fold — enforced in validate()).
+            if raise_amount >= state.min_raise:
+                new_last_full_raise = effective_bet
 
     # --- 5.  Track which players have acted this round ---
     # A betting round closes only when every player who can still act has
@@ -238,6 +261,7 @@ def execute(state: GameState, action: Action) -> GameState:
         current_bet=new_current_bet,
         min_raise=new_min_raise,
         last_aggressor_idx=new_last_aggressor,
+        last_full_raise=new_last_full_raise,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
         sb_seat=state.sb_seat,
@@ -327,6 +351,7 @@ def _advance(state: GameState, from_seat: int) -> GameState:
         current_bet=state.current_bet,
         min_raise=state.min_raise,
         last_aggressor_idx=state.last_aggressor_idx,
+        last_full_raise=state.last_full_raise,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
         sb_seat=state.sb_seat,
@@ -404,6 +429,7 @@ def _advance_phase(state: GameState) -> GameState:
             current_bet=0,
             min_raise=state.big_blind,
             last_aggressor_idx=None,
+            last_full_raise=0,
             small_blind=state.small_blind,
             big_blind=state.big_blind,
             sb_seat=state.sb_seat,
@@ -437,6 +463,7 @@ def _advance_phase(state: GameState) -> GameState:
         current_bet=0,
         min_raise=state.big_blind,
         last_aggressor_idx=None,
+        last_full_raise=0,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
         sb_seat=state.sb_seat,
@@ -548,6 +575,7 @@ def deal_new_hand(
         current_bet=state.big_blind,
         min_raise=state.big_blind,
         last_aggressor_idx=bb_seat if first_to_act != bb_seat else None,
+        last_full_raise=state.big_blind,
         small_blind=state.small_blind,
         big_blind=state.big_blind,
         sb_seat=sb_seat,

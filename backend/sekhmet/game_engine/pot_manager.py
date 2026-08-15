@@ -94,12 +94,13 @@ def award_pot(
     pot: PotState,
     players: tuple[Player, ...],
     hands: dict[int, HandScore],  # seat_idx → best hand
+    dealer_idx: int,
 ) -> list[PotAward]:
     """Distribute every pot to its winner(s).
 
     For each pot (main + each side), the eligible player with the best
-    hand wins.  Ties split the pot evenly (odd chip goes to the player
-    closest to the dealer's left).
+    hand wins.  Ties split the pot evenly; odd chips go to the tied
+    player(s) closest to the dealer's left, continuing clockwise.
 
     Parameters
     ----------
@@ -111,6 +112,8 @@ def award_pot(
         Mapping from seat index to the player's best 5-card hand.
         Only players who reach showdown should be included; folded
         players are implicitly excluded.
+    dealer_idx : int
+        Seat holding the dealer button — anchor for odd-chip tie-breaks.
 
     Returns
     -------
@@ -150,7 +153,13 @@ def award_pot(
                 hand_description=best_score.describe(),
             ))
         else:
-            # Split pot — odd chip to earliest position after dealer
+            # Split pot — odd chips to the tied player(s) closest to the
+            # dealer's left, continuing clockwise.  The seat ring size is
+            # the highest occupied seat + 1 (matches the engine's turn
+            # order over sparse seat indices).
+            n_seats = max((p.seat_idx + 1 for p in players), default=0)
+            if n_seats > 0:
+                winners.sort(key=lambda s: (s - dealer_idx - 1) % n_seats)
             share = pot_amount // len(winners)
             remainder = pot_amount % len(winners)
             for i, seat in enumerate(winners):

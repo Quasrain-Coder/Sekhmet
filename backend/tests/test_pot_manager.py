@@ -130,7 +130,7 @@ def test_award_simple_win():
         1: _hs(HandRank.HIGH_CARD, 14, 13, 12, 11, 9),
     }
     pot = PotState(main_pot=20)
-    awards = award_pot(pot, players, hands)
+    awards = award_pot(pot, players, hands, dealer_idx=0)
     assert len(awards) == 1
     assert awards[0].winner_seat_idx == 0
     assert awards[0].amount == 20
@@ -151,7 +151,7 @@ def test_award_with_side_pot():
     }
     pot = create_side_pots(players)
 
-    awards = award_pot(pot, players, hands)
+    awards = award_pot(pot, players, hands, dealer_idx=0)
 
     # Main pot (150): all 3 eligible → P0 wins with flush
     main_awards = [a for a in awards if a.amount == 150]
@@ -172,25 +172,40 @@ def test_award_split_pot_on_tie():
         1: _hs(HandRank.ONE_PAIR, 14, 13, 12, 11),  # identical kickers
     }
     pot = PotState(main_pot=20)
-    awards = award_pot(pot, players, hands)
+    awards = award_pot(pot, players, hands, dealer_idx=0)
     amounts = {a.winner_seat_idx: a.amount for a in awards}
     assert amounts[0] == 10
     assert amounts[1] == 10
 
 
 def test_award_split_odd_chip():
-    """Odd chip on split goes to first eligible seat."""
+    """Odd chip on split goes to the player closest to the dealer's left."""
     players = (P(0, total_bet=10), P(1, total_bet=10))
     hands = {
         0: _hs(HandRank.ONE_PAIR, 14, 13, 12, 11),
         1: _hs(HandRank.ONE_PAIR, 14, 13, 12, 11),
     }
     pot = PotState(main_pot=25)  # odd amount
-    awards = award_pot(pot, players, hands)
+    # dealer is seat 0 → left of dealer is seat 1 → seat 1 gets the odd chip
+    awards = award_pot(pot, players, hands, dealer_idx=0)
     amounts = {a.winner_seat_idx: a.amount for a in awards}
-    # Seat 0 is first → gets 13, seat 1 gets 12
-    assert amounts[0] == 13
-    assert amounts[1] == 12
+    assert amounts[1] == 13
+    assert amounts[0] == 12
+
+
+def test_award_split_odd_chip_sparse_seats():
+    """Odd chip follows table order even with sparse seat indices."""
+    players = (P(0, total_bet=1), P(5, total_bet=1), P(7, total_bet=1))
+    hands = {
+        5: _hs(HandRank.ONE_PAIR, 14, 13, 12, 11),
+        7: _hs(HandRank.ONE_PAIR, 14, 13, 12, 11),
+    }
+    pot = PotState(main_pot=3)  # all three contributed; two tie for it
+    # dealer is seat 6 → left of dealer is seat 7 → seat 7 gets the odd chip
+    awards = award_pot(pot, players, hands, dealer_idx=6)
+    amounts = {a.winner_seat_idx: a.amount for a in awards}
+    assert amounts[7] == 2
+    assert amounts[5] == 1
 
 
 def test_award_folded_player_excluded():
@@ -202,12 +217,12 @@ def test_award_folded_player_excluded():
     # Only P1 has a hand (reached showdown)
     hands = {1: _hs(HandRank.HIGH_CARD, 14, 13, 12, 11, 9)}
     pot = PotState(main_pot=20)
-    awards = award_pot(pot, players, hands)
+    awards = award_pot(pot, players, hands, dealer_idx=0)
     assert len(awards) == 1
     assert awards[0].winner_seat_idx == 1
     assert awards[0].amount == 20
 
 
 def test_award_empty_pot():
-    awards = award_pot(PotState(), (), {})
+    awards = award_pot(PotState(), (), {}, dealer_idx=0)
     assert awards == []

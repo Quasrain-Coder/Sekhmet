@@ -412,3 +412,14 @@ select.input { width: auto; }
   .seat-picker { max-width: 320px; }
   .toast-stack { left: 16px; max-width: none; }
 }
+
+/* Action countdown (mirrors backend action_timeout_seconds=30) */
+.action-timer {
+  font-variant-numeric: tabular-nums;
+  color: var(--cyan-text, #7dd3fc);
+  font-size: 0.85rem;
+  margin-right: 10px;
+  min-width: 44px;
+  text-align: center;
+}
+.action-timer.warn { color: #f87171; }
