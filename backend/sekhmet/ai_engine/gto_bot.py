@@ -159,12 +159,18 @@ class GTOBot(BaseBot):
         wet = self._board_is_wet(state)
         rng = self._rng(hole, state)
 
+        # Draw outs are stale on the river (no cards to come): semi-bluffs
+        # and implied-odds chases only make sense on the flop and turn.
+        live_draw = outs >= 8 and state.phase in (
+            GamePhase.FLOP, GamePhase.TURN,
+        )
+
         if to_call == 0:
             # Value-bet strong hands; semi-bluff draws sometimes.
             if equity >= 0.62:
                 sizing = 0.75 if wet else 0.5
                 return self._bet_action(state, player_idx, pot, sizing)
-            if outs >= 8 and rng.random() < 0.45:
+            if live_draw and rng.random() < 0.45:
                 return self._bet_action(state, player_idx, pot, 0.67)
             return Action(player_idx, ActionType.CHECK)
 
@@ -175,7 +181,7 @@ class GTOBot(BaseBot):
                 return self._raise_action(state, player_idx, 3.0)
             return Action(player_idx, ActionType.CALL)
         # Draws may chase slightly under the direct price (implied odds).
-        if outs >= 8 and equity >= required * 0.6:
+        if live_draw and equity >= required * 0.6:
             return Action(player_idx, ActionType.CALL)
         return Action(player_idx, ActionType.FOLD)
 

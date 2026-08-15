@@ -243,6 +243,17 @@ def test_calls_flush_draw_half_pot():
     assert bot.decide(state, 1).type == ActionType.CALL
 
 
+def test_missed_draw_on_river_does_not_bluff():
+    """River outs are stale — a busted draw never fires the semi-bluff."""
+    bot = GTOBot()
+    hole = [C(2, Suit.HEARTS), C(3, Suit.HEARTS)]
+    board = [C(10, Suit.HEARTS), C(11, Suit.HEARTS), C(5, Suit.DIAMONDS),
+             C(9, Suit.SPADES), C(14, Suit.CLUBS)]  # busted flush draw
+    state = _postflop(hole, board, current_bet=0, pot=50,
+                      phase=GamePhase.RIVER)
+    assert bot.decide(state, 1).type == ActionType.CHECK
+
+
 def test_equity_sanity():
     bot = GTOBot()
     # AA on A72 rainbow vs the aggressor's RFI range — crushing.
