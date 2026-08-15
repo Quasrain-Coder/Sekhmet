@@ -378,6 +378,13 @@ async def handle_disconnect(table_id: str, seat_idx: int) -> None:
     session.disconnected.add(seat_idx)
     await broadcast(table_id, _table_summary(session))
 
+    # If it is the dead player's turn, the already-armed 30s timer would
+    # stall the hand — re-arm it: disconnected players auto-act instantly.
+    gs = session.game_state
+    if gs.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN) \
+            and gs.current_player_idx == seat_idx:
+        schedule_action_timeout(session)
+
     async def _expire() -> None:
         try:
             await asyncio.sleep(app_config.game.disconnect_grace_seconds)
@@ -778,7 +785,13 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
 
 
 def schedule_action_timeout(session: TableSession) -> None:
-    """(Re)arm the action timer if a human is to act in a betting round."""
+    """(Re)arm the action timer if a human is to act in a betting round.
+
+    A player whose socket is already gone doesn't get the full 30s think
+    time — their auto check/fold fires immediately so the hand never
+    stalls for a dead connection.  (They keep the grace window to reclaim
+    *between* turns; only the turn itself is skipped.)
+    """
     if session.action_timer is not None:
         session.action_timer.cancel()
         session.action_timer = None
@@ -791,12 +804,15 @@ def schedule_action_timeout(session: TableSession) -> None:
     p = gs.player(cur)
     if p is None or not p.is_human:
         return
-    session.action_timer = asyncio.create_task(_action_timeout(session.table_id, cur))
+    wait = 0.0 if cur in session.disconnected else app_config.game.action_timeout_seconds
+    session.action_timer = asyncio.create_task(_action_timeout(session.table_id, cur, wait))
 
 
-async def _action_timeout(table_id: str, seat_idx: int) -> None:
+async def _action_timeout(table_id: str, seat_idx: int, delay_seconds: float | None = None) -> None:
     try:
-        await asyncio.sleep(app_config.game.action_timeout_seconds)
+        if delay_seconds is None:
+            delay_seconds = app_config.game.action_timeout_seconds
+        await asyncio.sleep(delay_seconds)
     except asyncio.CancelledError:
         return
     session = await get_table(table_id)
