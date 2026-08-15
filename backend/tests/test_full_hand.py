@@ -303,13 +303,17 @@ async def test_illegal_bot_action_falls_back_without_stalling(monkeypatch):
 
     # Bot is SB/dealer on hand 1 and acts first; its illegal BET must
     # trigger the fallback (fold — facing 5 to call), ending the hand.
-    msgs = await tm.auto_bot_actions(tid)
+    # (auto_bot_actions broadcasts inline now — the outcome is asserted
+    # from the final state instead of the returned message list.)
+    await tm.auto_bot_actions(tid)
 
     session = await tm.get_table(tid)
     assert session is not None
     gs = session.game_state
     assert gs.phase == GamePhase.SHOWDOWN
-    assert any(m.get("type") == "hand_result" for m in msgs)
+    # the pot (blinds 5+10) went to the hero via fold-out:
+    # 200 - 10 (posted BB) + 15 (pot) = 205
+    assert any(p.seat_idx == 0 and p.stack == 205 for p in gs.players)
 
 
 async def test_second_hand_can_start_after_showdown():

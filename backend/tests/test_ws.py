@@ -360,3 +360,40 @@ async def test_table_info_exposes_live_public_state():
     assert seat0["is_active"] is True
     assert seat0["is_all_in"] is False
     assert seat0["current_bet"] == 0  # fresh street
+
+
+async def test_bot_actions_wait_the_think_delay(monkeypatch):
+    """Bots act with a pacing pause (2s in production) — the move must not
+    land instantly, and the broadcast pipeline must still advance the hand."""
+    import time
+
+    from sekhmet.config import app_config
+    from sekhmet.api import table_manager as tm
+
+    monkeypatch.setattr(app_config.game, "bot_action_delay_seconds", 0.25)
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+
+    session = await tm.get_table(tid)
+    gs = session.game_state
+    if gs.player(gs.current_player_idx).is_human:
+        # hero acts first (SB) — check, so the bot (BB) gets the turn
+        cur = gs.current_player_idx
+        p = gs.player(cur)
+        await tm.handle_player_action(
+            tid, cur, "CHECK" if gs.current_bet == p.current_bet else "CALL")
+        session = await tm.get_table(tid)
+        gs = session.game_state
+
+    cur = gs.current_player_idx
+    assert cur is not None and not gs.player(cur).is_human
+
+    t0 = time.monotonic()
+    await tm.after_action(tid)  # bot thinks 0.25s, then acts
+    elapsed = time.monotonic() - t0
+    assert elapsed >= 0.2, f"bot acted instantly ({elapsed:.3f}s)"
+
+    session = await tm.get_table(tid)
+    assert session.game_state is not gs  # the bot really acted
