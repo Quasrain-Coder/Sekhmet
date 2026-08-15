@@ -110,6 +110,7 @@ class TableSession:
     reclaim_tokens: dict[int, str] = field(default_factory=dict)  # seat_idx → token
     action_timer: asyncio.Task | None = None
     owner_seat: int | None = None
+    owner_token: str | None = None  # room key from create_table — bearer claims ownership
     last_activity: float = field(default_factory=time.monotonic)
     # Serializes every read-modify-write of ``game_state`` that can race:
     # the auto_bot_actions loop (incl. the all-in runout, whose per-street
@@ -148,8 +149,14 @@ async def create_table(config: TableConfig | None = None) -> str:
         ),
         deck=Deck(),
         config=cfg,
+        owner_token=secrets.token_hex(16),
     )
     async with _lock:
+        if len(_tables) >= app_config.game.max_tables:
+            raise GameError(
+                f"Table limit reached ({app_config.game.max_tables}) — "
+                "try again later"
+            )
         _tables[tid] = session
     return tid
 
@@ -232,6 +239,7 @@ async def sit_down(
     buyin: int | None = None,
     is_human: bool = True,
     bot_level: int | None = None,
+    owner_token: str | None = None,
 ) -> dict[str, Any]:
     """Seat a player at *table_id*.  Returns the updated table summary."""
     session = await get_table(table_id)
@@ -256,6 +264,12 @@ async def sit_down(
         session.bot_levels[seat_idx] = level
 
     stack = buyin if buyin is not None else session.config.default_buyin
+    # Bounds mirror the rebuy limits (20bb–200bb).  This also blocks the
+    # 0-chip grief seat: a dead player occupies the seat but can never play.
+    lo = 20 * session.config.big_blind
+    hi = max(200 * session.config.big_blind, session.config.default_buyin)
+    if not (lo <= stack <= hi):
+        raise GameError(f"Buy-in must be between {lo} and {hi}, got {buyin}")
     player = Player(
         name=name,
         seat_idx=seat_idx,
@@ -268,7 +282,15 @@ async def sit_down(
     current = list(session.game_state.players)
     current.append(player)
     session.game_state = session.game_state.with_players(tuple(current))
-    _reassign_owner(session)
+
+    # Ownership: the bearer of the room's owner_token (returned at
+    # creation) claims the room — on first sit-down or by taking over
+    # from a stranger who raced in first.  Without a token the lowest-
+    # seated human becomes (or stays) owner.
+    if is_human and owner_token is not None and owner_token == session.owner_token:
+        session.owner_seat = seat_idx
+    else:
+        _reassign_owner(session)
 
     session.stats[seat_idx] = PlayerStats()
     session.total_buyin[seat_idx] = stack

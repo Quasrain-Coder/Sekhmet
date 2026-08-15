@@ -45,6 +45,7 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                     buyin = msg.get("buyin")
                     is_human = bool(msg.get("is_human", True))
                     bot_level = msg.get("bot_level")
+                    owner_token = msg.get("owner_token")
 
                     session = await tm.get_table(table_id)
                     if session is None:
@@ -83,12 +84,26 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         )
                         continue
 
+                    # Only the room owner may fill seats with bots —
+                    # otherwise any passer-by could spam a stranger's table
+                    # full of bot seats (the owner is the only one who can
+                    # remove them).  An ownerless table is fair game: the
+                    # first human to sit becomes owner and can clean up.
+                    if not is_human and session.owner_seat is not None and (
+                        my_seat is None or my_seat != session.owner_seat
+                    ):
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": "Only the table owner can add bots",
+                        })
+                        continue
+
                     # Validate first: a rejected sit_down (seat occupied /
                     # mid-hand) must NOT touch the clients map — otherwise the
                     # loser's socket hijacks the real occupant's broadcasts.
                     summary = await tm.sit_down(
                         table_id, seat_idx, name, buyin, is_human,
-                        bot_level=bot_level,
+                        bot_level=bot_level, owner_token=owner_token,
                     )
 
                     # Only human seats claim the connection.  A bot seated
