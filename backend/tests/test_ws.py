@@ -214,3 +214,106 @@ def test_broadcasts_carry_min_raise_and_activity_flags():
                 break
         assert saw_hand_start, "never received hand_start"
         assert saw_update, "never received game_state_update"
+async def test_reclaim_rearms_action_timer():
+    """Reclaiming mid-hand restarts the action countdown — the auto-fold
+    must not fire on the stale timer from before the disconnect."""
+    import random
+    from sekhmet.api import table_manager as tm
+
+    random.seed(7)  # deterministic deal: bot calls preflop, hero gets a turn
+    client = TestClient(app)
+    tid = client.post("/api/game/tables").json()["table_id"]
+
+    with client.websocket_connect(f"/ws/{tid}") as ws1:
+        ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero", "buyin": 200})
+        token = None
+        for _ in range(10):
+            m = ws1.receive_json()
+            if m["type"] == "reclaim_token":
+                token = m["token"]
+            if m["type"] == "table_state":
+                break
+        assert token is not None
+        ws1.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot",
+                       "buyin": 200, "is_human": False})
+        ws1.send_json({"type": "start_hand"})
+        for _ in range(30):
+            m = ws1.receive_json()
+            if m["type"] == "game_state_update" and m["current_player_idx"] == 0:
+                break
+
+    session = await tm.get_table(tid)
+    old_timer = session.action_timer
+    assert old_timer is not None  # hero's turn → timer armed
+
+    # TestClient never pumps the server-side close frame, so simulate what
+    # the server does when it notices the dead socket.
+    await tm.handle_disconnect(tid, 0)
+    session = await tm.get_table(tid)
+    assert 0 in session.disconnected
+
+    with client.websocket_connect(f"/ws/{tid}") as ws2:
+        ws2.send_json({"type": "sit_down", "seat_idx": 0, "name": "Hero",
+                       "reclaim_token": token})
+        for _ in range(10):
+            m = ws2.receive_json()
+            if m["type"] == "reclaim_token":
+                break
+
+    session = await tm.get_table(tid)
+    assert session.action_timer is not None
+    assert session.action_timer is not old_timer  # re-armed, not the stale one
+    session.action_timer.cancel()
+def test_non_owner_cannot_add_bots():
+    """Only the table owner may add bot seats — strangers can't spam a room."""
+    client = TestClient(app)
+    resp = client.post("/api/game/tables")
+    tid = resp.json()["table_id"]
+
+    with client.websocket_connect(f"/ws/{tid}") as owner_ws, \
+         client.websocket_connect(f"/ws/{tid}") as guest_ws:
+        owner_ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "Owner", "buyin": 200})
+        guest_ws.send_json({"type": "sit_down", "seat_idx": 1, "name": "Guest", "buyin": 200})
+        _drain(owner_ws, 1)
+        _drain(guest_ws, 2)
+
+        guest_ws.send_json({"type": "sit_down", "seat_idx": 2, "name": "Bot",
+                            "is_human": False})
+        err = guest_ws.receive_json()
+        assert err["type"] == "error"
+        assert "owner" in err["message"]
+
+        # the owner can
+        owner_ws.send_json({"type": "sit_down", "seat_idx": 2, "name": "Bot",
+                            "is_human": False})
+        for _ in range(10):
+            m = owner_ws.receive_json()
+            if m["type"] == "table_state" and len(m["seats"]) == 3:
+                break
+        else:
+            raise AssertionError("owner's bot add never broadcast")
+
+
+def test_rest_create_returns_owner_token_and_ws_claims_it():
+    """Creator's owner_token makes their seat the owner even if they sit late."""
+    client = TestClient(app)
+    tid, token = None, None
+    resp = client.post("/api/game/tables")
+    tid = resp.json()["table_id"]
+    token = resp.json()["owner_token"]
+    assert token and len(token) == 32
+
+    with client.websocket_connect(f"/ws/{tid}") as stranger, \
+         client.websocket_connect(f"/ws/{tid}") as creator:
+        stranger.send_json({"type": "sit_down", "seat_idx": 0, "name": "Stranger", "buyin": 200})
+        _drain(stranger, 2)
+        creator.send_json({"type": "sit_down", "seat_idx": 5, "name": "Creator",
+                           "buyin": 200, "owner_token": token})
+        _drain(creator, 2)
+        # token holder owns the room despite the higher seat index
+        creator.send_json({"type": "sit_down", "seat_idx": 1, "name": "Bot",
+                           "is_human": False})
+        msg = creator.receive_json()
+        assert msg["type"] == "table_state"
+        owner = [s for s in msg["seats"] if s["is_owner"]]
+        assert owner[0]["seat_idx"] == 5
