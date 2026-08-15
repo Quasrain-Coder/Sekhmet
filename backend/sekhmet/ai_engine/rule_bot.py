@@ -270,13 +270,36 @@ class RuleBot(BaseBot):
 
     @staticmethod
     def _position(player_idx: int, state: GameState) -> float:
-        """Return 0–1 position quality (0 = early, 1 = late/button)."""
-        seats = sorted(p.seat_idx for p in state.players)
+        """Return 0–1 position quality (0 = first to act, 1 = last).
+
+        Anchored to the real table order: postflop the dealer acts last
+        (best position); preflop the big blind closes the action.  Only
+        players still in the hand count, and seat order wraps around
+        the table.
+        """
+        seats = sorted(
+            p.seat_idx for p in state.players if p.is_active or p.is_all_in
+        )
         if len(seats) <= 1:
             return 0.5
-        idx = seats.index(player_idx)
-        # Normalize so dealer is last
-        return idx / (len(seats) - 1) if len(seats) > 1 else 0.5
+        anchor = (
+            state.bb_seat
+            if state.phase == GamePhase.PREFLOP and state.bb_seat is not None
+            else state.dealer_idx
+        )
+        # First to act is the first occupied seat clockwise after the
+        # anchor (the button postflop, the big blind preflop).  If the
+        # anchor seat itself folded, fall back to the nearest occupied
+        # seat at or before it.
+        anchor_pos = len(seats) - 1
+        for i, seat in enumerate(seats):
+            if seat > anchor:
+                break
+            anchor_pos = i
+        order = seats[anchor_pos + 1:] + seats[:anchor_pos + 1]
+        if player_idx not in order:
+            return 0.5
+        return order.index(player_idx) / (len(order) - 1)
 
     def _bet_size(
         self, state: GameState, strength: float, is_preflop: bool,

@@ -49,6 +49,8 @@ def make_heads_up_preflop(hero_cards=None, bot_cards=None,
         min_raise=bb,
         small_blind=sb,
         big_blind=bb,
+        sb_seat=0,  # HU: dealer = SB
+        bb_seat=1,
         pot=PotState(main_pot=sb + bb),
     )
 
@@ -109,6 +111,99 @@ def test_preflop_strength_premium_pair():
 
 
 # ---------------------------------------------------------------------------
+# Position — anchored to the real table order
+# ---------------------------------------------------------------------------
+
+
+def test_position_heads_up_preflop():
+    """HU preflop: SB acts first (0.0), BB closes the action (1.0)."""
+    state = make_heads_up_preflop()
+    assert RuleBot._position(0, state) == 0.0  # SB/dealer first to act
+    assert RuleBot._position(1, state) == 1.0  # BB acts last preflop
+
+
+def test_position_heads_up_postflop():
+    """HU postflop: BB is first to act (0.0), button acts last (1.0)."""
+    state = make_postflop_state(GamePhase.FLOP)
+    assert RuleBot._position(0, state) == 1.0  # dealer/button
+    assert RuleBot._position(1, state) == 0.0  # BB out of position
+
+
+def test_position_three_handed_wraps_around_button():
+    """Seats 0,1,2 with button at 1: order is 2 → 0 → 1."""
+    from sekhmet.game_engine.game_state import PotState
+    players = tuple(
+        Player(name=f"P{i}", seat_idx=i, stack=200, hole_cards=(C(14, Suit.SPADES), C(13, Suit.SPADES)))
+        for i in range(3)
+    )
+    state = GameState(
+        phase=GamePhase.FLOP,
+        players=players,
+        community_cards=(C(2, Suit.HEARTS), C(7, Suit.CLUBS), C(9, Suit.DIAMONDS)),
+        dealer_idx=1,
+        current_player_idx=2,
+        current_bet=0,
+        min_raise=10,
+        small_blind=5,
+        big_blind=10,
+        pot=PotState(main_pot=15),
+    )
+    assert RuleBot._position(2, state) == 0.0  # first left of button
+    assert RuleBot._position(0, state) == 0.5
+    assert RuleBot._position(1, state) == 1.0  # button acts last
+
+
+def test_position_excludes_folded_players():
+    """Folded seats do not count — order is rebuilt from live seats."""
+    from sekhmet.game_engine.game_state import PotState
+    p0 = Player(name="Folded", seat_idx=0, stack=200, is_active=False)
+    p1 = Player(name="P1", seat_idx=1, stack=200,
+                hole_cards=(C(14, Suit.SPADES), C(13, Suit.SPADES)))
+    p2 = Player(name="P2", seat_idx=2, stack=200,
+                hole_cards=(C(7, Suit.HEARTS), C(2, Suit.CLUBS)))
+    state = GameState(
+        phase=GamePhase.FLOP,
+        players=(p0, p1, p2),
+        community_cards=(C(2, Suit.HEARTS), C(7, Suit.CLUBS), C(9, Suit.DIAMONDS)),
+        dealer_idx=1,
+        current_player_idx=1,
+        current_bet=0,
+        min_raise=10,
+        small_blind=5,
+        big_blind=10,
+        pot=PotState(main_pot=15),
+    )
+    # Live seats are 1 (button) and 2: button acts last.
+    assert RuleBot._position(2, state) == 0.0
+    assert RuleBot._position(1, state) == 1.0
+
+
+def test_position_folded_anchor_falls_back():
+    """Button folded: first to act is the next live seat after it."""
+    from sekhmet.game_engine.game_state import PotState
+    p0 = Player(name="FoldedBtn", seat_idx=0, stack=200, is_active=False)
+    p1 = Player(name="P1", seat_idx=1, stack=200,
+                hole_cards=(C(14, Suit.SPADES), C(13, Suit.SPADES)))
+    p2 = Player(name="P2", seat_idx=2, stack=200,
+                hole_cards=(C(7, Suit.HEARTS), C(2, Suit.CLUBS)))
+    state = GameState(
+        phase=GamePhase.FLOP,
+        players=(p0, p1, p2),
+        community_cards=(C(2, Suit.HEARTS), C(7, Suit.CLUBS), C(9, Suit.DIAMONDS)),
+        dealer_idx=0,  # button folded
+        current_player_idx=1,
+        current_bet=0,
+        min_raise=10,
+        small_blind=5,
+        big_blind=10,
+        pot=PotState(main_pot=15),
+    )
+    # Seats 1,2 live; first to act left of the folded button is seat 1.
+    assert RuleBot._position(1, state) == 0.0
+    assert RuleBot._position(2, state) == 1.0
+
+
+# ---------------------------------------------------------------------------
 # RuleBot — basic
 # ---------------------------------------------------------------------------
 
@@ -147,6 +242,7 @@ def test_bot_folds_trash_preflop():
         phase=GamePhase.PREFLOP, players=(p1, p2),
         current_player_idx=1, current_bet=30, min_raise=10,
         big_blind=10, small_blind=5, dealer_idx=0,
+        sb_seat=0, bb_seat=1,
         pot=PotState(main_pot=40),
     )
     action = bot.decide(state, 1)
@@ -248,6 +344,8 @@ def _bb_option_state(bot_hole):
         min_raise=10,
         small_blind=5,
         big_blind=10,
+        sb_seat=0,
+        bb_seat=1,
         pot=PotState(main_pot=20),
         acted_seats=(0,),
     )
