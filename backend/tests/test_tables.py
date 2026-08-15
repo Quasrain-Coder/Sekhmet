@@ -183,15 +183,25 @@ def test_failed_sit_down_does_not_hijack_victim_broadcasts():
         assert any(s["seat_idx"] == 1 for s in msg["seats"])
 
 
-async def test_sit_down_rejected_mid_hand():
-    """Joining mid-hand would corrupt the round-close logic — reject it."""
+async def test_sit_down_mid_hand_parks_humans_blocks_bots():
+    """Humans may sit mid-hand (parked until the next deal — joining
+    game_state.players mid-hand would corrupt the betting round); bots are
+    house furniture and stay blocked between hands only."""
     from sekhmet.game_engine import GameError
     tid = await tm.create_table()
     await tm.sit_down(tid, 0, "A", buyin=200)
     await tm.sit_down(tid, 1, "B", buyin=200)
     await tm.start_hand(tid)
-    with pytest.raises(GameError, match="mid-hand"):
-        await tm.sit_down(tid, 2, "Late", buyin=200)
+
+    # human joins mid-hand — parked, never in the running hand
+    await tm.sit_down(tid, 2, "Late", buyin=200)
+    session = await tm.get_table(tid)
+    assert [p.seat_idx for p in session.game_state.players] == [0, 1]
+    assert session.pending_seats == {2}
+
+    # bots still rejected mid-hand
+    with pytest.raises(GameError, match="between hands"):
+        await tm.sit_down(tid, 3, "Bot", buyin=200, is_human=False)
 
 
 async def test_stats_accumulate_over_a_hand():

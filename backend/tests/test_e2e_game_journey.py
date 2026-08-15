@@ -66,6 +66,7 @@ def test_complete_game_journey():
             "bot_level": None, "stack": 2000,
             "hands": 0, "wins": 0, "net_chips": 0, "connected": True,
             "is_owner": True,
+            "in_hand": True,
             "current_bet": 0, "is_active": True, "is_all_in": False,
         }]
         # public in-hand state is exposed for the join-panel preview
@@ -88,20 +89,40 @@ def test_complete_game_journey():
         for hand_no in (1, 2):
             ws.send_json({"type": "start_hand"})
             if hand_no == 1:
-                # Late join attempt while the hand is running → rejected
-                ws.send_json({"type": "sit_down", "seat_idx": 3, "name": "Late"})
+                # Late join while the hand is running: the seat is parked —
+                # "Late" spectates this hand (never in game_state.players)
+                # and would be dealt into the next one.  They leave before
+                # hand 2 starts, which parked seats may do any time.
+                with client.websocket_connect(f"/ws/{tid}") as ws2:
+                    ws2.send_json({"type": "sit_down", "seat_idx": 3, "name": "Late"})
+                    # The hand keeps running while we exchange: consume
+                    # messages until both the token and the 4-seat summary
+                    # arrive (bounded by the outer pytest timeout — the
+                    # hand stalls at Hero's turn, which is fine).
+                    late_token = None
+                    late_ts = None
+                    while late_token is None or late_ts is None:
+                        m = ws2.receive_json()
+                        if m["type"] == "reclaim_token":
+                            late_token = m["token"]
+                        if m["type"] == "table_state" and len(m["seats"]) == 4:
+                            late_ts = m
+                    seat3 = next(s for s in late_ts["seats"] if s["seat_idx"] == 3)
+                    assert seat3["in_hand"] is False  # parked, not in this hand
+                    assert seat3["stack"] == 2000      # buy-in shows up
+                    # A standing socket is dropped from clients before the
+                    # summary broadcast — no confirmation arrives here; the
+                    # 3-seat summary reaches ws and is ignored below.
+                    ws2.send_json({"type": "stand_up", "seat_idx": 3})
 
             result = None
-            saw_mid_hand_error = False
             for _ in range(150):
                 msg = ws.receive_json()
                 mtype = msg["type"]
 
                 if mtype == "error":
-                    # The only error this journey should ever produce
-                    assert "mid-hand" in msg["message"], msg
-                    saw_mid_hand_error = True
-                    continue
+                    # no error is expected anywhere in this journey
+                    raise AssertionError(f"unexpected error: {msg}")
                 if mtype == "hole_cards":
                     assert len(msg["cards"]) == 2
                     continue
@@ -126,8 +147,6 @@ def test_complete_game_journey():
                     })
 
             assert result is not None, f"hand {hand_no} never reached showdown"
-            if hand_no == 1:
-                assert saw_mid_hand_error, "mid-hand join was not rejected"
 
             # Showdown integrity: either someone won by fold-out (no hands
             # revealed), or the board ran out to 5 cards and every award

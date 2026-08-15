@@ -397,3 +397,63 @@ async def test_bot_actions_wait_the_think_delay(monkeypatch):
 
     session = await tm.get_table(tid)
     assert session.game_state is not gs  # the bot really acted
+
+
+async def test_mid_hand_sit_parks_seat_until_next_hand():
+    """A human may sit mid-hand: the seat spectates the running hand (never
+    in game_state.players) and is dealt into the next one.  Bots stay
+    blocked mid-hand, and a parked player may leave any time."""
+    import asyncio
+
+    from sekhmet.api import table_manager as tm
+    from sekhmet.game_engine import GamePhase
+    from sekhmet.game_engine.game_state import GameError
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+
+    # mid-hand: a human joins seat 2 — parked, not in the running hand
+    await tm.sit_down(tid, 2, "Late", buyin=300)
+    session = await tm.get_table(tid)
+    assert session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN)
+    assert [p.seat_idx for p in session.game_state.players] == [0, 1]
+    assert session.pending_seats == {2}
+    info = tm.table_info(session)
+    seat2 = next(s for s in info["seats"] if s["seat_idx"] == 2)
+    assert seat2["in_hand"] is False
+    assert seat2["stack"] == 300
+
+    # bots still cannot join mid-hand
+    with pytest.raises(GameError, match="between hands"):
+        await tm.sit_down(tid, 3, "Bot", buyin=200, is_human=False)
+
+    # a parked player may stand up mid-hand and re-sit
+    await tm.stand_up(tid, 2)
+    await tm.sit_down(tid, 2, "Late", buyin=300)
+
+    # play the hand out (hero folds on their turn, bots auto-play)
+    for _ in range(60):
+        session = await tm.get_table(tid)
+        gs = session.game_state
+        if gs.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+            break
+        cur = gs.current_player_idx
+        if cur is None:  # all-in runout steps itself
+            await asyncio.sleep(0.9)
+            continue
+        if gs.player(cur).is_human:
+            await tm.handle_player_action(tid, cur, "FOLD")
+        else:
+            await tm.after_action(tid)
+
+    # next hand: the parked seat is dealt in with cards
+    await tm.start_hand(tid)
+    session = await tm.get_table(tid)
+    assert {p.seat_idx for p in session.game_state.players} == {0, 1, 2}
+    assert session.pending_seats == set()
+    assert all(
+        p.hole_cards is not None and len(p.hole_cards) == 2
+        for p in session.game_state.players
+    )

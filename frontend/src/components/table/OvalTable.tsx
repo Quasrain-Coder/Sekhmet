@@ -103,6 +103,9 @@ export default function OvalTable({
           is_all_in: false,
           is_human: seat.is_human,
         };
+        // A seat without a player record (joined mid-hand, parked until the
+        // next deal) holds no cards — gate the backs per seat.
+        const seatInHand = handLive && p !== undefined;
         return (
           <div key={seat.seat_idx} data-seat={seat.seat_idx}
                className={`seat-wrap seat-${slot}${seat.connected === false ? ' offline' : ''}${viewer ? ' selectable' : ''}${viewer && selectedSeat === seat.seat_idx ? ' selected' : ''}`}
@@ -118,7 +121,7 @@ export default function OvalTable({
               }
               isMe={isMe}
               positionTag={tag}
-              inHand={handLive}
+              inHand={seatInHand}
               dealSeq={dealSeq}
               revealedCards={showdownHoleCards?.[seat.seat_idx]}
             />

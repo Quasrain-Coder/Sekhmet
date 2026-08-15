@@ -137,11 +137,13 @@ async def game_websocket(websocket: WebSocket, table_id: str):
                         # of game_state.players and wedge the hand (action
                         # timer finds no player, bots stop).  The graceful
                         # path is: close the tab → disconnect → grace expiry
-                        # folds them out.
+                        # folds them out.  A spectator who sat while the
+                        # hand was running (parked outside game_state) may
+                        # leave freely — they were never part of the hand.
                         session = await tm.get_table(table_id)
                         if session is not None and session.game_state.phase not in (
                             GamePhase.WAITING, GamePhase.SHOWDOWN,
-                        ):
+                        ) and session.game_state.player(my_seat) is not None:
                             await websocket.send_json({
                                 "type": "error",
                                 "message": "Cannot leave mid-hand — close the "
