@@ -51,6 +51,10 @@ async def get_scenario(scenario_id: str):
     s = _library.get(scenario_id)
     if s is None:
         return JSONResponse(status_code=404, content={"error": "Scenario not found"})
+    # Fetching a scenario's detail marks the decision timer's start — the
+    # submit endpoint scores against this.  (next_scenario was never wired
+    # into the API, so timing used to read 0 and always score full marks.)
+    _runner.start(scenario_id)
     return {
         "id": s.id,
         "title": s.title,

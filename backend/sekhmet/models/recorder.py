@@ -7,6 +7,7 @@ import json
 import logging
 
 from sqlalchemy import select
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from . import db
 from .records import HandRecord, PlayerStatsRecord
@@ -37,16 +38,25 @@ async def upsert_player_stats(deltas: list[dict]) -> None:
             for d in deltas:
                 if not d.get("is_human"):
                     continue
-                row = (await s.execute(
-                    select(PlayerStatsRecord).where(
-                        PlayerStatsRecord.name == d["name"])
-                )).scalar_one_or_none()
-                if row is None:
-                    row = PlayerStatsRecord(name=d["name"], hands=0, wins=0, net_chips=0)
-                    s.add(row)
-                row.hands += 1
-                row.wins += 1 if d.get("won") else 0
-                row.net_chips += d.get("delta", 0)
+                # Atomic UPSERT: a read-modify-write (select → mutate → commit)
+                # loses updates when hands at different tables finish
+                # concurrently — all readers see the same stale row.  The
+                # database does the increment in one statement instead.
+                stmt = sqlite_insert(PlayerStatsRecord).values(
+                    name=d["name"],
+                    hands=1,
+                    wins=1 if d.get("won") else 0,
+                    net_chips=d.get("delta", 0),
+                )
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=["name"],
+                    set_={
+                        "hands": PlayerStatsRecord.hands + stmt.excluded.hands,
+                        "wins": PlayerStatsRecord.wins + stmt.excluded.wins,
+                        "net_chips": PlayerStatsRecord.net_chips + stmt.excluded.net_chips,
+                    },
+                )
+                await s.execute(stmt)
             await s.commit()
     except Exception:
         logger.exception("failed to upsert player stats")

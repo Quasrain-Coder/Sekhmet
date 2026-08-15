@@ -35,6 +35,7 @@ export interface GameStateData {
   community_cards: string[];
   pot: number;
   current_bet: number;
+  min_raise: number;
   current_player_idx: number | null;
   players: PlayerInfo[];
   round_history: { seat: number; action: string; amount: number }[];
@@ -52,6 +53,7 @@ interface HandStartData {
   players: PlayerInfo[];
   small_blind: number;
   big_blind: number;
+  min_raise: number;
   pot: number;
   sb_seat: number | null;
   bb_seat: number | null;
@@ -80,6 +82,7 @@ interface AppState {
   communityCards: string[];
   pot: number;
   currentBet: number;
+  minRaise: number;
   currentPlayerIdx: number | null;
   roundHistory: GameStateData['round_history'];
   holeCards: string[];
@@ -88,6 +91,7 @@ interface AppState {
   tableId: string | null;
   maxSeats: number;
   connected: boolean;
+  turnEpoch: number;
   seats: SeatInfo[];
   config: TableConfigData | null;
   dealerIdx: number | null;
@@ -103,7 +107,8 @@ type Action =
   | { type: 'GAME_UPDATE'; data: GameMsg & { type: 'game_state_update' } }
   | { type: 'HAND_RESULT'; data: GameMsg & { type: 'hand_result' } }
   | { type: 'SET_MY_SEAT'; seat: number | null }
-  | { type: 'SET_CONNECTED'; connected: boolean };
+  | { type: 'SET_CONNECTED'; connected: boolean }
+  | { type: 'BUMP_TURN_EPOCH' };
 
 export const initialState: AppState = {
   phase: 'WAITING',
@@ -111,6 +116,7 @@ export const initialState: AppState = {
   communityCards: [],
   pot: 0,
   currentBet: 0,
+  minRaise: 0,
   currentPlayerIdx: null,
   roundHistory: [],
   holeCards: [],
@@ -119,6 +125,7 @@ export const initialState: AppState = {
   tableId: null,
   maxSeats: 9,
   connected: false,
+  turnEpoch: 0,
   seats: [],
   config: null,
   dealerIdx: null,
@@ -148,6 +155,7 @@ function reducer(state: AppState, action: Action): AppState {
         showdown: null,
         roundHistory: [],
         currentBet: action.data.current_bet ?? 0,
+        minRaise: action.data.min_raise ?? 0,
         currentPlayerIdx: action.data.current_player_idx ?? null,
         dealerIdx: action.data.dealer_idx ?? null,
         sbSeat: action.data.sb_seat ?? null,
@@ -163,6 +171,7 @@ function reducer(state: AppState, action: Action): AppState {
         communityCards: action.data.community_cards,
         pot: action.data.pot,
         currentBet: action.data.current_bet,
+        minRaise: action.data.min_raise ?? 0,
         currentPlayerIdx: action.data.current_player_idx,
         roundHistory: action.data.round_history,
         dealerIdx: action.data.dealer_idx ?? null,
@@ -174,12 +183,17 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         ...action.data,
         phase: action.data.phase,
+        minRaise: action.data.min_raise ?? 0,
         showdown: action.data.showdown,
       };
     case 'SET_MY_SEAT':
       return { ...state, mySeat: action.seat };
     case 'SET_CONNECTED':
       return { ...state, connected: action.connected };
+    case 'BUMP_TURN_EPOCH':
+      // Server re-armed the action countdown (reclaim mid-turn) — the
+      // ActionBar restarts its local clock when this changes.
+      return { ...state, turnEpoch: state.turnEpoch + 1 };
     default:
       return state;
   }
