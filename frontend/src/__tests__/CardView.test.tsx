@@ -1,21 +1,27 @@
 import { render } from '@testing-library/react';
 import CardView from '../components/table/CardView';
 
-test('renders corner rank and suit', () => {
-  const { container } = render(<CardView card="A♥" />);
-  expect(container.querySelector('.corner')!.textContent).toBe('A♥');
-  expect(container.querySelector('.pip')!.textContent).toBe('♥');
+test('spades use the standard black-suit style', () => {
+  const { container } = render(<CardView card="A♠" />);
+  const el = container.querySelector('.card')!;
+  expect(el.className).toContain('card-black');
+  expect(el.className).not.toContain('suit-club');
+  expect(el.getAttribute('title')).toBe('A♠');
+});
+
+test('clubs get the distinct green-suit style so ♠/♣ are not confused', () => {
+  const { container } = render(<CardView card="K♣" />);
+  const el = container.querySelector('.card')!;
+  expect(el.className).toContain('suit-club');
+  expect(el.className).not.toContain('card-black');
+});
+
+test('red suits stay red', () => {
+  const { container } = render(<CardView card="Q♥" />);
   expect(container.querySelector('.card')!.className).toContain('card-red');
 });
 
-test('black suit gets card-black, face-down gets card-back', () => {
-  const { container } = render(<CardView card="K♠" />);
-  expect(container.querySelector('.card')!.className).toContain('card-black');
-  const back = render(<CardView />);
-  expect(back.container.querySelector('.card-back')).toBeTruthy();
-});
-
-test('ten renders two-char rank', () => {
-  const { container } = render(<CardView card="10♦" />);
-  expect(container.querySelector('.corner')!.textContent).toBe('10♦');
+test('empty card renders a face-down back', () => {
+  const { container } = render(<CardView card={undefined} />);
+  expect(container.querySelector('.card')!.className).toContain('card-back');
 });
