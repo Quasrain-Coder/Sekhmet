@@ -26,6 +26,21 @@ async def _isolated_tables():
     tm._tables.clear()
 
 
+@pytest.fixture(autouse=True)
+def _instant_bots():
+    """Zero the bot think-delay for the whole suite.
+
+    Bot actions now wait bot_action_delay_seconds (2s in production) before
+    executing; most tests drive bots through after_action and would slow to
+    a crawl.  The cadence itself is covered by a dedicated test that
+    overrides the delay with monkeypatch.
+    """
+    from sekhmet.config import app_config
+    app_config.game.bot_action_delay_seconds = 0.0
+    yield
+    app_config.game.bot_action_delay_seconds = 2.0
+
+
 @pytest.fixture
 def game_config():
     return GameConfig(default_stack=100, default_small_blind=1, default_big_blind=2)
