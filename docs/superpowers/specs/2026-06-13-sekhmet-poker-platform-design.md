@@ -172,6 +172,22 @@ class BaseBot(ABC):
 
 决策树：手牌分类 → 位置调整 → 场景匹配 → 动作生成。
 
+实现要点（与代码同步）：
+
+- **翻前**：`_preflop_strength` 启发式牌力分（高张/低张/对子/同花/
+  连张），按难度与位置调整跟注/加注门槛；位置按真实行动顺序计算
+  （翻后以按钮为锚、翻前以大盲为锚，只统计未弃牌座位）。
+- **翻后**：成牌按类别映射到保守近似 equity（`_RANK_EQUITY`，不是
+  类别序号——顶对/两对/三条不再被当弱牌），听牌数 outs（含卡顺与
+  wheel，已成型类别不产生 outs）+ 2/4 法则折算 equity，面对下注按
+  equity vs 所需胜率决定跟/弃。
+- **诈唬**：半诈唬概率按街道（翻 > 转 > 河）与底池大小缩放；抓诈唬
+  概率按 pot odds 调价（小注多抓、超额下注少抓），L2+ 生效。
+- **对手模型**：`ai_engine/stats_tracker.py` 跨手牌追踪每座 VPIP /
+  PFR / 翻后弃牌率 / 激进度（Laplace 平滑），挂在牌桌 session 上、
+  每次动作执行后由 table_manager 记录；L2+ 读取对手模型调整诈唬
+  频率（对高弃牌率对手多诈、对激进对手多抓）。
+
 按难度注入"合理错误"：
 - **easy**：过度跟注、追听牌赔率不够也追、极少加注
 - **medium**：基本 GTO 近似，偶尔 sizing 不佳
@@ -190,11 +206,11 @@ class BaseBot(ABC):
 ```python
 @dataclass
 class BotPersonality:
-    vpip: float          # 入池率 (0~1)
-    pfr: float           # 翻前加注率
-    aggression: float    # 攻击性 (0~1)
-    bluff_freq: float    # 诈唬频率
-    hero_call_freq: float# 英雄跟注倾向
+    aggression: float        # 攻击性 (0 = passive, 1 = maniac)
+    tightness: float         # 松紧度 (0 = 玩任意两张, 1 = 只玩强牌)
+    bluff_frequency: float   # 抓诈唬基础频率 (0 = 从不, 1 = 太多)
+    use_position: bool       # 是否按位置调整翻前门槛
+    use_pot_odds: bool       # 是否按 equity/赔率决策
 ```
 
 ## 5. 情景训练器

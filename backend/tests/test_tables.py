@@ -88,7 +88,8 @@ async def test_bot_level_drives_registry(monkeypatch):
     created: list[str] = []
     monkeypatch.setattr(
         "sekhmet.ai_engine.bot_registry.create",
-        lambda name: created.append(name) or __import__(
+        # The session passes the opponent-model tracker in as a kwarg.
+        lambda name, **kw: created.append(name) or __import__(
             "sekhmet.ai_engine.rule_bot", fromlist=["RuleBot"]
         ).RuleBot(level=int(name[-1])),
     )

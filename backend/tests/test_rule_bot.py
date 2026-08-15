@@ -550,8 +550,8 @@ def test_semi_bluff_prob_decreases_by_street():
     flop = _pot_state(GamePhase.FLOP, 20)
     turn = _pot_state(GamePhase.TURN, 20)
     river = _pot_state(GamePhase.RIVER, 20)
-    assert bot._semi_bluff_prob(flop) > bot._semi_bluff_prob(turn)
-    assert bot._semi_bluff_prob(turn) > bot._semi_bluff_prob(river)
+    assert bot._semi_bluff_prob(flop, 1) > bot._semi_bluff_prob(turn, 1)
+    assert bot._semi_bluff_prob(turn, 1) > bot._semi_bluff_prob(river, 1)
 
 
 def test_semi_bluff_prob_grows_with_pot():
@@ -560,17 +560,17 @@ def test_semi_bluff_prob_grows_with_pot():
     small = _pot_state(GamePhase.FLOP, 5)
     mid = _pot_state(GamePhase.FLOP, 150)
     big = _pot_state(GamePhase.FLOP, 600)
-    assert bot._semi_bluff_prob(mid) > bot._semi_bluff_prob(small)
-    assert bot._semi_bluff_prob(big) == bot._semi_bluff_prob(mid)  # capped
+    assert bot._semi_bluff_prob(mid, 1) > bot._semi_bluff_prob(small, 1)
+    assert bot._semi_bluff_prob(big, 1) == bot._semi_bluff_prob(mid, 1)  # capped
 
 
 def test_bluff_catch_prob_favors_cheap_bets():
     """Small bets offer good odds → catch more; overbets → catch less."""
     bot = RuleBot(level=3)
     state = _pot_state(GamePhase.RIVER, 20)
-    cheap = bot._bluff_catch_prob(state, 2)
-    mid = bot._bluff_catch_prob(state, 10)
-    over = bot._bluff_catch_prob(state, 40)
+    cheap = bot._bluff_catch_prob(state, 2, 1)
+    mid = bot._bluff_catch_prob(state, 10, 1)
+    over = bot._bluff_catch_prob(state, 40, 1)
     assert cheap > mid > over
     assert all(0.0 <= p <= 1.0 for p in (cheap, mid, over))
 

@@ -24,6 +24,7 @@ from ..game_engine.hand_evaluator import evaluate_7_cards, HandRank
 
 if TYPE_CHECKING:
     from ..game_engine.deck import Card
+    from .stats_tracker import OpponentStats, OpponentStatsTracker
 
 
 # ---------------------------------------------------------------------------
@@ -179,13 +180,22 @@ class RuleBot(BaseBot):
         Difficulty level (1–3).
     personality : BotPersonality | None
         Custom personality; defaults to level-appropriate settings.
+    stats : OpponentStatsTracker | None
+        Shared cross-hand opponent model; levels 2+ tune bluff
+        frequencies against it when present.
     """
 
-    def __init__(self, level: int = 1, personality: BotPersonality | None = None):
+    def __init__(
+        self,
+        level: int = 1,
+        personality: BotPersonality | None = None,
+        stats: "OpponentStatsTracker | None" = None,
+    ):
         if level not in (1, 2, 3):
             raise ValueError(f"RuleBot level must be 1–3, got {level}")
         self._level = level
         self._personality = personality or self._default_personality(level)
+        self._stats = stats
 
     # ------------------------------------------------------------------
     # BaseBot interface
@@ -288,7 +298,7 @@ class RuleBot(BaseBot):
         if self._level >= 3 and category == "draw":
             # Semi-bluff some of the time, more often with two cards to
             # come and into bigger pots (see _semi_bluff_prob).
-            if random.random() < self._semi_bluff_prob(state):
+            if random.random() < self._semi_bluff_prob(state, player_idx):
                 sizing = self._bet_size(state, 0.5, is_preflop=False)
                 if sizing >= state.player(player_idx).stack:  # type: ignore[operator]
                     return Action(player_idx, ActionType.ALL_IN)
@@ -346,36 +356,71 @@ class RuleBot(BaseBot):
             if equity >= required:
                 return Action(player_idx, ActionType.CALL)
         if self._level >= 2 and random.random() < self._bluff_catch_prob(
-            state, to_call,
+            state, to_call, player_idx,
         ):
             return Action(player_idx, ActionType.CALL)
         return Action(player_idx, ActionType.FOLD)
 
-    def _semi_bluff_prob(self, state: GameState) -> float:
+    def _semi_bluff_prob(self, state: GameState, player_idx: int) -> float:
         """Probability of semi-bluffing a draw, tuned by street and pot.
 
         More cards to come (flop > turn > river) and bigger pots reward
         aggression; the river factor keeps pure bluffs rare.  Pot scale
-        saturates at 15bb, a typical postflop pot.
+        saturates at 15bb, a typical postflop pot.  With an opponent
+        model available, semi-bluff more against players who fold to
+        pressure.
         """
         p = self._personality
         street = {
             GamePhase.FLOP: 1.0, GamePhase.TURN: 0.7, GamePhase.RIVER: 0.4,
         }[state.phase]
         pot_scale = min(1.0, state.pot.main_pot / (state.big_blind * 15))
-        return p.aggression * 0.4 * street * (0.5 + 0.5 * pot_scale)
+        prob = p.aggression * 0.4 * street * (0.5 + 0.5 * pot_scale)
+        opp = self._opponent_stats(state, player_idx)
+        if opp is not None:
+            prob *= 0.5 + opp.fold_to_bet_rate()
+        return min(prob, 1.0)
 
-    def _bluff_catch_prob(self, state: GameState, to_call: int) -> float:
+    def _bluff_catch_prob(
+        self, state: GameState, to_call: int, player_idx: int,
+    ) -> float:
         """Probability of bluff-catching, tuned by the price offered.
 
         Good pot odds (a small bet) justify catching more often; an
-        overbet makes hero-calls expensive and thus rarer.
+        overbet makes hero-calls expensive and thus rarer.  With an
+        opponent model available, catch more against aggressive players.
         """
         p = self._personality
         pot = state.pot.main_pot
         odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 0.0
         price_factor = 1.0 + 0.5 * (1.0 - 2.0 * odds)
-        return max(0.0, min(1.0, p.bluff_frequency * price_factor))
+        prob = p.bluff_frequency * price_factor
+        opp = self._opponent_stats(state, player_idx)
+        if opp is not None:
+            prob *= 0.5 + opp.aggression_rate()
+        return max(0.0, min(1.0, prob))
+
+    def _opponent_stats(
+        self, state: GameState, player_idx: int,
+    ) -> "OpponentStats | None":
+        """Aggregated stats for the opponent behind the current spot.
+
+        Prefers the last aggressor (the player whose bet we answer);
+        otherwise the first other live seat.  Returns ``None`` when no
+        tracker is attached or no opponent is left.
+        """
+        if self._stats is None:
+            return None
+        seats = [
+            p.seat_idx for p in state.players
+            if p.seat_idx != player_idx and p.is_active
+        ]
+        if not seats:
+            return None
+        opp = state.last_aggressor_idx
+        if opp is None or opp == player_idx or opp not in seats:
+            opp = seats[0]
+        return self._stats.stats.get(opp)
 
     @staticmethod
     def _call_or_fold(
