@@ -357,8 +357,15 @@ def test_bot_two_pair_never_folds_reasonable_bet():
         assert bot.decide(state, 1).type == ActionType.CALL
 
 
-def test_bot_gutshot_calls_with_good_odds():
-    """L2 gutshot (4 outs): calls a tiny bet, folds a pot-sized bet."""
+def test_bot_gutshot_calls_with_good_odds(monkeypatch):
+    """L2 gutshot (4 outs): calls a tiny bet, folds a pot-sized bet.
+
+    The fold side depends on the bluff-catch roll — seed the RNG so a
+    pot-odds fold is never overridden by a random bluff-catch.
+    """
+    import random
+    monkeypatch.setattr("sekhmet.ai_engine.rule_bot.random",
+                        random.Random(42))
     bot = RuleBot(level=2)
     hole = [C(5, Suit.SPADES), C(6, Suit.CLUBS)]
     board = [C(8, Suit.HEARTS), C(9, Suit.DIAMONDS), C(14, Suit.CLUBS)]
@@ -464,13 +471,52 @@ def test_bot_level3_can_bluff():
         min_raise=10, big_blind=10, small_blind=5,
         pot=state.pot,
     )
-    # Run many times — should fold usually, but occasionally call
+    # Run many times — should fold usually, but occasionally call.
+    # With bluff_frequency=0.15, P(no call in 50) = 0.85^50 ≈ 0.03%.
     decisions = [bot.decide(state, 1).type for _ in range(50)]
-    # With bluff_frequency=0.15, expect some calls
     assert ActionType.FOLD in decisions  # usually folds
-    # May have some CALLs (not guaranteed, but likely over 50 runs)
-    # At minimum, it should produce valid actions
+    assert ActionType.CALL in decisions  # occasionally bluff-catches
     assert all(d in (ActionType.FOLD, ActionType.CALL) for d in decisions)
+
+
+def _weak_hand_facing_bet_state(level=None, hole=None):
+    """River, bot holds a weak high-card hand facing a half-pot bet."""
+    state = make_postflop_state(GamePhase.RIVER)
+    players = list(state.players)
+    players[1] = Player(name="Bot", seat_idx=1, stack=190,
+                        hole_cards=tuple(hole))
+    return GameState(
+        phase=state.phase, players=tuple(players),
+        community_cards=state.community_cards,
+        dealer_idx=state.dealer_idx,
+        current_player_idx=1, current_bet=10,
+        min_raise=10, big_blind=10, small_blind=5,
+        pot=state.pot,
+    )
+
+
+def test_bot_level2_bluff_catches_rarely():
+    """L2's bluff_frequency is live now: mostly folds, occasionally calls.
+
+    79o misses the river board (no pair, no straight), so every call
+    is a genuine bluff-catch.  P(no call in 200) ≈ 0.95^200 ≈ 0.0035%.
+    """
+    bot = RuleBot(level=2)
+    state = _weak_hand_facing_bet_state(
+        hole=(C(7, Suit.HEARTS), C(9, Suit.CLUBS)))
+    decisions = [bot.decide(state, 1).type for _ in range(200)]
+    assert ActionType.FOLD in decisions
+    assert ActionType.CALL in decisions
+    assert all(d in (ActionType.FOLD, ActionType.CALL) for d in decisions)
+
+
+def test_bot_level1_never_bluff_catches():
+    """L1 has no bluff-catching — always folds weak hands to a bet."""
+    bot = RuleBot(level=1)
+    state = _weak_hand_facing_bet_state(
+        hole=(C(7, Suit.HEARTS), C(9, Suit.CLUBS)))
+    decisions = [bot.decide(state, 1).type for _ in range(50)]
+    assert all(d == ActionType.FOLD for d in decisions)
 
 
 def test_bot_all_three_levels_return_valid_actions():
