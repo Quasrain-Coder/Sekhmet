@@ -492,3 +492,41 @@ async def test_pending_seat_survives_grace_expiry():
     assert seat == 2 and new_token is not None
     session = await tm.get_table(tid)
     assert 2 not in session.disconnected
+
+
+async def test_disconnected_player_auto_folds_immediately():
+    """断联玩家轮到时立即自动过牌/弃牌——牌局不为死连接停顿 30 秒。
+    断联发生在回合中 → 计时器重挂为 0 秒；之后每个回合都是瞬发。"""
+    import asyncio
+    import time
+
+    from sekhmet.api import table_manager as tm
+    from sekhmet.game_engine import GamePhase
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)
+
+    # drive to the hero's first turn
+    session = await tm.get_table(tid)
+    while session.game_state.current_player_idx != 0:
+        await tm.after_action(tid)
+        session = await tm.get_table(tid)
+    assert session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN)
+
+    await tm.handle_disconnect(tid, 0)
+    session = await tm.get_table(tid)
+    # the 30s timer was re-armed as an instant one
+    assert session.action_timer is not None
+
+    t0 = time.monotonic()
+    for _ in range(300):
+        session = await tm.get_table(tid)
+        if session.game_state.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+            break
+        await asyncio.sleep(0.01)
+    elapsed = time.monotonic() - t0
+
+    assert session.game_state.phase == GamePhase.SHOWDOWN
+    assert elapsed < 3.0, f"hand stalled {elapsed:.2f}s for a dead connection"
