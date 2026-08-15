@@ -110,6 +110,7 @@ class TableSession:
     reclaim_tokens: dict[int, str] = field(default_factory=dict)  # seat_idx → token
     action_timer: asyncio.Task | None = None
     owner_seat: int | None = None
+    owner_token: str | None = None  # room key from create_table — bearer claims ownership
     last_activity: float = field(default_factory=time.monotonic)
     # Serializes every read-modify-write of ``game_state`` that can race:
     # the auto_bot_actions loop (incl. the all-in runout, whose per-street
@@ -148,8 +149,14 @@ async def create_table(config: TableConfig | None = None) -> str:
         ),
         deck=Deck(),
         config=cfg,
+        owner_token=secrets.token_hex(16),
     )
     async with _lock:
+        if len(_tables) >= app_config.game.max_tables:
+            raise GameError(
+                f"Table limit reached ({app_config.game.max_tables}) — "
+                "try again later"
+            )
         _tables[tid] = session
     return tid
 
@@ -232,6 +239,7 @@ async def sit_down(
     buyin: int | None = None,
     is_human: bool = True,
     bot_level: int | None = None,
+    owner_token: str | None = None,
 ) -> dict[str, Any]:
     """Seat a player at *table_id*.  Returns the updated table summary."""
     session = await get_table(table_id)
@@ -256,6 +264,12 @@ async def sit_down(
         session.bot_levels[seat_idx] = level
 
     stack = buyin if buyin is not None else session.config.default_buyin
+    # Bounds mirror the rebuy limits (20bb–200bb).  This also blocks the
+    # 0-chip grief seat: a dead player occupies the seat but can never play.
+    lo = 20 * session.config.big_blind
+    hi = max(200 * session.config.big_blind, session.config.default_buyin)
+    if not (lo <= stack <= hi):
+        raise GameError(f"Buy-in must be between {lo} and {hi}, got {buyin}")
     player = Player(
         name=name,
         seat_idx=seat_idx,
@@ -268,7 +282,15 @@ async def sit_down(
     current = list(session.game_state.players)
     current.append(player)
     session.game_state = session.game_state.with_players(tuple(current))
-    _reassign_owner(session)
+
+    # Ownership: the bearer of the room's owner_token (returned at
+    # creation) claims the room — on first sit-down or by taking over
+    # from a stranger who raced in first.  Without a token the lowest-
+    # seated human becomes (or stays) owner.
+    if is_human and owner_token is not None and owner_token == session.owner_token:
+        session.owner_seat = seat_idx
+    else:
+        _reassign_owner(session)
 
     session.stats[seat_idx] = PlayerStats()
     session.total_buyin[seat_idx] = stack
@@ -644,13 +666,13 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
             if player.is_human:
                 break  # it's a human's turn — stop auto-play
 
-            # Bot's turn — decide and execute.  A bot that produces an illegal
-            # action must never freeze the game: fall back to check (free) or
-            # fold (facing a bet) and carry on.
+            # Bot's turn — decide and execute.  A bot that crashes or
+            # produces an illegal action must never freeze the game: fall
+            # back to check (free) or fold (facing a bet) and carry on.
             bot_name = session.player_names.get(cur_idx, f"Bot{cur_idx}")
             level = session.bot_levels.get(cur_idx, 2)
-            bot = create_bot(f"rule_lv{level}")
             try:
+                bot = create_bot(f"rule_lv{level}")
                 action = bot.decide(gs, cur_idx)
                 gs = execute(gs, action)
             except GameError:
@@ -658,12 +680,17 @@ async def auto_bot_actions(table_id: str) -> list[dict[str, Any]]:
                     "Bot %s produced an illegal action at table %s — falling back",
                     bot_name, table_id, exc_info=True,
                 )
-                to_call = gs.current_bet - player.current_bet
-                fallback = Action(
-                    cur_idx,
-                    ActionType.CHECK if to_call == 0 else ActionType.FOLD,
+                gs = _bot_fallback(gs, cur_idx, player)
+            except Exception:
+                # Any other exception (a buggy decide() crashing, a broken
+                # bot factory) would otherwise propagate through
+                # after_action and strand the hand with no driver and no
+                # action timer — a permanently frozen table.
+                logger.exception(
+                    "Bot %s crashed at table %s — falling back",
+                    bot_name, table_id,
                 )
-                gs = execute(gs, fallback)
+                gs = _bot_fallback(gs, cur_idx, player)
             session.game_state = gs
 
             result = None
@@ -750,14 +777,39 @@ async def _action_timeout(table_id: str, seat_idx: int) -> None:
 
 async def after_action(table_id: str) -> None:
     """Drive bots, push fresh stats at hand end, re-arm the action timer."""
-    for msg in await auto_bot_actions(table_id):
-        await broadcast(table_id, msg)
+    try:
+        for msg in await auto_bot_actions(table_id):
+            await broadcast(table_id, msg)
+    except Exception:
+        # auto_bot_actions is defensive, but if anything else throws the
+        # timer must still get armed — otherwise a human-to-act hand has
+        # no timeout safety net and the table wedges silently.
+        logger.exception("after_action bot phase failed at table %s", table_id)
     session = await get_table(table_id)
     if session is None:
         return
     if session.game_state.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
         await broadcast(table_id, _table_summary(session))
     schedule_action_timeout(session)
+
+
+def _bot_fallback(gs: GameState, cur_idx: int, player: Player) -> GameState:
+    """Least-damaging legal action when a bot misbehaves or crashes.
+
+    Check when free, fold when facing a bet.  FOLD is always legal while
+    it is the bot's turn, so this can only fail in a corrupt state.
+    """
+    to_call = gs.current_bet - player.current_bet
+    try:
+        return execute(
+            gs,
+            Action(cur_idx, ActionType.CHECK if to_call == 0 else ActionType.FOLD),
+        )
+    except GameError:
+        logger.exception(
+            "bot fallback rejected for seat %s — forcing fold", cur_idx,
+        )
+        return execute(gs, Action(cur_idx, ActionType.FOLD))
 
 
 # ---------------------------------------------------------------------------
@@ -937,7 +989,7 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
             hands[p.seat_idx] = evaluate_7_cards(all_cards)
 
         # Award
-        awards_list = award_pot(pot, gs.players, hands)
+        awards_list = award_pot(pot, gs.players, hands, gs.dealer_idx)
 
     for seat in {a.winner_seat_idx for a in awards_list}:
         if seat in session.stats:
