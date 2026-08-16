@@ -1204,3 +1204,50 @@ async def test_table_creation_cap(monkeypatch):
     await tm.create_table()
     with pytest.raises(tm.GameError, match="limit"):
         await tm.create_table()
+
+
+async def test_dealer_button_survives_dealer_leaving():
+    """The dealer standing up must not freeze SB/BB rotation.
+
+    Reproduces the live bug: after the dealer seat left, dealer_idx
+    stayed stale and every hand kept the same SB/BB forever.
+    """
+    import asyncio
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    for i in (1, 2, 3):
+        await tm.sit_down(tid, i, f"Bot{i}", buyin=200, is_human=False)
+
+    async def play_out():
+        for _ in range(60):
+            s = await tm.get_table(tid)
+            if s.game_state.phase in (tm.GamePhase.WAITING, tm.GamePhase.SHOWDOWN):
+                return
+            cur = s.game_state.current_player_idx
+            if cur is None:
+                await asyncio.sleep(0.5)
+                continue
+            await tm.handle_player_action(tid, cur, "FOLD")
+
+    await tm.start_hand(tid)
+    s = await tm.get_table(tid)
+    first_dealer = s.game_state.dealer_idx
+    await play_out()
+
+    # The current dealer leaves between hands.
+    await tm.stand_up(tid, first_dealer)
+    await tm.start_hand(tid)
+    s = await tm.get_table(tid)
+    assert s.game_state.dealer_idx != first_dealer          # moved on
+    session = await tm.get_table(tid)
+    assert s.game_state.dealer_idx in session.player_names  # points at a live seat
+    second_dealer = s.game_state.dealer_idx
+    await play_out()
+
+    # Rotation keeps working on the next hand too.
+    await tm.start_hand(tid)
+    s = await tm.get_table(tid)
+    assert s.game_state.dealer_idx != second_dealer
+    session = await tm.get_table(tid)
+    assert s.game_state.dealer_idx in session.player_names
