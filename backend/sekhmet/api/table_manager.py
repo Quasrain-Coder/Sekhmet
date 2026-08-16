@@ -1290,6 +1290,11 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
                 "seat_idx": p.seat_idx, "name": p.name, "is_human": p.is_human,
                 "stack_before": stacks_before[p.seat_idx],
                 "stack_after": p.stack,
+                # Hole cards at showdown — enables rebuilding decision
+                # points from history for training scenarios.  (Rows
+                # recorded before this field are missing it; the
+                # generator skips those.)
+                "hole_cards": [str(c) for c in (p.hole_cards or [])],
             }
             for p in players_list
         ],
