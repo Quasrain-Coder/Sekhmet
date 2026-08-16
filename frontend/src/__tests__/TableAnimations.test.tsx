@@ -254,3 +254,57 @@ describe('community card flip-in', () => {
     slots.forEach(s => expect(s.className).not.toContain('dealt'));
   });
 });
+
+// ---------------------------------------------------------------------------
+// Seat spreading — occupied seats spread evenly around the oval
+// ---------------------------------------------------------------------------
+
+describe('seat spreading', () => {
+  const base = {
+    players: [] as PlayerInfo[],
+    maxSeats: 9, communityCards: [], pot: 0,
+    currentPlayerIdx: null, dealerIdx: null, sbSeat: null, bbSeat: null,
+    mySeat: 0, holeCards: [], onAddBot: vi.fn(), onKickBot: vi.fn(),
+  };
+
+  test('HU on a 9-max table puts the opponent at the top (seat-4)', () => {
+    const { container } = render(
+      <OvalTable {...base} phase="WAITING"
+                 seats={[seat(0, '你', true), seat(1, 'Bot L2', false)]} />,
+    );
+    const me = container.querySelector('[data-seat="0"]')!;
+    const opp = container.querySelector('[data-seat="1"]')!;
+    expect(me.className).toContain('seat-0');
+    expect(opp.className).toContain('seat-4');  // 正对面，不再挤在右侧
+  });
+
+  test('3 players spread out: hero bottom, next ccw top-right, next top-left', () => {
+    const { container } = render(
+      <OvalTable {...base} phase="WAITING"
+                 seats={[seat(0, '你', true), seat(1, 'B1', false), seat(2, 'B2', false)]} />,
+    );
+    const s0 = container.querySelector('[data-seat="0"]')!.className;
+    const s1 = container.querySelector('[data-seat="1"]')!.className;
+    const s2 = container.querySelector('[data-seat="2"]')!.className;
+    expect(s0).toContain('seat-0');
+    expect(s1).toContain('seat-3');  // top-right (counterclockwise)
+    expect(s2).toContain('seat-5');  // top-left
+  });
+
+  test('action order stays counterclockwise around the oval', () => {
+    // 6 players: hero bottom → slot1 → slot2 → slot3 → slot4 → slot5…
+    const seats = [0, 1, 2, 3, 4, 5].map(i =>
+      seat(i, i === 0 ? '你' : `B${i}`, i === 0));
+    const { container } = render(
+      <OvalTable {...base} phase="WAITING" seats={seats} maxSeats={6} />,
+    );
+    const slots = [0, 1, 2, 3, 4, 5].map(i =>
+      Number(container.querySelector(`[data-seat="${i}"]`)!.className
+        .match(/seat-(\d)/)![1]));
+    // In action order the slot numbers must keep increasing (the oval
+    // is numbered counterclockwise) — no reversal.
+    for (let i = 1; i < slots.length; i++) {
+      expect(slots[i]).toBeGreaterThan(slots[i - 1]);
+    }
+  });
+});

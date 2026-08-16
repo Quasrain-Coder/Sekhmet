@@ -30,17 +30,37 @@ interface Props {
   onSeatClick?: (seatIdx: number) => void;
 }
 
-/** Map a seat index to an oval display slot, rotating so *mySeat* is at
- *  position 0 (bottom center). */
-function displaySlot(seatIdx: number, total: number, mySeat: number | null): number {
-  if (mySeat === null) return seatIdx % total;
-  const rel = (seatIdx - mySeat + total) % total;
-  if (total <= 2) return [0, 4][rel % 2];
-  // 9-handed needs the 9th visual slot (.seat-8, between top-left and
-  // top-center) — folding it into slot 0 would stack it on my seat.
-  if (total === 9) return [0, 2, 3, 4, 8, 5, 6, 7, 1][rel];
-  const SLOTS = [0, 2, 3, 4, 5, 6, 7, 1];
-  return SLOTS[rel % SLOTS.length];
+/** Map a seat index to an on-screen slot.
+ *
+ * Occupied seats spread evenly around the oval in action order
+ * (counterclockwise, hero at the bottom) — sparse tables no longer
+ * bunch players on one side, so the action order always traces the
+ * same visual direction.  Empty seats keep the natural maxSeats-based
+ * slot so the +Bot markers stay put.
+ */
+function displaySlot(
+  seatIdx: number,
+  occupied: number[],
+  maxSeats: number,
+  mySeat: number | null,
+): number {
+  const total = Math.min(Math.max(maxSeats, 2), 9);
+  const idx = occupied.indexOf(seatIdx);
+  if (idx === -1) {
+    // Empty seat: natural slot by raw position.
+    if (mySeat === null) return seatIdx % total;
+    const rel = (seatIdx - mySeat + total) % total;
+    if (total <= 2) return [0, 4][rel % 2];
+    if (total === 9) return [0, 2, 3, 4, 8, 5, 6, 7, 1][rel];
+    return [0, 2, 3, 4, 5, 6, 7, 1][rel % 8];
+  }
+  const n = occupied.length;
+  const start = mySeat !== null ? occupied.indexOf(mySeat) : 0;
+  const order = [...occupied.slice(start), ...occupied.slice(0, start)];
+  const k = order.indexOf(seatIdx);
+  if (n === 2) return [0, 4][k];
+  if (n === 9) return [0, 2, 3, 4, 8, 5, 6, 7, 1][k];
+  return [0, 1, 2, 3, 4, 5, 6, 7][Math.round((k * 8) / n) % 8];
 }
 
 export default function OvalTable({
@@ -62,8 +82,10 @@ export default function OvalTable({
   useEffect(() => {
     if (!canAddBot) setPendingSeat(null);
   }, [canAddBot]);
-  const total = Math.min(Math.max(maxSeats, 2), 9);
   const occupied = new Map(seats.map(s => [s.seat_idx, s]));
+  // Sorted occupied seats — displaySlot spreads them evenly around the
+  // oval in action order.
+  const occupiedList = [...occupied.keys()].sort((a, b) => a - b);
   // Card backs persist from the deal through showdown (players are still
   // holding their cards); they clear once the table returns to WAITING.
   const handLive = phase !== 'WAITING';
@@ -95,7 +117,7 @@ export default function OvalTable({
           : seat.seat_idx === sbSeat ? 'SB'
           : seat.seat_idx === bbSeat ? 'BB'
           : undefined;
-        const slot = displaySlot(seat.seat_idx, total, mySeat);
+        const slot = displaySlot(seat.seat_idx, occupiedList, maxSeats, mySeat);
         // Merge lobby-level seat info with in-hand player info
         const merged: PlayerInfo = p ?? {
           seat_idx: seat.seat_idx,
@@ -148,7 +170,7 @@ export default function OvalTable({
           .filter(i => !occupied.has(i))
           .map(i => (
             <button key={`empty-${i}`} data-seat={i}
-                    className={`empty-seat-btn seat-${displaySlot(i, total, mySeat)}${selectedSeat === i ? ' selected' : ''}`}
+                    className={`empty-seat-btn seat-${displaySlot(i, occupiedList, maxSeats, mySeat)}${selectedSeat === i ? ' selected' : ''}`}
                     onClick={() => onSeatSelect!(i)}>
               {i}
             </button>
@@ -156,7 +178,7 @@ export default function OvalTable({
         : canAddBot && Array.from({ length: maxSeats }, (_, i) => i)
           .filter(i => !occupied.has(i))
           .map(i => (
-            <div key={`empty-${i}`} className={`empty-seat seat-${displaySlot(i, total, mySeat)}`}>
+            <div key={`empty-${i}`} className={`empty-seat seat-${displaySlot(i, occupiedList, maxSeats, mySeat)}`}>
               {pendingSeat === i ? (
                 <span className="bot-level-picker">
                   {[1, 2, 3, 4].map(lv => (
