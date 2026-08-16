@@ -15,6 +15,11 @@ class GameConfig:
     # 每个 bot 行动前的思考间隔——bot 决策不是瞬发，像真人一样有节奏
     bot_action_delay_seconds: float = 2.0
     room_idle_timeout_seconds: int = 1800
+    # 巡检（sweeper）配置：僵尸桌判定与卡死牌局处理
+    empty_room_timeout_seconds: int = 300    # 无人入座且无连接的空房间
+    orphan_room_timeout_seconds: int = 600   # 只有 bot 且无连接——bot 自打永不 idle
+    stuck_hand_timeout_seconds: int = 120    # all-in runout 失去驱动后强制完成
+    sweep_interval_seconds: float = 30.0
     max_tables: int = 30
 
 

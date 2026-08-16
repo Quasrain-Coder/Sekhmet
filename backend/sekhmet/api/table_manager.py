@@ -118,6 +118,10 @@ class TableSession:
     grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
     reclaim_tokens: dict[int, str] = field(default_factory=dict)  # seat_idx → token
     action_timer: asyncio.Task | None = None
+    # Sweeper: when the room first matched a zombie/stuck condition.
+    # Reset whenever the condition clears — a room must be continuously
+    # dead for the grace period before the sweeper acts on it.
+    zombie_since: float | None = None
     owner_seat: int | None = None
     owner_token: str | None = None  # room key from create_table — bearer claims ownership
     # Serializes sends per client socket: concurrent broadcast/send_to_player
@@ -199,28 +203,120 @@ async def touch(table_id: str) -> None:
         session.last_activity = time.monotonic()
 
 
+async def _close_room(session: TableSession) -> None:
+    """Cancel pending timers, tell connected clients, drop the room."""
+    for task in session.grace_timers.values():
+        task.cancel()
+    if session.action_timer is not None:
+        session.action_timer.cancel()
+    await broadcast(session.table_id,
+                    {"type": "room_closed", "table_id": session.table_id})
+    await remove_table(session.table_id)
+
+
+def _zombie_condition(session: TableSession) -> tuple[str, float] | None:
+    """Return (reason, grace_seconds) when the room is a zombie.
+
+    - empty: nobody ever sat down and no client is connected
+    - orphaned: only bots seated and no client is connected — the bots
+      would self-play forever, so idle timeout never fires on its own
+    """
+    cfg = app_config.game
+    if not session.player_names and not session.clients:
+        return ("empty room", float(cfg.empty_room_timeout_seconds))
+    if (session.player_names
+            and all(seat in session.bot_levels for seat in session.player_names)
+            and not session.clients):
+        return ("bots-only orphan", float(cfg.orphan_room_timeout_seconds))
+    return None
+
+
+async def _complete_stuck_hand(session: TableSession) -> None:
+    """Finish an all-in runout that lost its driver.
+
+    The auto_bot_actions loop deals runout streets; if it dies
+    mid-street the hand sits forever with nobody to act.  The outcome
+    is deterministic — deal the remaining streets and resolve.  If a
+    human reconnects mid-completion, hand the driving back.
+    """
+    async with session.lock:
+        gs = session.game_state
+        for _ in range(8):
+            if gs.phase in (GamePhase.WAITING, GamePhase.SHOWDOWN):
+                break
+            if gs.current_player_idx is not None:
+                # A driver reappeared (human reconnected) — hand back.
+                session.game_state = gs
+                schedule_action_timeout(session)
+                return
+            gs = runout_step(gs)
+        else:
+            logger.error("Table %s stuck hand would not resolve — closing",
+                         session.table_id)
+            await _close_room(session)
+            return
+        session.game_state = gs
+        result = _resolve_showdown(session)
+        await broadcast(session.table_id, _state_broadcast(session, result))
+
+
 async def sweep_idle_tables() -> list[str]:
-    """Close rooms idle beyond the configured timeout. Returns closed ids."""
-    timeout = app_config.game.room_idle_timeout_seconds
+    """Sweep zombie rooms and force-finish stuck hands. Returns closed ids.
+
+    Zombie conditions (empty / bots-only orphan) need the room to stay
+    dead for their grace period, tracked in ``session.zombie_since``.
+    Idle rooms past ``room_idle_timeout_seconds`` close immediately.
+    Stuck hands are completed in place, not closed.
+    """
+    cfg = app_config.game
     now = time.monotonic()
     closed: list[str] = []
     for tid, session in list(_tables.items()):
-        if now - session.last_activity <= timeout:
+        # Long-idle rooms close outright (the original rule).
+        if now - session.last_activity > cfg.room_idle_timeout_seconds:
+            logger.info("Closing idle table %s", tid)
+            await _close_room(session)
+            closed.append(tid)
             continue
-        for task in session.grace_timers.values():
-            task.cancel()
-        if session.action_timer is not None:
-            session.action_timer.cancel()
-        await broadcast(tid, {"type": "room_closed", "table_id": tid})
-        await remove_table(tid)
-        closed.append(tid)
+
+        # A runout with nobody to act: complete it after the grace period.
+        gs = session.game_state
+        stuck = (
+            gs.phase in (GamePhase.PREFLOP, GamePhase.FLOP,
+                         GamePhase.TURN, GamePhase.RIVER)
+            and gs.current_player_idx is None
+        )
+        if stuck:
+            if session.zombie_since is None:
+                session.zombie_since = now
+            elif now - session.zombie_since >= cfg.stuck_hand_timeout_seconds:
+                logger.warning("Table %s stuck in %s runout — completing it",
+                               tid, gs.phase)
+                session.zombie_since = None
+                await _complete_stuck_hand(session)
+            continue
+
+        # Other zombie conditions need continuous-death grace tracking.
+        zombie = _zombie_condition(session)
+        if zombie is None:
+            session.zombie_since = None
+            continue
+        reason, grace = zombie
+        if session.zombie_since is None:
+            session.zombie_since = now
+        elif now - session.zombie_since >= grace:
+            logger.info("Closing zombie table %s: %s", tid, reason)
+            await _close_room(session)
+            closed.append(tid)
     return closed
 
 
-async def sweeper_loop(interval_seconds: float = 60.0) -> None:
-    """Background task: periodically sweep idle rooms."""
+async def sweeper_loop(interval_seconds: float | None = None) -> None:
+    """Background task: periodically sweep zombie/stuck rooms."""
+    interval = (interval_seconds if interval_seconds is not None
+                else app_config.game.sweep_interval_seconds)
     while True:
-        await asyncio.sleep(interval_seconds)
+        await asyncio.sleep(interval)
         try:
             await sweep_idle_tables()
         except Exception:
