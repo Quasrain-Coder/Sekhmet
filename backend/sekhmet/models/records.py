@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import json as _json
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy import DateTime, Integer, String, Text, select
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -28,6 +29,65 @@ class HandRecord(Base):
     small_blind: Mapped[int | None] = mapped_column(Integer, nullable=True)
     big_blind: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+
+async def recent_hands_for(session, username: str, limit: int = 10) -> list[dict]:
+    """Last *limit* recorded hands the account played in, with their
+    own net result derived from stack_before/stack_after."""
+    q = (select(HandRecord)
+         .where(HandRecord.players.contains(f'"name": "{username}"'))
+         .order_by(HandRecord.id.desc())
+         .limit(max(0, min(limit, 20))))
+    rows = (await session.execute(q)).scalars().all()
+    out = []
+    for r in rows:
+        players = _json.loads(r.players)
+        me = next((pl for pl in players if pl.get("name") == username), None)
+        if me is None:
+            continue
+        winners = {a["seat_idx"] for a in _json.loads(r.awards)}
+        net = None
+        if "stack_before" in me and "stack_after" in me:
+            net = me["stack_after"] - me["stack_before"]
+        out.append({
+            "table_id": r.table_id,
+            "board": _json.loads(r.board),
+            "won": me["seat_idx"] in winners,
+            "net": net,
+            "small_blind": r.small_blind,
+            "big_blind": r.big_blind,
+            "created_at": r.created_at.isoformat(),
+        })
+    return out
+
+
+async def stats_by_blinds(session, username: str, cap: int = 500) -> list[dict]:
+    """Lifetime results grouped by blind level (over the last *cap*
+    hands containing the account)."""
+    q = (select(HandRecord)
+         .where(HandRecord.players.contains(f'"name": "{username}"'))
+         .order_by(HandRecord.id.desc())
+         .limit(max(0, min(cap, 1000))))
+    rows = (await session.execute(q)).scalars().all()
+    groups: dict[tuple[int | None, int | None], dict] = {}
+    for r in rows:
+        players = _json.loads(r.players)
+        me = next((pl for pl in players if pl.get("name") == username), None)
+        if me is None:
+            continue
+        key = (r.small_blind, r.big_blind)
+        g = groups.setdefault(key, {"hands": 0, "wins": 0, "net_chips": 0})
+        g["hands"] += 1
+        winners = {a["seat_idx"] for a in _json.loads(r.awards)}
+        if me["seat_idx"] in winners:
+            g["wins"] += 1
+        if "stack_before" in me and "stack_after" in me:
+            g["net_chips"] += me["stack_after"] - me["stack_before"]
+    return [
+        {"small_blind": sb, "big_blind": bb, **g}
+        for (sb, bb), g in sorted(groups.items(), key=lambda kv: kv[0][1] or 0)
+    ]
 
 
 class PlayerStatsRecord(Base):

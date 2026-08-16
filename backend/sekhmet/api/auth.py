@@ -15,6 +15,7 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
 from ..models import db
+from ..models import records
 from ..models.records import UserRecord, UserStatsRecord
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -105,11 +106,28 @@ async def me(token: str):
     if user is None:
         raise HTTPException(status_code=401, detail="Not logged in")
 
+    hands = stats.hands if stats is not None else 0
     return {
         "username": user.username,
         "stats": {
-            "hands": stats.hands if stats is not None else 0,
+            "hands": hands,
             "wins": stats.wins if stats is not None else 0,
             "net_chips": stats.net_chips if stats is not None else 0,
+        },
+        # Full profile shape — matches the in-game profile endpoint so
+        # the lobby's "My Profile" can render the same metrics.
+        "profile": {
+            "total_buyin": stats.total_buyin if stats is not None else 0,
+            "vpip_rate": (stats.vpip_hands / hands)
+                         if stats is not None and hands else None,
+            "pfr_rate": (stats.pfr_hands / hands)
+                        if stats is not None and hands else None,
+            "wtsd": (stats.showdown_wins / stats.showdowns)
+                    if stats is not None and stats.showdowns else None,
+            "last_active": (stats.updated_at.isoformat()
+                            if stats is not None and stats.updated_at
+                            else None),
+            "recent_hands": await records.recent_hands_for(s, user.username),
+            "by_blinds": await records.stats_by_blinds(s, user.username),
         },
     }
