@@ -431,6 +431,7 @@ export default function GameTablePage() {
           holeCards={state.holeCards}
           phase={state.phase}
           showdownHoleCards={state.showdown?.hole_cards}
+          winnerSeats={state.showdown?.awards.map(a => a.seat_idx)}
           onAddBot={addBot}
           onKickBot={kickBot}
           onSeatClick={openProfile}

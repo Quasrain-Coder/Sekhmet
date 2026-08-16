@@ -345,3 +345,43 @@ describe('seat spreading rotation', () => {
     expect(container.querySelector('[data-seat="5"]')!.className).toContain('seat-4');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Showdown winner highlight
+// ---------------------------------------------------------------------------
+
+describe('showdown winner highlight', () => {
+  const base = {
+    players: [player({ seat_idx: 0, is_human: true }), player()],
+    seats: [seat(0, '你', true), seat(1, 'Bot L2', false)],
+    maxSeats: 2, communityCards: [], pot: 0,
+    currentPlayerIdx: null, dealerIdx: null, sbSeat: null, bbSeat: null,
+    mySeat: 0, holeCards: [], onAddBot: vi.fn(), onKickBot: vi.fn(),
+  };
+
+  test('winner seat gets the winner class and badge', () => {
+    const { container } = render(
+      <OvalTable {...base} phase="SHOWDOWN" winnerSeats={[1]} />,
+    );
+    const opp = container.querySelector('[data-seat="1"]')!;
+    expect(opp.className).toContain('winner');
+    expect(opp.querySelector('.winner-badge')).not.toBeNull();
+    const me = container.querySelector('[data-seat="0"]')!;
+    expect(me.className).not.toContain('winner');
+  });
+
+  test('split pot highlights every winner', () => {
+    const { container } = render(
+      <OvalTable {...base} phase="SHOWDOWN" winnerSeats={[0, 1]} />,
+    );
+    expect(container.querySelector('[data-seat="0"]')!.className).toContain('winner');
+    expect(container.querySelector('[data-seat="1"]')!.className).toContain('winner');
+  });
+
+  test('no winners before the result arrives', () => {
+    const { container } = render(
+      <OvalTable {...base} phase="SHOWDOWN" />,
+    );
+    expect(container.querySelector('.winner-badge')).toBeNull();
+  });
+});

@@ -19,6 +19,8 @@ interface Props {
   phase: string;
   // Seat → revealed hole cards, populated by hand_result at showdown.
   showdownHoleCards?: Record<number, string[]>;
+  // Seats that won (part of) the pot at showdown — highlighted.
+  winnerSeats?: number[];
   onAddBot: (seatIdx: number, level: number) => void;
   onKickBot: (seatIdx: number) => void;
   // Viewer mode (join panel): seats become clickable and empty seats render
@@ -68,7 +70,7 @@ export default function OvalTable({
   dealerIdx, sbSeat, bbSeat,
   mySeat, holeCards, phase, showdownHoleCards, onAddBot, onKickBot,
   onSeatSelect, selectedSeat,
-  onSeatClick,
+  onSeatClick, winnerSeats,
 }: Props) {
   const showCommunity = phase !== 'WAITING' && phase !== 'PREFLOP' && phase !== 'DEALING';
   // Mid-hand seating changes corrupt the engine — only offer bot seats
@@ -133,7 +135,7 @@ export default function OvalTable({
         const seatInHand = handLive && p !== undefined;
         return (
           <div key={seat.seat_idx} data-seat={seat.seat_idx}
-               className={`seat-wrap seat-${slot}${seat.connected === false ? ' offline' : ''}${viewer ? ' selectable' : ''}${viewer && selectedSeat === seat.seat_idx ? ' selected' : ''}${!viewer && onSeatClick ? ' clickable' : ''}`}
+               className={`seat-wrap seat-${slot}${seat.connected === false ? ' offline' : ''}${winnerSeats?.includes(seat.seat_idx) ? ' winner' : ''}${viewer ? ' selectable' : ''}${viewer && selectedSeat === seat.seat_idx ? ' selected' : ''}${!viewer && onSeatClick ? ' clickable' : ''}`}
                onClick={viewer ? () => onSeatSelect!(seat.seat_idx)
                         : onSeatClick ? () => onSeatClick(seat.seat_idx) : undefined}>
             <PlayerSeat
@@ -161,6 +163,9 @@ export default function OvalTable({
               </span>
             )}
             {seat.is_owner && <span className="owner-crown">👑</span>}
+            {winnerSeats?.includes(seat.seat_idx) && (
+              <span className="winner-badge">WIN</span>
+            )}
           </div>
         );
       })}
