@@ -154,3 +154,38 @@ def test_ws_token_binds_seat_to_account(client):
         assert session.user_ids.get(0) is not None
 
     asyncio.run(check())
+
+
+def test_token_survives_restart_and_expires():
+    """Signed tokens are stateless: no restart can invalidate them, and
+    they expire after the configured TTL."""
+    import time as _time
+    from sekhmet.api import auth
+
+    # 1) A token issued now resolves without any server-side state.
+    token = auth._issue_token(42)
+    assert auth.resolve_token(token) == 42
+
+    # 2) A token expired in the past is rejected.
+    payload = auth.base64.urlsafe_b64encode(
+        f"7:{int(_time.time()) - 10}".encode()).decode()
+    sig = auth.hmac.new(auth._AUTH_SECRET.encode(),
+                        payload.encode(), "sha256").hexdigest()
+    stale = f"{payload}.{sig}"
+    assert auth.resolve_token(stale) is None
+
+    # 3) A tampered token is rejected.
+    assert auth.resolve_token("garbage") is None
+    assert auth.resolve_token(None) is None
+
+
+def test_register_token_roundtrips_via_api_without_memory():
+    """Full API roundtrip: register → me with the token (no in-memory store)."""
+    client = TestClient(app)
+    resp = client.post("/api/auth/register", json={
+        "username": "persist_me", "password": "secret123",
+    })
+    token = resp.json()["token"]
+    assert client.get("/api/auth/me", params={"token": token}).status_code == 200
+    assert client.get("/api/auth/me",
+                      params={"token": token[:-2] + "zz"}).status_code == 401

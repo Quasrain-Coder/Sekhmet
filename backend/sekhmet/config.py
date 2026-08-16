@@ -20,6 +20,9 @@ class GameConfig:
     orphan_room_timeout_seconds: int = 600   # 只有 bot 且无连接——bot 自打永不 idle
     stuck_hand_timeout_seconds: int = 120    # all-in runout 失去驱动后强制完成
     sweep_interval_seconds: float = 30.0
+    # 登录 token 有效期（秒，默认 7 天）。token 是 HMAC 签名的无状态
+    # token，不随后端重启失效——之前存内存，每次重启全部踢下线。
+    auth_token_ttl_seconds: int = 604800
     max_tables: int = 30
 
 
