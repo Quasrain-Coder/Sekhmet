@@ -2,8 +2,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import Leaderboard from '../components/table/Leaderboard';
 
 const seats = [
-  { seat_idx: 0, name: 'Hero', is_human: true, bot_level: null, stack: 200, buyin: 185, hands: 2, wins: 1, net_chips: 15, connected: true, is_owner: true },
-  { seat_idx: 1, name: 'Bot', is_human: false, bot_level: 3, stack: 200, buyin: 215, hands: 2, wins: 1, net_chips: -15, connected: true, is_owner: false },
+  { seat_idx: 0, name: 'Hero', is_human: true, bot_level: null, stack: 200, buyin: 185, buyin_count: 1, hands: 2, wins: 1, net_chips: 15, connected: true, is_owner: true },
+  { seat_idx: 1, name: 'Bot', is_human: false, bot_level: 3, stack: 200, buyin: 215, buyin_count: 2, hands: 2, wins: 1, net_chips: -15, connected: true, is_owner: false },
 ];
 
 test('collapsed by default, expands on click, sorted by net desc', () => {
