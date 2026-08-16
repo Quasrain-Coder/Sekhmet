@@ -97,6 +97,16 @@ export default function GameTablePage() {
     }, 1000);
     return () => clearInterval(iv);
   }, [state.phase, isOwner, needRebuy, send]);
+  // ---- Mobile orientation (portrait / landscape) ----
+  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>(
+    () => (localStorage.getItem('tableOrientation') as 'portrait' | 'landscape') ?? 'portrait');
+  const toggleOrientation = useCallback(() => {
+    setOrientation(prev => {
+      const next = prev === 'portrait' ? 'landscape' : 'portrait';
+      localStorage.setItem('tableOrientation', next);
+      return next;
+    });
+  }, []);
 
   const openProfile = useCallback(async (seatIdx: number) => {
     try {
@@ -426,9 +436,13 @@ export default function GameTablePage() {
   const me = state.players.find(p => p.seat_idx === state.mySeat);
 
   return (
-    <div className="game-table">
+    <div className={`game-table ${orientation}`}>
       <div className="table-head">
         <button className="btn btn-sm" onClick={() => navigate('/')}>← Lobby</button>
+        <button className="btn btn-sm orientation-toggle" onClick={toggleOrientation}
+                title="横/竖屏切换（手机端）">
+          {orientation === 'portrait' ? '⇔ 横屏' : '⇕ 竖屏'}
+        </button>
         <span className="logo">♠ Sekhmet</span>
         <span className="phase-label">
           {tableId} · {state.phase}

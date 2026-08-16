@@ -726,3 +726,17 @@ select.input { width: auto; }
   font-variant-numeric: tabular-nums;
   animation: toast-in 0.2s ease-out;
 }
+
+/* ---- Mobile orientation toggle ---- */
+.orientation-toggle { display: none; }
+@media (max-width: 768px) {
+  .orientation-toggle { display: inline-block; }
+
+  /* 横屏模式：更宽的牌桌、单行紧凑动作栏、隐藏历史记录省空间 */
+  .game-table.landscape .table-felt { aspect-ratio: 2.4 / 1; margin-bottom: 10px; }
+  .game-table.landscape .action-row,
+  .game-table.landscape .raise-panel { flex-wrap: nowrap; }
+  .game-table.landscape .action-area .action-bar { padding: 6px; gap: 6px; }
+  .game-table.landscape .side-panel .history { display: none; }
+  .game-table.landscape .side-panel .leaderboard { max-width: 100%; }
+}
