@@ -813,3 +813,19 @@ select.input { width: auto; }
   padding: 12px 16px; margin-top: 14px;
 }
 .analysis-suggestion { color: var(--gold-text); margin-top: 8px; font-size: 0.9rem; }
+
+/* ---- Scenario table preview ---- */
+.scenario-table {
+  border: 1px solid rgba(34, 211, 238, 0.35); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 16px;
+  background: rgba(5, 8, 15, 0.6);
+}
+.scenario-table-head {
+  display: flex; gap: 18px; flex-wrap: wrap; align-items: center;
+  margin-bottom: 12px; color: var(--text-dim); font-size: 0.9rem;
+}
+.scenario-table-head b { color: var(--text); }
+.scenario-table-head b.lb-neg { color: var(--rose); }
+.scenario-cards { display: flex; align-items: center; gap: 12px; margin: 6px 0; }
+.scenario-hole, .scenario-community { display: flex; gap: 8px; }
+.scenario-meta { color: var(--text-dim); font-size: 0.82rem; margin-top: 10px; }

@@ -62,6 +62,29 @@ async def get_scenario(scenario_id: str):
         "category": s.category.value,
         "difficulty": s.difficulty,
         "hints": s.hints,
+        # Concrete table preview when the scenario carries a frozen state.
+        "table": _table_preview(s),
+    }
+
+
+def _table_preview(scenario) -> dict | None:
+    """Public preview of the frozen state for the decision UI."""
+    gs = scenario.frozen_state
+    if gs is None:
+        return None
+    p = gs.player(scenario.player_seat) if scenario.player_seat is not None else None
+    return {
+        "phase": gs.phase.name,
+        "hole_cards": [str(c) for c in p.hole_cards] if p and p.hole_cards else [],
+        "community_cards": [str(c) for c in gs.community_cards],
+        "pot": gs.pot.main_pot,
+        "current_bet": gs.current_bet,
+        "to_call": max(0, gs.current_bet - p.current_bet) if p else 0,
+        "stack": p.stack if p else 0,
+        "dealer_idx": gs.dealer_idx,
+        "sb_seat": gs.sb_seat,
+        "bb_seat": gs.bb_seat,
+        "player_seat": scenario.player_seat,
     }
 
 

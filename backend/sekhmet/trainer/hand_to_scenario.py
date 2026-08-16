@@ -171,6 +171,7 @@ def build_scenario_from_hand(
         ],
         analysis={"equity_vs_range": 0.5},
         frozen_state=gs,
+        player_seat=seat,
     )
 
 
