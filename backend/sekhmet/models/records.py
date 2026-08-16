@@ -23,6 +23,10 @@ class HandRecord(Base):
     board: Mapped[str] = mapped_column(Text)     # JSON array of card strings
     actions: Mapped[str] = mapped_column(Text)   # JSON array
     awards: Mapped[str] = mapped_column(Text)    # JSON array
+    # Blinds at deal time — enables per-stakes aggregation.  NULL on
+    # rows recorded before this column existed.
+    small_blind: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    big_blind: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
@@ -59,4 +63,10 @@ class UserStatsRecord(Base):
     hands: Mapped[int] = mapped_column(Integer, default=0)
     wins: Mapped[int] = mapped_column(Integer, default=0)
     net_chips: Mapped[int] = mapped_column(Integer, default=0)
+    # Poker-tracking metrics (accumulated per hand at showdown):
+    total_buyin: Mapped[int] = mapped_column(Integer, default=0)     # chips bought (incl. rebuys)
+    vpip_hands: Mapped[int] = mapped_column(Integer, default=0)      # hands with a voluntary preflop chip
+    pfr_hands: Mapped[int] = mapped_column(Integer, default=0)       # hands with a preflop raise
+    showdowns: Mapped[int] = mapped_column(Integer, default=0)       # hands reaching showdown
+    showdown_wins: Mapped[int] = mapped_column(Integer, default=0)   # of those, won the pot
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
