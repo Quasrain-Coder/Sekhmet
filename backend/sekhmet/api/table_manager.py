@@ -727,11 +727,15 @@ async def start_hand(table_id: str) -> dict[str, Any]:
         session.deck.shuffle()
         dealer = session.game_state.dealer_idx
 
-        # Advance dealer button
+        # Advance dealer button.  A dealer who left the table must not
+        # freeze the rotation — hand the button to the next occupied
+        # seat clockwise (stale dealer_idx would keep SB/BB frozen).
         seats = session.player_seats()
         if dealer in seats:
             idx = seats.index(dealer)
             dealer = seats[(idx + 1) % len(seats)]
+        else:
+            dealer = next((s for s in seats if s > dealer), seats[0])
 
         session.game_state = deal_new_hand(
             session.game_state,
