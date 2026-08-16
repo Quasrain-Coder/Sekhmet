@@ -1,42 +1,68 @@
 """Account registration, login and personal profile.
 
 Passwords are hashed with PBKDF2-HMAC-SHA256 (per-user random salt, no
-extra dependencies).  Sessions are in-memory tokens — a server restart
-logs everyone out, which is fine at this scale.  Logged-in players get
-their results recorded against their account; guest play is not counted.
+extra dependencies).  Sessions are signed stateless tokens
+(``base64(payload).hmac``) with an expiry — they survive backend
+restarts, so a redeploy no longer logs everyone out.  Logged-in players
+get their results recorded against their account; guest play is not
+counted.
 """
 
 from __future__ import annotations
 
+import base64
 import hashlib
+import hmac
+import os
 import secrets
+import time
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
+from ..config import app_config
 from ..models import db
 from ..models import records
 from ..models.records import UserRecord, UserStatsRecord
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-# token → user id (in-memory session store)
-_tokens: dict[str, int] = {}
-
 _PBKDF2_ITERATIONS = 100_000
+
+# Signing key: env override for deployment, stable default otherwise.
+_AUTH_SECRET = os.environ.get("SEKHMET_AUTH_SECRET", "sekhmet-dev-secret")
+
+
+def _issue_token(user_id: int) -> str:
+    """Signed token carrying user id + expiry."""
+    exp = int(time.time()) + app_config.game.auth_token_ttl_seconds
+    payload = base64.urlsafe_b64encode(f"{user_id}:{exp}".encode()).decode()
+    sig = hmac.new(_AUTH_SECRET.encode(), payload.encode(), "sha256").hexdigest()
+    return f"{payload}.{sig}"
+
+
+def resolve_token(token: str | None) -> int | None:
+    """Map a session token to a user id, or None (guest / invalid)."""
+    if not token or "." not in token:
+        return None
+    payload, sig = token.rsplit(".", 1)
+    expected = hmac.new(_AUTH_SECRET.encode(), payload.encode(), "sha256").hexdigest()
+    if not hmac.compare_digest(sig, expected):
+        return None
+    try:
+        decoded = base64.urlsafe_b64decode(payload.encode()).decode()
+        user_id, exp = decoded.split(":", 1)
+        if int(exp) < time.time():
+            return None
+        return int(user_id)
+    except Exception:
+        return None
 
 
 def hash_password(password: str, salt: str) -> str:
     return hashlib.pbkdf2_hmac(
         "sha256", password.encode("utf-8"), salt.encode("utf-8"), _PBKDF2_ITERATIONS,
     ).hex()
-
-
-def resolve_token(token: str | None) -> int | None:
-    """Map a session token to a user id, or None (guest / invalid)."""
-    if not token:
-        return None
-    return _tokens.get(token)
 
 
 @router.post("/register")
@@ -64,9 +90,7 @@ async def register(body: dict):
         await s.commit()
         await s.refresh(user)
 
-    token = secrets.token_hex(24)
-    _tokens[token] = user.id
-    return {"token": token, "username": username}
+    return {"token": _issue_token(user.id), "username": username}
 
 
 @router.post("/login")
@@ -84,14 +108,12 @@ async def login(body: dict):
     ):
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
-    token = secrets.token_hex(24)
-    _tokens[token] = user.id
-    return {"token": token, "username": user.username}
+    return {"token": _issue_token(user.id), "username": user.username}
 
 
 @router.get("/me")
 async def me(token: str):
-    user_id = _tokens.get(token)
+    user_id = resolve_token(token)
     if user_id is None:
         raise HTTPException(status_code=401, detail="Not logged in")
 
