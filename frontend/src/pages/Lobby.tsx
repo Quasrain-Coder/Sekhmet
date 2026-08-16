@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Toast from '../components/shared/Toast';
-import ProfileDialog from '../components/shared/ProfileDialog';
+import ProfileDialog, { type ProfileAccount } from '../components/shared/ProfileDialog';
 import type { ToastItem } from '../components/shared/Toast';
 
 interface SeatInfo {
@@ -48,6 +48,7 @@ export default function Lobby() {
   const [authToken, setAuthToken] = useState(() => localStorage.getItem('authToken') ?? '');
   const [authUser, setAuthUser] = useState(() => localStorage.getItem('authUser') ?? '');
   const [authStats, setAuthStats] = useState<{ hands: number; wins: number; net_chips: number } | null>(null);
+  const [authProfile, setAuthProfile] = useState<ProfileAccount | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [authName, setAuthName] = useState('');
   const [authPass, setAuthPass] = useState('');
@@ -60,6 +61,11 @@ export default function Lobby() {
         const data = await resp.json();
         setAuthUser(data.username);
         setAuthStats(data.stats);
+        setAuthProfile({
+          username: data.username,
+          ...data.stats,
+          ...data.profile,
+        });
       }
     } catch { /* server may not be running */ }
   }, []);
@@ -96,6 +102,7 @@ export default function Lobby() {
     setAuthToken('');
     setAuthUser('');
     setAuthStats(null);
+    setAuthProfile(null);
     pushToast('info', 'Logged out — playing as guest (stats not recorded)');
   };
 
@@ -138,7 +145,7 @@ export default function Lobby() {
   return (
     <div className="lobby">
       <Toast items={toasts} onDismiss={dismissToast} />
-      {showProfile && authStats && (
+      {showProfile && authStats && authProfile && (
         <ProfileDialog
           title="My Profile"
           onClose={() => setShowProfile(false)}
@@ -149,7 +156,7 @@ export default function Lobby() {
             hands: authStats.hands,
             wins: authStats.wins,
             net_chips: authStats.net_chips,
-            account: { username: authUser, ...authStats },
+            account: authProfile,
           }}
         />
       )}

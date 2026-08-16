@@ -55,6 +55,7 @@ async def player_profile(table_id: str, seat_idx: int):
     st = session.stats.get(seat_idx)
     buyin = session.total_buyin.get(seat_idx, p.stack if p is not None else 0)
 
+    table_stats = session.tracker.stats.get(seat_idx)
     profile = {
         "seat_idx": seat_idx,
         "name": session.player_names[seat_idx],
@@ -62,9 +63,13 @@ async def player_profile(table_id: str, seat_idx: int):
         "bot_level": session.bot_levels.get(seat_idx),
         "stack": p.stack if p is not None else buyin,
         "buyin": buyin,
+        "buyin_count": session.buyin_count.get(seat_idx, 1),
         "hands": st.hands if st else 0,
         "wins": st.wins if st else 0,
         "net_chips": (p.stack if p is not None else buyin) - buyin,
+        # Table-local poker tracking (live from the opponent model).
+        "vpip": table_stats.vpip_rate() if table_stats else None,
+        "pfr": table_stats.pfr_rate() if table_stats else None,
         "account": None,
     }
 
@@ -79,11 +84,24 @@ async def player_profile(table_id: str, seat_idx: int):
                 .where(records.UserStatsRecord.user_id == user_id)
             )).scalar_one_or_none()
         if user is not None:
+            hands = stats.hands if stats is not None else 0
             profile["account"] = {
                 "username": user.username,
-                "hands": stats.hands if stats is not None else 0,
+                "hands": hands,
                 "wins": stats.wins if stats is not None else 0,
                 "net_chips": stats.net_chips if stats is not None else 0,
+                "total_buyin": stats.total_buyin if stats is not None else 0,
+                "vpip_rate": (stats.vpip_hands / hands)
+                             if stats is not None and hands else None,
+                "pfr_rate": (stats.pfr_hands / hands)
+                            if stats is not None and hands else None,
+                "wtsd": (stats.showdown_wins / stats.showdowns)
+                        if stats is not None and stats.showdowns else None,
+                "last_active": (stats.updated_at.isoformat()
+                                if stats is not None and stats.updated_at
+                                else None),
+                "recent_hands": await records.recent_hands_for(s, user.username),
+                "by_blinds": await records.stats_by_blinds(s, user.username),
             }
     return profile
 
@@ -91,7 +109,6 @@ async def player_profile(table_id: str, seat_idx: int):
 @router.get("/tables")
 async def list_tables():
     """List all active tables."""
-    # tm._tables is private; we'll expose a proper list method
     tables = []
     for tid in tm._tables:
         session = await tm.get_table(tid)

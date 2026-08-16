@@ -25,13 +25,16 @@ def test_register_login_me_roundtrip(client):
     assert data["username"] == "alice"
     assert data["token"]
 
-    # fresh account: zero stats
+    # fresh account: zero stats + empty full profile
     me = client.get("/api/auth/me", params={"token": data["token"]})
     assert me.status_code == 200
-    assert me.json() == {
-        "username": "alice",
-        "stats": {"hands": 0, "wins": 0, "net_chips": 0},
-    }
+    body = me.json()
+    assert body["username"] == "alice"
+    assert body["stats"] == {"hands": 0, "wins": 0, "net_chips": 0}
+    assert body["profile"]["total_buyin"] == 0
+    assert body["profile"]["vpip_rate"] is None
+    assert body["profile"]["recent_hands"] == []
+    assert body["profile"]["by_blinds"] == []
 
     # login again with the password → a new valid token
     resp2 = client.post("/api/auth/login", json={
