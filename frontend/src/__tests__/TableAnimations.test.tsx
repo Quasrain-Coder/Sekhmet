@@ -308,3 +308,40 @@ describe('seat spreading', () => {
     }
   });
 });
+
+describe('seat spreading rotation', () => {
+  const base = {
+    players: [] as PlayerInfo[],
+    maxSeats: 6, communityCards: [], pot: 0,
+    currentPlayerIdx: null, dealerIdx: null, sbSeat: null, bbSeat: null,
+    holeCards: [], onAddBot: vi.fn(), onKickBot: vi.fn(),
+  };
+
+  test('hero at a non-zero seat: own seat at bottom, order still ccw', () => {
+    const seats = [0, 1, 2, 3, 4, 5].map(i =>
+      seat(i, i === 3 ? '你' : `B${i}`, i === 3));
+    const { container } = render(
+      <OvalTable {...base} seats={seats} mySeat={3} phase="WAITING" />,
+    );
+    const hero = container.querySelector('[data-seat="3"]')!.className;
+    expect(hero).toContain('seat-0');  // rotated to bottom
+
+    // Action order from the hero: 4,5,0,1,2 — slots must strictly
+    // increase (counterclockwise) and wrap without reversal.
+    const slots = [3, 4, 5, 0, 1, 2].map(i =>
+      Number(container.querySelector(`[data-seat="${i}"]`)!.className
+        .match(/seat-(\d)/)![1]));
+    for (let i = 1; i < slots.length; i++) {
+      expect(slots[i]).toBeGreaterThan(slots[i - 1]);
+    }
+  });
+
+  test('viewer mode (join panel) spreads occupied seats evenly', () => {
+    const { container } = render(
+      <OvalTable {...base} seats={[seat(2, 'A', true), seat(5, 'B', true)]}
+                 mySeat={null} onSeatSelect={vi.fn()} phase="WAITING" />,
+    );
+    expect(container.querySelector('[data-seat="2"]')!.className).toContain('seat-0');
+    expect(container.querySelector('[data-seat="5"]')!.className).toContain('seat-4');
+  });
+});
