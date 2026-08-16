@@ -66,9 +66,22 @@ export default function Lobby() {
           ...data.stats,
           ...data.profile,
         });
+        return;
+      }
+      // 401 = token 失效（token 存服务端内存，重启即失效）。
+      // 必须真正登出，否则 UI 停留在"假登录态"：My Profile 点不开、
+      // 名字不对——静默失败正是"点没反应"的根因。
+      if (resp.status === 401) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
+        setAuthToken('');
+        setAuthUser('');
+        setAuthStats(null);
+        setAuthProfile(null);
+        pushToast('info', 'Session expired — please log in again');
       }
     } catch { /* server may not be running */ }
-  }, []);
+  }, [pushToast]);
 
   useEffect(() => {
     if (authToken) refreshProfile(authToken);
