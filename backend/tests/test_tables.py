@@ -123,6 +123,10 @@ async def test_table_info_shape():
     assert seats[0]["is_human"] is True and seats[0]["bot_level"] is None
     assert seats[1]["is_human"] is False and seats[1]["bot_level"] == 1
     assert seats[1]["stack"] == 200
+    # Leaderboard fields: total buy-in exposed alongside the live stack.
+    assert seats[1]["buyin"] == 200
+    assert seats[1]["net_chips"] == 0
+    assert seats[0]["buyin"] == 200
 
 
 def test_ws_kick_bot_and_reject_kicking_human():

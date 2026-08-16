@@ -63,7 +63,7 @@ def test_complete_game_journey():
         ts = recv_until(lambda m: m["type"] == "table_state", "table_state")
         assert ts["seats"] == [{
             "seat_idx": 0, "name": "Hero", "is_human": True,
-            "bot_level": None, "stack": 2000,
+            "bot_level": None, "stack": 2000, "buyin": 2000,
             "hands": 0, "wins": 0, "net_chips": 0, "connected": True,
             "is_owner": True,
             "in_hand": True,

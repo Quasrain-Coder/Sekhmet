@@ -996,6 +996,7 @@ def table_info(session: TableSession) -> dict[str, Any]:
             # A seat parked outside the running hand has no engine player —
             # its buy-in is still its stack.
             "stack": p.stack if p is not None else buyin,
+            "buyin": buyin,
             "hands": st.hands if st else 0,
             "wins": st.wins if st else 0,
             "net_chips": (p.stack if p is not None else buyin) - buyin,

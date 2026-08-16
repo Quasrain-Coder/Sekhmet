@@ -17,13 +17,15 @@ export default function Leaderboard({ seats }: Props) {
       {open && (
         <table className="lb-table">
           <thead>
-            <tr><th>#</th><th>Player</th><th>Hands</th><th>Wins</th><th>Win%</th><th>Net</th></tr>
+            <tr><th>#</th><th>Player</th><th>Buy-in</th><th>Stack</th><th>Hands</th><th>Wins</th><th>Win%</th><th>Net</th></tr>
           </thead>
           <tbody>
             {ranked.map((s, i) => (
               <tr key={s.seat_idx}>
                 <td>{i + 1}</td>
                 <td>{s.name}{!s.is_human && <span className="lb-bot"> L{s.bot_level ?? 2}</span>}</td>
+                <td>{s.buyin ?? 0}</td>
+                <td>{s.stack}</td>
                 <td>{s.hands}</td>
                 <td>{s.wins}</td>
                 <td>{s.hands > 0 ? Math.round((s.wins / s.hands) * 100) : 0}%</td>
