@@ -71,10 +71,15 @@ async def test_hand_recorded_after_showdown():
     session = await tm.get_table(tid)
     sb = session.game_state.current_player_idx
     await tm.handle_player_action(tid, sb, "FOLD")
-    await asyncio.sleep(0.05)  # fire-and-forget 落库
-
+    # fire-and-forget 落库——轮询等待而不是固定 sleep（CI 慢机上
+    # 事件循环繁忙，单次 50ms 偶发不够，与 test_auth #57 同理）。
     async with db.SessionLocal() as s:
-        hands = (await s.execute(select(records.HandRecord))).scalars().all()
+        hands = []
+        for _ in range(100):  # 最多等 2s
+            hands = (await s.execute(select(records.HandRecord))).scalars().all()
+            if hands:
+                break
+            await asyncio.sleep(0.02)
         stats = (await s.execute(select(records.UserStatsRecord))).scalars().all()
     assert len(hands) == 1
     assert hands[0].table_id == tid
