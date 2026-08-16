@@ -91,3 +91,90 @@ async def get_hint(scenario_id: str, level: int = 0):
 async def list_categories():
     """List all scenario categories."""
     return {"categories": [c.value for c in ScenarioCategory]}
+
+
+@router.get("/importable-hands")
+async def importable_hands(username: str | None = None, limit: int = 10):
+    """Recent recorded hands the account lost, ready to import as scenarios."""
+    import json as _json
+    from fastapi.responses import JSONResponse
+    from sqlalchemy import select
+
+    if not username:
+        return JSONResponse(status_code=400, content={"error": "username required"})
+    from ..models import db
+    from ..models.records import HandRecord
+
+    async with db.SessionLocal() as s:
+        rows = (await s.execute(
+            select(HandRecord).order_by(HandRecord.id.desc())
+            .limit(max(1, min(limit, 100)))
+        )).scalars().all()
+    hands = [
+        {**{k: getattr(r, k) for k in (
+            "id", "table_id", "created_at", "small_blind", "big_blind")},
+         "players": _json.loads(r.players),
+         "board": _json.loads(r.board),
+         "actions": _json.loads(r.actions),
+         "awards": _json.loads(r.awards)}
+        for r in rows
+    ]
+    from ..trainer.hand_to_scenario import lost_hands_for
+    lost = lost_hands_for(hands, username)
+    return {"hands": [
+        {
+            "hand_id": h["id"],
+            "table_id": h["table_id"],
+            "created_at": h["created_at"].isoformat() if h.get("created_at") else None,
+            "board": h["board"],
+            "lost": sum(1 for _ in [0]),  # placeholder, replaced below
+        }
+        for h in lost
+    ]}
+
+
+@router.post("/scenarios/import-hand")
+async def import_hand(body: dict):
+    """Build a training scenario from a recorded hand the player lost."""
+    from fastapi.responses import JSONResponse
+
+    hand_id = body.get("hand_id")
+    username = body.get("username")
+    if not hand_id or not username:
+        return JSONResponse(status_code=400,
+                            content={"error": "hand_id and username required"})
+
+    from ..models import db
+    from ..models.records import HandRecord
+    from sqlalchemy import select
+    import json as _json
+    from ..trainer.hand_to_scenario import build_scenario_from_hand
+
+    async with db.SessionLocal() as s:
+        r = (await s.execute(
+            select(HandRecord).where(HandRecord.id == hand_id)
+        )).scalar_one_or_none()
+    if r is None:
+        return JSONResponse(status_code=404, content={"error": "Hand not found"})
+
+    hand = {
+        "id": r.id,
+        "players": _json.loads(r.players),
+        "board": _json.loads(r.board),
+        "actions": _json.loads(r.actions),
+        "awards": _json.loads(r.awards),
+        "small_blind": r.small_blind,
+        "big_blind": r.big_blind,
+    }
+    seat = next((p["seat_idx"] for p in hand["players"]
+                 if p.get("name") == username), None)
+    if seat is None:
+        return JSONResponse(status_code=404,
+                            content={"error": f"{username} not in hand"})
+
+    scenario = build_scenario_from_hand(hand, seat, username)
+    if scenario is None:
+        return JSONResponse(status_code=400,
+                            content={"error": "Hand lacks hole cards (recorded before the patch)"})
+    _library.add(scenario)
+    return {"scenario_id": scenario.id, "title": scenario.title}
