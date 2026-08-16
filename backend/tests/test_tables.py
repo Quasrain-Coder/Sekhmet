@@ -125,6 +125,7 @@ async def test_table_info_shape():
     assert seats[1]["stack"] == 200
     # Leaderboard fields: total buy-in exposed alongside the live stack.
     assert seats[1]["buyin"] == 200
+    assert seats[1]["buyin_count"] == 1
     assert seats[1]["net_chips"] == 0
     assert seats[0]["buyin"] == 200
 
@@ -355,6 +356,12 @@ async def test_rebuy_success_when_busted():
     session = await tm.get_table(tid)
     assert session is not None
     assert session.game_state.player(0).stack == 500
+    # Second buy-in: count goes up, total accumulates.
+    assert session.buyin_count[0] == 2
+    assert session.total_buyin[0] == 700
+    seat_info = {s["seat_idx"]: s for s in summary["seats"]}
+    assert seat_info[0]["buyin"] == 700
+    assert seat_info[0]["buyin_count"] == 2
     assert session.total_buyin[0] == 700  # 200 + 500 → net_chips 语义保持
     seat0 = next(s for s in summary["seats"] if s["seat_idx"] == 0)
     assert seat0["stack"] == 500 and seat0["net_chips"] == -200

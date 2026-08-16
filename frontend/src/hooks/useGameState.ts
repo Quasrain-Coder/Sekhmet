@@ -17,6 +17,7 @@ export interface SeatInfo {
   bot_level: number | null;
   stack: number;
   buyin: number;
+  buyin_count: number;
   hands: number;
   wins: number;
   net_chips: number;
