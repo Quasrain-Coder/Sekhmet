@@ -330,7 +330,13 @@ async def sweeper_loop(interval_seconds: float | None = None) -> None:
 
 
 def _reassign_owner(session: TableSession) -> None:
-    """Hand ownership to the lowest-seated remaining human (or None)."""
+    """Hand ownership to the lowest-seated remaining human (or None).
+
+    Parked spectators (sat mid-hand, joining at the next deal) are
+    humans too — without them the crown would be lost when the owner
+    leaves while the only other human is parked, and nobody could
+    ever deal again.
+    """
     if session.owner_seat is not None:
         p = session.game_state.player(session.owner_seat)
         if p is not None and p.is_human and session.owner_seat in session.player_names:
@@ -338,6 +344,9 @@ def _reassign_owner(session: TableSession) -> None:
     humans = [
         p.seat_idx for p in session.game_state.players
         if p.is_human and p.seat_idx in session.player_names
+    ] + [
+        s for s in session.pending_seats
+        if s in session.player_names
     ]
     session.owner_seat = min(humans) if humans else None
 
@@ -726,6 +735,9 @@ async def start_hand(table_id: str) -> dict[str, Any]:
                 ))
             session.game_state = session.game_state.with_players(tuple(players))
             session.pending_seats.clear()
+            # The crown may have been dropped while these seats were
+            # parked — restore it now that they're live players.
+            _reassign_owner(session)
 
         # Fresh deck, shuffle, deal
         session.deck = Deck()
