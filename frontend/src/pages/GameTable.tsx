@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { useGameState } from '../hooks/useGameState';
+import { useGameState, shouldShowRebuy } from '../hooks/useGameState';
 import type { GameMsg, TableConfigData, SeatInfo, PlayerInfo } from '../hooks/useGameState';
 import OvalTable from '../components/table/OvalTable';
 import ActionBar from '../components/table/ActionBar';
@@ -47,7 +47,7 @@ export default function GameTablePage() {
   // players, the typed name for guests.
   const seatName = authedUser ?? name.trim();
   const [buyin, setBuyin] = useState(200);
-  const [rebuyAmount, setRebuyAmount] = useState(200);
+  const [rebuyAmount, setRebuyAmount] = useState<number | null>(null);
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   // Seat we optimistically claimed via sit_down but the server has not yet
@@ -436,17 +436,25 @@ export default function GameTablePage() {
           onSeatClick={openProfile}
         />
 
-        {me && me.stack === 0 && (state.phase === 'WAITING' || state.phase === 'SHOWDOWN') && (
-          <div className="rebuy-panel">
-            <span className="rebuy-label">You're busted.</span>
-            <input className="input" type="number" value={rebuyAmount}
-                   onChange={e => setRebuyAmount(Number(e.target.value))} />
-            <button className="btn gold"
-                    onClick={() => send({ type: 'rebuy', amount: rebuyAmount })}>
-              Rebuy
-            </button>
-          </div>
-        )}
+        {shouldShowRebuy(
+          state.phase,
+          me?.stack,
+          state.seats.find(s => s.seat_idx === state.mySeat)?.stack,
+        ) && (() => {
+          const defaultAmount = state.config?.default_buyin ?? 200;
+          const amount = rebuyAmount ?? defaultAmount;
+          return (
+            <div className="rebuy-panel">
+              <span className="rebuy-label">You're busted.</span>
+              <input className="input" type="number" value={amount}
+                     onChange={e => setRebuyAmount(Number(e.target.value))} />
+              <button className="btn gold"
+                      onClick={() => send({ type: 'rebuy', amount })}>
+                Rebuy
+              </button>
+            </div>
+          );
+        })()}
 
         {profile && (
           <ProfileDialog

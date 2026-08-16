@@ -121,6 +121,19 @@ type Action =
   | { type: 'SET_CONNECTED'; connected: boolean }
   | { type: 'BUMP_TURN_EPOCH' };
 
+// Pure visibility rule for the rebuy/buy-in panel: offer it whenever
+// the hero is broke at the start or end of a hand.  `meStack` is the
+// live in-hand stack (may be absent between hands); `seatStack` is the
+// table-state fallback (works after reconnect, where players is empty).
+export function shouldShowRebuy(
+  phase: string,
+  meStack: number | undefined,
+  seatStack: number | undefined,
+): boolean {
+  return (meStack ?? seatStack ?? -1) === 0
+    && (phase === 'WAITING' || phase === 'SHOWDOWN');
+}
+
 export const initialState: AppState = {
   phase: 'WAITING',
   players: [],
