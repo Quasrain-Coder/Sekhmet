@@ -15,7 +15,10 @@ from .records import HandRecord, PlayerStatsRecord, UserRecord, UserStatsRecord
 logger = logging.getLogger(__name__)
 
 
-async def record_hand(table_id, players_meta, board, actions, awards) -> None:
+async def record_hand(
+    table_id, players_meta, board, actions, awards,
+    small_blind: int | None = None, big_blind: int | None = None,
+) -> None:
     """Persist one completed hand. Never raises."""
     try:
         async with db.SessionLocal() as s:
@@ -25,6 +28,8 @@ async def record_hand(table_id, players_meta, board, actions, awards) -> None:
                 board=json.dumps(board),
                 actions=json.dumps(actions),
                 awards=json.dumps(awards),
+                small_blind=small_blind,
+                big_blind=big_blind,
             ))
             await s.commit()
     except Exception:
@@ -84,6 +89,11 @@ async def upsert_user_stats(deltas: list[dict]) -> None:
                     hands=1,
                     wins=1 if d.get("won") else 0,
                     net_chips=d.get("delta", 0),
+                    total_buyin=d.get("total_buyin", 0),
+                    vpip_hands=1 if d.get("vpip") else 0,
+                    pfr_hands=1 if d.get("pfr") else 0,
+                    showdowns=1 if d.get("showdown") else 0,
+                    showdown_wins=1 if d.get("showdown_win") else 0,
                 )
                 stmt = stmt.on_conflict_do_update(
                     index_elements=["user_id"],
@@ -91,6 +101,11 @@ async def upsert_user_stats(deltas: list[dict]) -> None:
                         "hands": UserStatsRecord.hands + stmt.excluded.hands,
                         "wins": UserStatsRecord.wins + stmt.excluded.wins,
                         "net_chips": UserStatsRecord.net_chips + stmt.excluded.net_chips,
+                        "total_buyin": UserStatsRecord.total_buyin + stmt.excluded.total_buyin,
+                        "vpip_hands": UserStatsRecord.vpip_hands + stmt.excluded.vpip_hands,
+                        "pfr_hands": UserStatsRecord.pfr_hands + stmt.excluded.pfr_hands,
+                        "showdowns": UserStatsRecord.showdowns + stmt.excluded.showdowns,
+                        "showdown_wins": UserStatsRecord.showdown_wins + stmt.excluded.showdown_wins,
                     },
                 )
                 await s.execute(stmt)

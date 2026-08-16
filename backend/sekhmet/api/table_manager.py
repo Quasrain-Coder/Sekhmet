@@ -1283,6 +1283,8 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
     winner_seats = {a.winner_seat_idx for a in awards_list}
     recorder.schedule_recording(recorder.record_hand(
         table_id=session.table_id,
+        small_blind=session.config.small_blind,
+        big_blind=session.config.big_blind,
         players_meta=[
             {
                 "seat_idx": p.seat_idx, "name": p.name, "is_human": p.is_human,
@@ -1304,12 +1306,25 @@ def _resolve_showdown(session: TableSession) -> dict[str, Any]:
     ))
     # Only logged-in players feed their account profile — guest seats are
     # filtered out inside (no user_id → nothing recorded).
+    # Showdown participation: everyone still live at showdown counts;
+    # a fold-out (single survivor) is not a showdown.
+    showdown_seats = {p.seat_idx for p in active} if len(active) > 1 else set()
     recorder.schedule_recording(recorder.upsert_user_stats([
         {
             "user_id": session.user_ids.get(p.seat_idx),
             "username": p.name,
             "won": p.seat_idx in winner_seats,
             "delta": p.stack - stacks_before[p.seat_idx],
+            "total_buyin": session.total_buyin.get(p.seat_idx, 0),
+            # VPIP/PFR from the opponent-model tracker's current-hand
+            # scratch flags (read before the next deal folds them away).
+            "vpip": bool(getattr(session.tracker.stats.get(p.seat_idx),
+                                "_vpip_this_hand", False)),
+            "pfr": bool(getattr(session.tracker.stats.get(p.seat_idx),
+                               "_pfr_this_hand", False)),
+            "showdown": p.seat_idx in showdown_seats,
+            "showdown_win": p.seat_idx in showdown_seats
+                            and p.seat_idx in winner_seats,
         }
         for p in players_list
     ]))
