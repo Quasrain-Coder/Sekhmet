@@ -1258,3 +1258,67 @@ async def test_dealer_button_survives_dealer_leaving():
     assert s.game_state.dealer_idx != second_dealer
     session = await tm.get_table(tid)
     assert s.game_state.dealer_idx in session.player_names
+
+
+# ---------------------------------------------------------------------------
+# Owner reassignment when the owner leaves
+# ---------------------------------------------------------------------------
+
+
+async def test_owner_reassigned_when_owner_stands_up():
+    """The owner leaving between hands hands ownership to the next human."""
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)   # first human → owner
+    await tm.sit_down(tid, 1, "Friend", buyin=200)
+    await tm.sit_down(tid, 2, "Bot", buyin=200, is_human=False)
+
+    session = await tm.get_table(tid)
+    assert session.owner_seat == 0
+
+    await tm.stand_up(tid, 0)
+    session = await tm.get_table(tid)
+    assert session.owner_seat == 1
+    seats = {s["seat_idx"]: s for s in tm.table_info(session)["seats"]}
+    assert seats[1]["is_owner"] is True and seats[2]["is_owner"] is False
+
+
+async def test_owner_reassigned_after_grace_expiry(monkeypatch):
+    """A disconnected owner whose grace expires loses the crown too."""
+    import asyncio
+    monkeypatch.setattr(tm.app_config.game, "disconnect_grace_seconds", 0.05)
+
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Friend", buyin=200)
+    await tm.handle_disconnect(tid, 0)
+    await asyncio.sleep(0.25)  # grace fires and expires the seat
+
+    session = await tm.get_table(tid)
+    assert 0 not in session.player_names
+    assert session.owner_seat == 1
+
+
+async def test_owner_reassigned_to_parked_human():
+    """The owner leaves while the only other human is parked mid-hand —
+    the parked seat becomes owner so the room can keep playing."""
+    tid = await tm.create_table()
+    await tm.sit_down(tid, 0, "Hero", buyin=200)
+    await tm.sit_down(tid, 1, "Bot", buyin=200, is_human=False)
+    await tm.start_hand(tid)  # hand running
+    # Friend sits mid-hand → parked
+    await tm.sit_down(tid, 2, "Friend", buyin=200)
+    # fold the hand out
+    for _ in range(40):
+        session = await tm.get_table(tid)
+        if session.game_state.phase in (tm.GamePhase.WAITING, tm.GamePhase.SHOWDOWN):
+            break
+        cur = session.game_state.current_player_idx
+        if cur is None:
+            import asyncio as aio
+            await aio.sleep(0.5)
+            continue
+        await tm.handle_player_action(tid, cur, "FOLD")
+
+    await tm.stand_up(tid, 0)  # owner leaves between hands
+    session = await tm.get_table(tid)
+    assert session.owner_seat == 2  # parked human inherits the crown
