@@ -26,6 +26,8 @@ interface Props {
   // which seats are actually selectable (occupied seats are ignored).
   onSeatSelect?: (seatIdx: number) => void;
   selectedSeat?: number | null;
+  // In-game: clicking an occupied seat opens its profile.
+  onSeatClick?: (seatIdx: number) => void;
 }
 
 /** Map a seat index to an oval display slot, rotating so *mySeat* is at
@@ -46,6 +48,7 @@ export default function OvalTable({
   dealerIdx, sbSeat, bbSeat,
   mySeat, holeCards, phase, showdownHoleCards, onAddBot, onKickBot,
   onSeatSelect, selectedSeat,
+  onSeatClick,
 }: Props) {
   const showCommunity = phase !== 'WAITING' && phase !== 'PREFLOP' && phase !== 'DEALING';
   // Mid-hand seating changes corrupt the engine — only offer bot seats
@@ -108,8 +111,9 @@ export default function OvalTable({
         const seatInHand = handLive && p !== undefined;
         return (
           <div key={seat.seat_idx} data-seat={seat.seat_idx}
-               className={`seat-wrap seat-${slot}${seat.connected === false ? ' offline' : ''}${viewer ? ' selectable' : ''}${viewer && selectedSeat === seat.seat_idx ? ' selected' : ''}`}
-               onClick={viewer ? () => onSeatSelect!(seat.seat_idx) : undefined}>
+               className={`seat-wrap seat-${slot}${seat.connected === false ? ' offline' : ''}${viewer ? ' selectable' : ''}${viewer && selectedSeat === seat.seat_idx ? ' selected' : ''}${!viewer && onSeatClick ? ' clickable' : ''}`}
+               onClick={viewer ? () => onSeatSelect!(seat.seat_idx)
+                        : onSeatClick ? () => onSeatClick(seat.seat_idx) : undefined}>
             <PlayerSeat
               player={merged}
               isCurrent={currentPlayerIdx === seat.seat_idx}

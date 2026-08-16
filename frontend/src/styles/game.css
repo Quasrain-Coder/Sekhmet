@@ -653,3 +653,36 @@ select.input { width: auto; }
   text-align: center;
 }
 .action-timer.warn { color: #f87171; }
+
+/* ---- Player profile dialog ---- */
+.profile-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(4, 8, 14, 0.72);
+  display: flex; align-items: center; justify-content: center;
+  animation: toast-in 0.15s ease-out;
+}
+.profile-dialog {
+  width: min(420px, 92vw);
+  background: var(--surface);
+  border: 1.5px solid var(--cyan);
+  box-shadow: 0 0 24px rgba(34, 211, 238, 0.28);
+  border-radius: 10px;
+  padding: 18px 20px;
+  color: var(--text);
+}
+.profile-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.profile-title { color: var(--cyan-text); letter-spacing: 2px; font-size: 1.05rem; }
+.profile-close {
+  background: none; border: none; color: var(--text-dim);
+  font-size: 1rem; cursor: pointer;
+}
+.profile-close:hover { color: var(--text); }
+.profile-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 5px 0; font-size: 0.92rem;
+}
+.profile-row span { color: var(--text-dim); }
+.profile-divider { border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 8px 0; }
+.profile-subtitle { color: var(--gold-text); font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 2px; }
+.profile-note { color: var(--text-dim); font-size: 0.8rem; margin-top: 6px; }
+.seat-wrap.clickable { cursor: pointer; }
