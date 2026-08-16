@@ -214,6 +214,15 @@ export default function Lobby() {
       </div>
 
       <div className="lobby-panel">
+        <div className="panel-label">Trainer</div>
+        <div className="lobby-actions">
+          <button className="btn gold" onClick={() => { window.location.href = '/trainer'; }}>
+            🎯 进入训练场
+          </button>
+        </div>
+      </div>
+
+      <div className="lobby-panel">
         <div className="panel-label">New Table</div>
         <div className="lobby-actions">
           {!authToken && (
