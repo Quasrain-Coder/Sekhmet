@@ -1,6 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import FeedbackPanel from '../components/trainer/FeedbackPanel';
+import CardView from '../components/table/CardView';
+
+interface TablePreview {
+  phase: string;
+  hole_cards: string[];
+  community_cards: string[];
+  pot: number;
+  current_bet: number;
+  to_call: number;
+  stack: number;
+  dealer_idx: number | null;
+  sb_seat: number | null;
+  bb_seat: number | null;
+  player_seat: number | null;
+}
 
 interface ScenarioDetailData {
   id: string;
@@ -9,6 +24,7 @@ interface ScenarioDetailData {
   category: string;
   difficulty: number;
   hints: string[];
+  table?: TablePreview | null;
 }
 
 interface SubmitResult {
@@ -104,6 +120,10 @@ export default function ScenarioDetail() {
         <h2>{scenario.title}</h2>
         <p className="scenario-desc">{scenario.description}</p>
 
+        {scenario.table && (
+          <ScenarioTable table={scenario.table} />
+        )}
+
         {hints.length > 0 && (
           <div className="hint-box">
             {hints.map((h, i) => <p key={i}>💡 {h}</p>)}
@@ -135,6 +155,51 @@ export default function ScenarioDetail() {
           </>
         ) : (
           <FeedbackPanel result={result} onRetry={() => setResult(null)} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+function ScenarioTable({ table }: { table: TablePreview }) {
+  const tag = (seat: number | null) => {
+    if (seat === null) return null;
+    if (seat === table.dealer_idx) return 'D';
+    if (seat === table.sb_seat) return 'SB';
+    if (seat === table.bb_seat) return 'BB';
+    return null;
+  };
+  return (
+    <div className="scenario-table">
+      <div className="scenario-table-head">
+        <span className="phase-pill playing">{table.phase}</span>
+        <span>底池 <b>{table.pot}</b></span>
+        <span>筹码 <b>{table.stack}</b></span>
+        {table.to_call > 0 && <span>跟注 <b className="lb-neg">{table.to_call}</b></span>}
+      </div>
+      <div className="scenario-cards">
+        <span className="fb-bar-label">你的手牌</span>
+        <div className="scenario-hole">
+          {table.hole_cards.map(c => <CardView key={c} card={c} big />)}
+        </div>
+      </div>
+      {table.community_cards.length > 0 && (
+        <div className="scenario-cards">
+          <span className="fb-bar-label">公共牌</span>
+          <div className="scenario-community">
+            {table.community_cards.map(c => <CardView key={c} card={c} />)}
+          </div>
+        </div>
+      )}
+      <div className="scenario-meta">
+        {table.player_seat !== null && (
+          <span>
+            你的位置：{tag(table.player_seat) ?? `${table.player_seat} 号位`}
+            {table.player_seat === table.dealer_idx ? '（按钮位，最后行动）'
+             : table.player_seat === table.sb_seat ? '（小盲）'
+             : table.player_seat === table.bb_seat ? '（大盲）' : ''}
+          </span>
         )}
       </div>
     </div>

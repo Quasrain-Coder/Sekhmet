@@ -10,6 +10,54 @@ from typing import Any
 
 import yaml
 
+from ..game_engine import GamePhase, GameState, Player
+from ..game_engine.deck import Card, Rank, Suit
+from ..game_engine.game_state import PotState
+
+_PHASE = {p.name: p for p in GamePhase}
+_RANK = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9,
+         "10": 10, "J": 11, "Q": 12, "K": 13, "A": 14}
+_SUIT = {"♠": Suit.SPADES, "♥": Suit.HEARTS, "♦": Suit.DIAMONDS, "♣": Suit.CLUBS}
+
+
+def _card(text: str) -> Card:
+    return Card(Rank(_RANK[text[:-1]]), _SUIT[text[-1]])
+
+
+def _state(phase, player_seat, hole, board, pot, dealer, sb, bb,
+           current_bet, stack) -> GameState:
+    """Build a frozen 2-handed state for a builtin scenario's preview.
+
+    The player's seat is *player_seat* (0 or 1); the other seat holds
+    generic cards (never shown).  Only the preview needs it, so blinds
+    are collapsed into ``pot`` and the bet-to-match is ``current_bet``.
+    """
+    cards = [_card(c) for c in hole]
+    villain = Player(
+        name="Villain", seat_idx=1 - player_seat, stack=stack,
+        hole_cards=(_card("2♠"), _card("3♣")),
+        current_bet=current_bet if 1 - player_seat == bb else 0,
+    )
+    you = Player(
+        name="You", seat_idx=player_seat, stack=stack,
+        hole_cards=tuple(cards), is_human=True,
+        current_bet=current_bet if player_seat == bb else 0,
+    )
+    return GameState(
+        phase=_PHASE[phase],
+        players=(you, villain),
+        community_cards=tuple(_card(c) for c in board),
+        pot=PotState(main_pot=pot),
+        dealer_idx=dealer,
+        current_player_idx=player_seat,
+        current_bet=current_bet,
+        min_raise=10,
+        small_blind=5,
+        big_blind=10,
+        sb_seat=sb,
+        bb_seat=bb,
+    )
+
 logger = logging.getLogger(__name__)
 
 
@@ -42,6 +90,8 @@ class Scenario:
     analysis: dict[str, Any] = field(default_factory=dict)
     # Frozen game state (set by runner after loading)
     frozen_state: Any = None
+    # Which seat the player holds in ``frozen_state`` (rendering only).
+    player_seat: int | None = None
 
     @classmethod
     def from_yaml(cls, data: dict[str, Any]) -> "Scenario":
@@ -55,6 +105,8 @@ class Scenario:
             acceptable_range=data.get("acceptable_range", {}),
             hints=data.get("hints", []),
             analysis=data.get("analysis", {}),
+            frozen_state=data.get("frozen_state"),
+            player_seat=data.get("player_seat"),
         )
 
 
@@ -136,6 +188,13 @@ BUILTIN_SCENARIOS: list[dict[str, Any]] = [
             "ev_fold": 0.0,
             "ev_raise": -0.8,
         },
+        # Concrete 9-handed table: you are UTG (seat 3) with K♠J♥.
+        "player_seat": 3,
+        "frozen_state": _state(
+            phase="PREFLOP", player_seat=3,
+            hole=("K♠", "J♥"), board=(), pot=15,
+            dealer=8, sb=0, bb=1, current_bet=10, stack=200,
+        ),
     },
     {
         "id": "preflop-btn-premium",
@@ -153,6 +212,12 @@ BUILTIN_SCENARIOS: list[dict[str, Any]] = [
             "equity_vs_range": 0.67,
             "ev_raise": 2.5,
         },
+        "player_seat": 5,
+        "frozen_state": _state(
+            phase="PREFLOP", player_seat=5,
+            hole=("A♠", "K♠"), board=(), pot=15,
+            dealer=5, sb=0, bb=1, current_bet=10, stack=200,
+        ),
     },
     {
         "id": "flop-top-pair-faces-bet",
@@ -172,6 +237,13 @@ BUILTIN_SCENARIOS: list[dict[str, Any]] = [
             "ev_call": 1.8,
             "ev_raise": 0.5,
         },
+        "player_seat": 1,
+        "frozen_state": _state(
+            phase="FLOP", player_seat=1,
+            hole=("A♣", "Q♣"), board=("A♦", "9♠", "2♥"), pot=60,
+            # Villain (BB, seat 0) bet 40 into 60 — hero faces 40.
+            dealer=0, sb=1, bb=0, current_bet=40, stack=180,
+        ),
     },
     {
         "id": "river-bluff-spot",
@@ -191,6 +263,12 @@ BUILTIN_SCENARIOS: list[dict[str, Any]] = [
             "ev_bluff": 2.3,
             "ev_check": -1.0,
         },
+        "player_seat": 0,
+        "frozen_state": _state(
+            phase="RIVER", player_seat=0,
+            hole=("8♣", "7♣"), board=("10♠", "9♠", "2♥", "4♦", "5♠"), pot=110,
+            dealer=0, sb=0, bb=1, current_bet=0, stack=190,
+        ),
     },
     {
         "id": "pot-odds-draw",
@@ -210,5 +288,11 @@ BUILTIN_SCENARIOS: list[dict[str, Any]] = [
             "pot_odds_required": 0.25,
             "ev_call": 0.8,
         },
+        "player_seat": 0,
+        "frozen_state": _state(
+            phase="TURN", player_seat=0,
+            hole=("A♥", "K♥"), board=("3♥", "7♥", "10♣", "Q♦"), pot=150,
+            dealer=0, sb=0, bb=1, current_bet=50, stack=150,
+        ),
     },
 ]

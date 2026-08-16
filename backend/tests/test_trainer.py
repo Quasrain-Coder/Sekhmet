@@ -290,3 +290,19 @@ def test_scenario_detail_starts_decision_timer(monkeypatch):
     # 60s → timing component halved: 60 + 25 + 7.5 = 92.5 (not the old 100)
     assert score["timing_judgment"] == 7.5
     assert score["total"] == 92.5
+
+
+def test_scenario_detail_includes_table_preview():
+    """Concrete cards/pot/price must reach the decision UI."""
+    client = TestClient(app)
+    resp = client.get("/api/trainer/scenarios/river-bluff-spot")
+    assert resp.status_code == 200
+    body = resp.json()
+    table = body["table"]
+    assert table is not None
+    assert table["phase"] == "RIVER"
+    assert table["hole_cards"] == ["8♣", "7♣"]
+    assert len(table["community_cards"]) == 5
+    assert table["pot"] == 110
+    assert table["to_call"] == 0
+    assert table["player_seat"] == 0
