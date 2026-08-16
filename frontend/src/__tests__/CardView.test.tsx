@@ -1,24 +1,34 @@
 import { render } from '@testing-library/react';
 import CardView from '../components/table/CardView';
 
-test('spades use the standard black-suit style', () => {
-  const { container } = render(<CardView card="A♠" />);
-  const el = container.querySelector('.card')!;
-  expect(el.className).toContain('card-black');
-  expect(el.className).not.toContain('suit-club');
-  expect(el.getAttribute('title')).toBe('A♠');
+test('each suit gets its own distinct color class', () => {
+  const cases: [string, string][] = [
+    ['A♠', 'spades'],
+    ['K♥', 'hearts'],
+    ['Q♦', 'diamonds'],
+    ['J♣', 'clubs'],
+  ];
+  for (const [card, cls] of cases) {
+    const { container, unmount } = render(<CardView card={card} />);
+    const el = container.querySelector('.card')!;
+    expect(el.className).toContain(`card-suit ${cls}`);
+    expect(el.getAttribute('title')).toBe(card);
+    unmount();
+  }
 });
 
-test('clubs get the distinct green-suit style so ♠/♣ are not confused', () => {
-  const { container } = render(<CardView card="K♣" />);
-  const el = container.querySelector('.card')!;
-  expect(el.className).toContain('suit-club');
-  expect(el.className).not.toContain('card-black');
-});
-
-test('red suits stay red', () => {
-  const { container } = render(<CardView card="Q♥" />);
-  expect(container.querySelector('.card')!.className).toContain('card-red');
+test('all four suit classes are mutually distinct', () => {
+  const { container } = render(
+    <>
+      <CardView card="A♠" />
+      <CardView card="K♥" />
+      <CardView card="Q♦" />
+      <CardView card="J♣" />
+    </>,
+  );
+  const cards = [...container.querySelectorAll('.card')];
+  const classes = cards.map(c => c.className);
+  expect(new Set(classes).size).toBe(4);
 });
 
 test('empty card renders a face-down back', () => {
