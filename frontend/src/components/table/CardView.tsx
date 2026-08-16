@@ -4,11 +4,16 @@ interface CardViewProps {
   big?: boolean;
 }
 
-const RED_SUITS = ['♥', '♦'];
+// 四花色四种颜色，小尺寸下一眼区分：
+// ♠ 蓝 · ♥ 红 · ♦ 金 · ♣ 绿
+const SUIT_CLASS: Record<string, string> = {
+  '♠': 'card-suit spades',
+  '♥': 'card-suit hearts',
+  '♦': 'card-suit diamonds',
+  '♣': 'card-suit clubs',
+};
 
-// ♠ 与 ♣ 同为黑色系，小尺寸下容易混淆——草花单独用绿色系渲染。
-const suitClass = (suit: string) =>
-  suit === '♣' ? 'suit-club' : RED_SUITS.includes(suit) ? 'card-red' : 'card-black';
+const suitClass = (suit: string) => SUIT_CLASS[suit] ?? 'card-suit spades';
 
 export default function CardView({ card, small, big }: CardViewProps) {
   const size = big ? 'big' : small ? 'small' : '';

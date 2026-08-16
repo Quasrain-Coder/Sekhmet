@@ -191,10 +191,20 @@ select.input { width: auto; }
   font-size: 0.72rem; font-weight: 700; line-height: 1.05; text-align: center;
 }
 .card .pip { font-size: 1.6rem; }
-.card-black { border: 1.5px solid var(--cyan); color: var(--text); box-shadow: 0 0 12px rgba(34, 211, 238, 0.4); }
-.card-red { border: 1.5px solid var(--rose); color: var(--rose); box-shadow: 0 0 12px rgba(251, 113, 133, 0.4); }
-/* 草花：绿色系渲染，与黑桃一眼区分 */
-.suit-club {
+/* 四花色四种颜色：♠ 蓝 · ♥ 红 · ♦ 金 · ♣ 绿 */
+.card-suit.spades {
+  border: 1.5px solid rgba(147, 197, 253, 0.65); color: #93c5fd;
+  box-shadow: 0 0 12px rgba(147, 197, 253, 0.35);
+}
+.card-suit.hearts {
+  border: 1.5px solid var(--rose); color: var(--rose);
+  box-shadow: 0 0 12px rgba(251, 113, 133, 0.4);
+}
+.card-suit.diamonds {
+  border: 1.5px solid rgba(251, 191, 36, 0.65); color: #fbbf24;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
+}
+.card-suit.clubs {
   border: 1.5px solid rgba(110, 231, 183, 0.65); color: #6ee7b7;
   box-shadow: 0 0 12px rgba(110, 231, 183, 0.35);
 }
