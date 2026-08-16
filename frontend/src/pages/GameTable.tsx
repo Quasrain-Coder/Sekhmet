@@ -70,6 +70,34 @@ export default function GameTablePage() {
     setToasts(ts => ts.filter(t => t.id !== id));
   }, []);
 
+  // ---- Auto next-hand (owner) ----
+  // After a hand ends the owner's client counts down and deals the next
+  // hand automatically.  A busted owner gets to rebuy first — the
+  // countdown only runs once they have chips again.
+  const isOwner = state.seats.find(s => s.seat_idx === state.mySeat)?.is_owner ?? false;
+  const mySeatStack = state.seats.find(s => s.seat_idx === state.mySeat)?.stack;
+  const meStack = state.players.find(p => p.seat_idx === state.mySeat)?.stack;
+  const needRebuy = shouldShowRebuy(state.phase, meStack, mySeatStack);
+  const AUTO_NEXT_SECONDS = 5;
+  const [autoNext, setAutoNext] = useState(0);
+  useEffect(() => {
+    if (state.phase !== 'SHOWDOWN' || !isOwner || needRebuy) {
+      setAutoNext(0);
+      return;
+    }
+    setAutoNext(AUTO_NEXT_SECONDS);
+    let remaining = AUTO_NEXT_SECONDS;
+    const iv = setInterval(() => {
+      remaining -= 1;
+      setAutoNext(Math.max(0, remaining));
+      if (remaining <= 0) {
+        clearInterval(iv);
+        send({ type: 'start_hand' });
+      }
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [state.phase, isOwner, needRebuy, send]);
+
   const openProfile = useCallback(async (seatIdx: number) => {
     try {
       const resp = await fetch(`/api/game/tables/${tableId}/players/${seatIdx}/profile`);
@@ -396,7 +424,6 @@ export default function GameTablePage() {
 
   // ---- Table view (seated) ----
   const me = state.players.find(p => p.seat_idx === state.mySeat);
-  const isOwner = state.seats.find(s => s.seat_idx === state.mySeat)?.is_owner ?? false;
 
   return (
     <div className="game-table">
@@ -409,10 +436,15 @@ export default function GameTablePage() {
             ? ` (reconnecting in ${Math.ceil(reconnectIn / 1000)}s…)`
             : ' (disconnected)')}
         </span>
+        {isOwner && autoNext > 0 && (
+          <span className="next-hand-timer">
+            Next hand in {autoNext}s…
+          </span>
+        )}
         <button className="btn btn-sm gold" onClick={() => send({ type: 'start_hand' })}
                 disabled={!isOwner || (state.phase !== 'WAITING' && state.phase !== 'SHOWDOWN')}
-                title={isOwner ? '' : 'Only the table owner can deal'}>
-          Deal
+                title={isOwner ? '' : 'Only the table owner can start the next hand'}>
+          Next Hand
         </button>
       </div>
 
@@ -437,11 +469,7 @@ export default function GameTablePage() {
           onSeatClick={openProfile}
         />
 
-        {shouldShowRebuy(
-          state.phase,
-          me?.stack,
-          state.seats.find(s => s.seat_idx === state.mySeat)?.stack,
-        ) && (() => {
+        {needRebuy && (() => {
           const defaultAmount = state.config?.default_buyin ?? 200;
           const amount = rebuyAmount ?? defaultAmount;
           return (
