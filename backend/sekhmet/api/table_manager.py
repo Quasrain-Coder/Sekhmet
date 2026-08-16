@@ -113,6 +113,7 @@ class TableSession:
     # Only these seats feed the per-account stats at showdown.
     user_ids: dict[int, int] = field(default_factory=dict)
     total_buyin: dict[int, int] = field(default_factory=dict)        # seat_idx → chips bought
+    buyin_count: dict[int, int] = field(default_factory=dict)        # seat_idx → buy-ins made
     disconnected: set[int] = field(default_factory=set)
     consecutive_timeouts: dict[int, int] = field(default_factory=dict)  # seat_idx → count
     grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
@@ -419,6 +420,7 @@ async def sit_down(
 
     session.stats[seat_idx] = PlayerStats()
     session.total_buyin[seat_idx] = stack
+    session.buyin_count[seat_idx] = 1
     if is_human:
         session.reclaim_tokens[seat_idx] = secrets.token_hex(16)
         if user_id is not None:
@@ -436,6 +438,7 @@ def _stand_up_locked(session: TableSession, seat_idx: int) -> None:
     session.stats.pop(seat_idx, None)
     session.tracker.stats.pop(seat_idx, None)
     session.total_buyin.pop(seat_idx, None)
+    session.buyin_count.pop(seat_idx, None)
     session.reclaim_tokens.pop(seat_idx, None)
     session.consecutive_timeouts.pop(seat_idx, None)
     session.pending_seats.discard(seat_idx)
@@ -616,6 +619,7 @@ async def _expire_seat(table_id: str, seat_idx: int, *, force: bool = False) -> 
             session.stats.pop(seat_idx, None)
             session.tracker.stats.pop(seat_idx, None)
             session.total_buyin.pop(seat_idx, None)
+            session.buyin_count.pop(seat_idx, None)
             session.bot_levels.pop(seat_idx, None)
             session.reclaim_tokens.pop(seat_idx, None)
             session.consecutive_timeouts.pop(seat_idx, None)
@@ -672,6 +676,7 @@ async def rebuy(table_id: str, seat_idx: int, amount: int) -> dict[str, Any]:
         for p in session.game_state.players
     ))
     session.total_buyin[seat_idx] = session.total_buyin.get(seat_idx, 0) + amount
+    session.buyin_count[seat_idx] = session.buyin_count.get(seat_idx, 1) + 1
     return _table_summary(session)
 
 
@@ -1097,6 +1102,7 @@ def table_info(session: TableSession) -> dict[str, Any]:
             # its buy-in is still its stack.
             "stack": p.stack if p is not None else buyin,
             "buyin": buyin,
+            "buyin_count": session.buyin_count.get(seat, 1),
             "hands": st.hands if st else 0,
             "wins": st.wins if st else 0,
             "net_chips": (p.stack if p is not None else buyin) - buyin,

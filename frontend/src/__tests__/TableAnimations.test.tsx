@@ -161,7 +161,7 @@ describe('showdown reveal', () => {
 
 const seat = (idx: number, name: string, isHuman: boolean): SeatInfo => ({
   seat_idx: idx, name, is_human: isHuman, bot_level: isHuman ? null : 2,
-  stack: 1000, buyin: 1000, hands: 0, wins: 0, net_chips: 0, connected: true, is_owner: false,
+  stack: 1000, buyin: 1000, buyin_count: 1, hands: 0, wins: 0, net_chips: 0, connected: true, is_owner: false,
 });
 
 describe('deal trigger', () => {
