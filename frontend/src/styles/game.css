@@ -696,3 +696,24 @@ select.input { width: auto; }
 .profile-subtitle { color: var(--gold-text); font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 2px; }
 .profile-note { color: var(--text-dim); font-size: 0.8rem; margin-top: 6px; }
 .seat-wrap.clickable { cursor: pointer; }
+
+/* ---- Showdown winner highlight ---- */
+.seat-wrap.winner .avatar {
+  box-shadow: 0 0 14px 3px rgba(251, 191, 36, 0.65);
+  border-color: var(--gold);
+}
+.seat-wrap.winner .revealed-cards .card,
+.seat-wrap.winner .hole-cards .card {
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.6);
+}
+.winner-badge {
+  position: absolute; top: -18px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #fbbf24, #b45309);
+  color: #1c1000;
+  font-size: 0.6rem; font-weight: 800; letter-spacing: 1px;
+  padding: 2px 8px; border-radius: 999px;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.7);
+  z-index: 5;
+}
