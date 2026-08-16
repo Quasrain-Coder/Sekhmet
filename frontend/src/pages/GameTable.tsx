@@ -7,6 +7,8 @@ import OvalTable from '../components/table/OvalTable';
 import ActionBar from '../components/table/ActionBar';
 import Leaderboard from '../components/table/Leaderboard';
 import Toast from '../components/shared/Toast';
+import ProfileDialog from '../components/shared/ProfileDialog';
+import type { ProfileData } from '../components/shared/ProfileDialog';
 import type { ToastItem } from '../components/shared/Toast';
 
 interface TableDetail {
@@ -47,6 +49,7 @@ export default function GameTablePage() {
   const [buyin, setBuyin] = useState(200);
   const [rebuyAmount, setRebuyAmount] = useState(200);
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   // Seat we optimistically claimed via sit_down but the server has not yet
   // confirmed (table_state echo).  An 'error' while pending means the sit
   // was rejected — revert mySeat so the user is not stranded at the table.
@@ -66,6 +69,17 @@ export default function GameTablePage() {
   const dismissToast = useCallback((id: number) => {
     setToasts(ts => ts.filter(t => t.id !== id));
   }, []);
+
+  const openProfile = useCallback(async (seatIdx: number) => {
+    try {
+      const resp = await fetch(`/api/game/tables/${tableId}/players/${seatIdx}/profile`);
+      if (!resp.ok) {
+        pushToast('error', 'Profile not available');
+        return;
+      }
+      setProfile(await resp.json());
+    } catch { pushToast('error', 'Cannot reach server'); }
+  }, [tableId, pushToast]);
 
   // Auto-reclaim loop: after a reconnect we re-send sit_down with the
   // reclaim token so the server restores our seat (and re-sends private
@@ -419,6 +433,7 @@ export default function GameTablePage() {
           showdownHoleCards={state.showdown?.hole_cards}
           onAddBot={addBot}
           onKickBot={kickBot}
+          onSeatClick={openProfile}
         />
 
         {me && me.stack === 0 && (state.phase === 'WAITING' || state.phase === 'SHOWDOWN') && (
@@ -431,6 +446,14 @@ export default function GameTablePage() {
               Rebuy
             </button>
           </div>
+        )}
+
+        {profile && (
+          <ProfileDialog
+            title="Player Profile"
+            profile={profile}
+            onClose={() => setProfile(null)}
+          />
         )}
 
         {state.showdown && (

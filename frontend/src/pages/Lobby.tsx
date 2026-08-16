@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Toast from '../components/shared/Toast';
+import ProfileDialog from '../components/shared/ProfileDialog';
 import type { ToastItem } from '../components/shared/Toast';
 
 interface SeatInfo {
@@ -50,6 +51,7 @@ export default function Lobby() {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [authName, setAuthName] = useState('');
   const [authPass, setAuthPass] = useState('');
+  const [showProfile, setShowProfile] = useState(false);
 
   const refreshProfile = useCallback(async (token: string) => {
     try {
@@ -136,6 +138,21 @@ export default function Lobby() {
   return (
     <div className="lobby">
       <Toast items={toasts} onDismiss={dismissToast} />
+      {showProfile && authStats && (
+        <ProfileDialog
+          title="My Profile"
+          onClose={() => setShowProfile(false)}
+          profile={{
+            name: authUser,
+            is_human: true,
+            bot_level: null,
+            hands: authStats.hands,
+            wins: authStats.wins,
+            net_chips: authStats.net_chips,
+            account: { username: authUser, ...authStats },
+          }}
+        />
+      )}
       <div className="lobby-logo">
         <div className="spade">♠</div>
         <h1>SEKHMET</h1>
@@ -153,6 +170,7 @@ export default function Lobby() {
                 {' '}· Net {authStats.net_chips >= 0 ? '+' : ''}{authStats.net_chips}
               </span>
             )}
+            <button className="btn btn-sm" onClick={() => setShowProfile(true)}>My Profile</button>
             <button className="btn btn-sm" onClick={logout}>Logout</button>
           </div>
         ) : (
