@@ -1,0 +1,3714 @@
+- id: gen-0471
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 67
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: &id001
+  - 半诈唬是教科书打法：落后但有充足赢率
+  - 下注同时赚取弃牌收益和实现权益
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♥
+    - 8♥
+    board:
+    - 5♠
+    - 6♦
+    - J♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0472
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 67
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 8♠
+    - 9♠
+    board:
+    - 6♥
+    - 7♣
+    - J♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0479
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 9♥
+    - 10♥
+    board:
+    - 7♣
+    - 8♦
+    - A♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0480
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 9♦
+    - 10♦
+    board:
+    - 7♥
+    - 8♣
+    - A♠
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0486
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 8♣
+    - 9♣
+    board:
+    - 6♦
+    - 7♠
+    - J♥
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0489
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 26
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♠
+    board:
+    - 5♣
+    - 6♥
+    - Q♦
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0490
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 67
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 8♠
+    - 9♠
+    board:
+    - 6♥
+    - 7♦
+    - J♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0493
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 67
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 9♦
+    - 10♦
+    board:
+    - 7♥
+    - 8♠
+    - Q♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0495
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 9♣
+    - 10♣
+    board:
+    - 7♠
+    - 8♥
+    - Q♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0502
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♠
+    board:
+    - 5♦
+    - 6♥
+    - J♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0504
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 67
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 9♠
+    - 10♠
+    board:
+    - 7♥
+    - 8♣
+    - A♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0505
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 26
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 8♠
+    - 9♠
+    board:
+    - 6♦
+    - 7♣
+    - J♥
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0509
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 26
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 9♥
+    - 10♥
+    board:
+    - 7♠
+    - 8♣
+    - K♦
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0514
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 9♦
+    - 10♦
+    board:
+    - 7♣
+    - 8♥
+    - A♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0515
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 9♠
+    - 10♠
+    board:
+    - 7♦
+    - 8♥
+    - K♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0521
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 9♣
+    - 10♣
+    board:
+    - 7♦
+    - 8♠
+    - A♥
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0524
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 67
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 8♣
+    - 9♣
+    board:
+    - 6♥
+    - 7♦
+    - K♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0525
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 26
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 7♦
+    - 8♦
+    board:
+    - 5♥
+    - 6♣
+    - K♠
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0526
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 7♦
+    - 8♦
+    board:
+    - 5♠
+    - 6♥
+    - J♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0527
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♥
+    - 8♥
+    board:
+    - 5♦
+    - 6♣
+    - J♠
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0530
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 9♦
+    - 10♦
+    board:
+    - 7♠
+    - 8♣
+    - A♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0540
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 8♣
+    - 9♣
+    board:
+    - 6♠
+    - 7♥
+    - J♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0543
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 9♣
+    - 10♣
+    board:
+    - 7♥
+    - 8♠
+    - K♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0544
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 7♠
+    - 8♠
+    board:
+    - 5♥
+    - 6♣
+    - J♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0546
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 26
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 8♥
+    - 9♥
+    board:
+    - 6♣
+    - 7♦
+    - Q♠
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0547
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 8♠
+    - 9♠
+    board:
+    - 6♦
+    - 7♥
+    - K♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0553
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 67
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 8♦
+    - 9♦
+    board:
+    - 6♣
+    - 7♠
+    - Q♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0558
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 9♥
+    - 10♥
+    board:
+    - 7♠
+    - 8♦
+    - A♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0560
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♥
+    - 8♥
+    board:
+    - 5♠
+    - 6♦
+    - Q♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0563
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 67
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♣
+    - 8♣
+    board:
+    - 5♦
+    - 6♠
+    - A♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0571
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 26
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♣
+    - 8♣
+    board:
+    - 5♥
+    - 6♠
+    - K♦
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0574
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 9♠
+    - 10♠
+    board:
+    - 7♣
+    - 8♦
+    - K♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0588
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - 7♣
+    - 8♣
+    board:
+    - 5♠
+    - 6♦
+    - Q♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0589
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 67
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 8♣
+    - 9♣
+    board:
+    - 6♠
+    - 7♦
+    - Q♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0592
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♦
+    - 8♦
+    board:
+    - 5♠
+    - 6♣
+    - J♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0594
+  title: 翻牌半诈唬
+  description: 你拿着强听牌，对手过牌
+  category: bluffing
+  difficulty: 3
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♠
+    board:
+    - 5♦
+    - 6♣
+    - Q♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0779
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: &id002
+  - A 高顶对在干燥牌面有摊牌价值
+  - 跟注控制底池，加注打走你赢的范围
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♠
+    - 9♥
+    board:
+    - A♥
+    - 5♦
+    - 8♦
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0781
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♠
+    - 7♦
+    board:
+    - A♦
+    - 8♠
+    - 2♦
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 15
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0783
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 5♥
+    board:
+    - A♥
+    - 9♠
+    - 8♥
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 12
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0784
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 8♥
+    board:
+    - A♥
+    - 9♣
+    - 9♥
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0785
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 7♥
+    board:
+    - A♥
+    - 4♣
+    - 8♥
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0786
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 9♠
+    board:
+    - A♠
+    - 9♣
+    - 4♠
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0788
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♠
+    - 7♦
+    board:
+    - A♦
+    - 8♦
+    - 4♦
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0790
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 8♥
+    board:
+    - A♥
+    - 7♣
+    - 9♣
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0792
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♠
+    - 5♣
+    board:
+    - A♣
+    - 9♦
+    - 2♣
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0796
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♥
+    - 7♣
+    board:
+    - A♣
+    - 9♠
+    - 3♥
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 12
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0802
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 9♦
+    board:
+    - A♦
+    - 5♣
+    - 6♠
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 15
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0803
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♥
+    - 7♠
+    board:
+    - A♠
+    - 9♠
+    - 7♥
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 16
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0804
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 5♣
+    board:
+    - A♣
+    - 9♣
+    - 3♣
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 16
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0811
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 9♠
+    board:
+    - A♠
+    - 5♠
+    - 6♥
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 12
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0812
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♥
+    - 9♠
+    board:
+    - A♠
+    - 7♠
+    - 8♦
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 12
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0813
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 8♠
+    board:
+    - A♠
+    - 7♥
+    - 2♣
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 15
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0814
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 5♥
+    board:
+    - A♥
+    - 4♦
+    - 7♥
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0815
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 5♦
+    board:
+    - A♦
+    - 5♠
+    - 8♥
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0817
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 8♠
+    board:
+    - A♠
+    - 4♠
+    - 8♥
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 15
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0818
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 5♠
+    board:
+    - A♠
+    - 3♦
+    - 5♣
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 16
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0819
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♥
+    - 6♦
+    board:
+    - A♦
+    - 5♥
+    - 3♦
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0821
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♥
+    - 8♦
+    board:
+    - A♦
+    - 9♣
+    - 6♥
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0823
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 5♥
+    board:
+    - A♥
+    - 9♥
+    - 3♣
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0829
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♥
+    - 8♦
+    board:
+    - A♦
+    - 9♣
+    - 8♠
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 12
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0832
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♥
+    - 8♦
+    board:
+    - A♦
+    - 4♠
+    - 3♠
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 12
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0844
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 7♠
+    board:
+    - A♠
+    - 8♥
+    - 5♦
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 16
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0848
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♠
+    - 9♣
+    board:
+    - A♣
+    - 3♠
+    - 5♠
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 12
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0849
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 7♥
+    board:
+    - A♥
+    - 8♠
+    - 6♠
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 16
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0852
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 9♣
+    board:
+    - A♣
+    - 8♣
+    - 6♠
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0856
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 8♠
+    board:
+    - A♠
+    - 3♦
+    - 2♠
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0857
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 5♥
+    board:
+    - A♥
+    - 3♠
+    - 4♣
+    pot: 40
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 16
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0858
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 6♥
+    board:
+    - A♥
+    - 5♣
+    - 6♦
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0862
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 5♠
+    board:
+    - A♠
+    - 9♠
+    - 9♦
+    pot: 30
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 15
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0872
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♠
+    - 5♥
+    board:
+    - A♥
+    - 2♥
+    - 8♣
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0874
+  title: 大盲位 A 高牌翻后
+  description: 你在 BB 用 A 高牌补盲进池，翻牌 A72，对手下注
+  category: position
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.63
+  player_seat: 1
+  frozen_state:
+    phase: FLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 7♠
+    board:
+    - A♠
+    - 9♦
+    - 5♥
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0876
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♦9♣
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: &id003
+  - BTN 是全场最好位置，施加最大压力
+  - 偷盲加注通常 2.5BB
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♦
+    - 9♣
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0877
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♠7♦
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♠
+    - 7♦
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0878
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♦7♣
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♦
+    - 7♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0879
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♥9♣
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♥
+    - 9♣
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0884
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♦7♠
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♦
+    - 7♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0894
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♥7♣
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♥
+    - 7♣
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0895
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♣7♦
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♣
+    - 7♦
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0897
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♣8♥
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♣
+    - 8♥
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0904
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♦7♥
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♦
+    - 7♥
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0911
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♥7♠
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♥
+    - 7♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0912
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♥8♠
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♥
+    - 8♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0915
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♥9♠
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♥
+    - 9♠
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0924
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♣8♦
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♣
+    - 8♦
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0926
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♥7♦
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♥
+    - 7♦
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0929
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♠7♣
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♠
+    - 7♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0935
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♦8♥
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♦
+    - 8♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0939
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♦8♠
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♦
+    - 8♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0941
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♠7♥
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♠
+    - 7♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0942
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♣7♠
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♣
+    - 7♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0960
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♠8♦
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♠
+    - 8♦
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0965
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♦9♠
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♦
+    - 9♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0976
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♥8♣
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♥
+    - 8♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0977
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♣9♦
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♣
+    - 9♦
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0988
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♥9♦
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♥
+    - 9♦
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-1023
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♣8♠
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♣
+    - 8♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-1026
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♠8♣
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♠
+    - 8♣
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-1030
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♣9♠
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♣
+    - 9♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-1032
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♠9♣
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♠
+    - 9♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-1033
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♠9♥
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♠
+    - 9♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0

@@ -332,3 +332,90 @@ def test_scenario_to_call_for_bb_hero_facing_bet():
     assert table["to_call"] == 15
     assert table["pot"] == 40
     assert table["player_seat"] == 1  # hero is the big blind
+
+
+# ---------------------------------------------------------------------------
+# Bulk generator
+# ---------------------------------------------------------------------------
+
+
+def test_generator_deterministic():
+    """Same seed reproduces the same library; different seeds differ."""
+    from sekhmet.trainer.bulk_generator import generate_library
+
+    a = generate_library(target=40, seed=12345)
+    b = generate_library(target=40, seed=12345)
+    c = generate_library(target=40, seed=99999)
+    assert [s.id for s in a] == [s.id for s in b]
+    assert [s.id for s in a] != [s.id for s in c]
+
+
+def test_generator_balanced_categories():
+    """Generated library covers every category (no empty tabs)."""
+    from sekhmet.trainer.bulk_generator import generate_library
+    from collections import Counter
+
+    sc = generate_library(target=60, seed=20260819)
+    counts = Counter(s.category for s in sc)
+    assert len(sc) >= 50
+    for cat in ScenarioCategory:
+        assert counts[cat] >= 2, f"category {cat.value} under-represented"
+
+
+def test_generated_scenarios_are_playable():
+    """Every generated scenario: frozen GameState, no duplicate cards,
+    and the optimal action scores high."""
+    from sekhmet.trainer.bulk_generator import generate_library
+    from sekhmet.trainer.scorer import score_decision
+
+    sc = generate_library(target=60, seed=7)
+    for s in sc:
+        gs = s.frozen_state
+        assert gs is not None
+        p = gs.player(s.player_seat)
+        assert p is not None and p.hole_cards
+        # no duplicate cards across hole + board
+        all_cards = [str(c) for c in p.hole_cards] + [str(c) for c in gs.community_cards]
+        assert len(all_cards) == len(set(all_cards)), s.id
+        # optimal action scores near-perfect
+        r = score_decision(s, s.optimal_action)
+        assert r.total >= 90, f"{s.id} optimal scores only {r.total}"
+
+
+def test_generated_yaml_roundtrip(tmp_path):
+    """Write + reload generated scenarios round-trips the frozen state."""
+    from sekhmet.trainer.bulk_generator import generate_library, write_yaml
+    from sekhmet.trainer.scenario_library import ScenarioLibrary
+
+    sc = generate_library(target=30, seed=42)
+    write_yaml(sc, tmp_path)
+    lib = ScenarioLibrary(tmp_path)
+    n = lib.load_all()
+    assert n == 30
+    s = lib.list_all()[0]
+    gs = s.frozen_state
+    assert gs is not None and hasattr(gs, "phase")
+    # table preview fields survive
+    p = gs.player(s.player_seat)
+    assert p is not None
+    assert gs.pot.main_pot > 0
+
+
+def test_generated_yaml_loads_in_api_library():
+    """The packaged data/scenarios dir must actually be present and load
+    (the generator output is committed)."""
+    from sekhmet.trainer.scenario_library import GENERATED_DATA_DIR
+
+    lib = ScenarioLibrary(GENERATED_DATA_DIR)
+    n = lib.load_all()
+    assert n >= 400, f"expected the committed generated library, got {n}"
+
+
+def test_api_serves_generated_and_builtin():
+    """API exposes both the generated library and the curated built-ins."""
+    client = TestClient(app)
+    resp = client.get("/api/trainer/scenarios")
+    assert resp.status_code == 200
+    ids = {s["id"] for s in resp.json()["scenarios"]}
+    assert any(i.startswith("gen-") for i in ids)
+    assert "preflop-btn-premium" in ids  # curated built-in still present

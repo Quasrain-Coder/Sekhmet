@@ -267,9 +267,11 @@ class Scenario:
 
 ### 5.5 场景生成
 
-- 手动设计场景
-- 基于历史弱点自动生成（分析对局记录 → 找 EV 损失最大的场景类型）
-- 给定约束随机生成
+- 手动设计场景（内置 16 题，`BUILTIN_SCENARIOS`，含详细提示/分析）
+- 基于历史弱点自动生成（分析对局记录 → 找 EV 损失最大的场景类型，`scenario_generator.py`）
+- 给定约束随机生成（已落地）：`bulk_generator.py` 用情景模板 + GTO bot 参考动作批量生成，
+  经质量筛选（非 trivial、牌面命中模板意图、去重）后确定性落盘为 YAML（固定 seed 可复现），
+  启动时由 `ScenarioLibrary.load_all()` 读入。生成库与手动内置题合并提供，约 500 题。
 
 ## 6. 前端设计
 
