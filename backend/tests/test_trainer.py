@@ -316,3 +316,19 @@ def test_scenario_detail_includes_table_preview():
     assert table["pot"] == 110
     assert table["to_call"] == 0
     assert table["player_seat"] == 0
+
+
+def test_scenario_to_call_for_bb_hero_facing_bet():
+    """A BB hero who checks must still face the villain's bet.
+
+    Regression: _state() used to force a BB hero's current_bet to the
+    bet-to-match, so "BB checks, villain bets" scenarios showed
+    to_call=0.  The hero must pay the full bet (to_call == current_bet).
+    """
+    client = TestClient(app)
+    resp = client.get("/api/trainer/scenarios/position-bb-ace-high")
+    assert resp.status_code == 200
+    table = resp.json()["table"]
+    assert table["to_call"] == 15
+    assert table["pot"] == 40
+    assert table["player_seat"] == 1  # hero is the big blind
