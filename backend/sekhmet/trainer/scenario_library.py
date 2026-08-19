@@ -25,25 +25,29 @@ def _card(text: str) -> Card:
 
 
 def _state(phase, player_seat, hole, board, pot, dealer, sb, bb,
-           current_bet, stack) -> GameState:
+           current_bet, stack, *, hero_current_bet: int | None = None) -> GameState:
     """Build a frozen 2-handed state for a builtin scenario.
 
     The player's seat is *player_seat* (0 or 1); the other seat holds
-    generic cards (never shown).  The hero may be either seat: being the
-    big blind (``player_seat == bb``) means the price to continue is
-    ``current_bet - bb``.  Only used for the builtin previews, so blinds
-    are collapsed into ``pot`` and the bet-to-match is ``current_bet``.
+    generic cards (never shown).  *pot* is the pot so far, *current_bet*
+    is the bet the hero faces: the villain (the other seat) holds it as
+    its ``current_bet``, and unless *hero_current_bet* is given the hero
+    has not yet matched it (``to_call = current_bet``).  A hero who is
+    the big blind may set *hero_current_bet* to the blind to model "big
+    blind checks" — then ``to_call = current_bet - bb``.
     """
     cards = [_card(c) for c in hole]
+    if hero_current_bet is None:
+        hero_current_bet = current_bet if player_seat == bb else 0
     villain = Player(
         name="Villain", seat_idx=1 - player_seat, stack=stack,
         hole_cards=(_card("2♠"), _card("3♣")),
-        current_bet=current_bet if 1 - player_seat == bb else 0,
+        current_bet=current_bet if 1 - player_seat != bb else 0,
     )
     you = Player(
         name="You", seat_idx=player_seat, stack=stack,
         hole_cards=tuple(cards), is_human=True,
-        current_bet=current_bet if player_seat == bb else 0,
+        current_bet=hero_current_bet,
     )
     return GameState(
         phase=_PHASE[phase],
@@ -394,8 +398,10 @@ BUILTIN_SCENARIOS: list[dict[str, Any]] = [
         "frozen_state": _state(
             phase="FLOP", player_seat=1,
             hole=("A♠", "5♥"), board=("A♦", "7♣", "2♠"), pot=40,
-            # Villain (SB, seat 0) bet 15 into 40 — hero (BB, seat 1) calls 15.
+            # Villain (SB, seat 0) bet 15 into 40 — hero (BB, seat 1)
+            # checks, so faces the full 15 (to_call = 15 - 0).
             dealer=0, sb=0, bb=1, current_bet=15, stack=180,
+            hero_current_bet=0,
         ),
     },
     {
@@ -452,7 +458,7 @@ BUILTIN_SCENARIOS: list[dict[str, Any]] = [
     {
         "id": "bluffing-flop-raise-semi",
         "title": "翻牌圈半诈唬加注",
-        "description": "你在大盲位补盲进池，翻牌击中两头顺听牌",
+        "description": "你在小盲位补盲进池，翻牌击中两头顺听牌",
         "category": "bluffing",
         "difficulty": 3,
         "optimal_action": {"type": "RAISE", "amount": 55},
@@ -521,9 +527,11 @@ BUILTIN_SCENARIOS: list[dict[str, Any]] = [
         "player_seat": 1,
         "frozen_state": _state(
             phase="PREFLOP", player_seat=1,
-            hole=("Q♠", "Q♣"), board=(), pot=30,
-            # Villain (BTN, seat 0) raised to 30 — hero (SB, seat 1) calls 25.
+            hole=("Q♠", "Q♣"), board=(), pot=45,
+            # Villain (BTN, seat 0) raised to 30 — pot = SB 5 + BB 10 +
+            # BTN 30; hero (SB, seat 1) already has 5 in, calls 25.
             dealer=0, sb=1, bb=0, current_bet=30, stack=190,
+            hero_current_bet=5,
         ),
     },
     {
@@ -554,7 +562,7 @@ BUILTIN_SCENARIOS: list[dict[str, Any]] = [
     {
         "id": "bluffing-float-dry-board",
         "title": "干燥翻牌漂浮跟注",
-        "description": "对手在干燥翻牌连续下注，你手里是带后门花的中等对子",
+        "description": "对手在干燥翻牌下注，你手里是带后门花的中等对子",
         "category": "bluffing",
         "difficulty": 2,
         "optimal_action": {"type": "CALL", "amount": 0},
