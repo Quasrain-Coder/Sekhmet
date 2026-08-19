@@ -25,13 +25,23 @@ def test_library_loads_builtins():
     lib = ScenarioLibrary(data_dir="/nonexistent")
     for data in BUILTIN_SCENARIOS:
         lib.add(Scenario.from_yaml(data))
-    assert len(lib) == 5
+    assert len(lib) == 16
 
     flop = lib.list_by_category(ScenarioCategory.POSTFLOP_VALUE)
-    assert len(flop) == 1
+    assert len(flop) >= 2
 
     easy = lib.list_by_difficulty(2)
     assert len(easy) >= 2
+
+
+def test_every_category_has_builtin():
+    """Each category must ship at least one scenario so the trainer's
+    category tabs are never empty."""
+    lib = ScenarioLibrary(data_dir="/nonexistent")
+    for data in BUILTIN_SCENARIOS:
+        lib.add(Scenario.from_yaml(data))
+    for cat in ScenarioCategory:
+        assert lib.list_by_category(cat), f"no builtin scenario for {cat.value}"
 
 
 def test_library_get():
