@@ -25,13 +25,23 @@ def test_library_loads_builtins():
     lib = ScenarioLibrary(data_dir="/nonexistent")
     for data in BUILTIN_SCENARIOS:
         lib.add(Scenario.from_yaml(data))
-    assert len(lib) == 5
+    assert len(lib) == 16
 
     flop = lib.list_by_category(ScenarioCategory.POSTFLOP_VALUE)
-    assert len(flop) == 1
+    assert len(flop) >= 2
 
     easy = lib.list_by_difficulty(2)
     assert len(easy) >= 2
+
+
+def test_every_category_has_builtin():
+    """Each category must ship at least one scenario so the trainer's
+    category tabs are never empty."""
+    lib = ScenarioLibrary(data_dir="/nonexistent")
+    for data in BUILTIN_SCENARIOS:
+        lib.add(Scenario.from_yaml(data))
+    for cat in ScenarioCategory:
+        assert lib.list_by_category(cat), f"no builtin scenario for {cat.value}"
 
 
 def test_library_get():
@@ -306,3 +316,19 @@ def test_scenario_detail_includes_table_preview():
     assert table["pot"] == 110
     assert table["to_call"] == 0
     assert table["player_seat"] == 0
+
+
+def test_scenario_to_call_for_bb_hero_facing_bet():
+    """A BB hero who checks must still face the villain's bet.
+
+    Regression: _state() used to force a BB hero's current_bet to the
+    bet-to-match, so "BB checks, villain bets" scenarios showed
+    to_call=0.  The hero must pay the full bet (to_call == current_bet).
+    """
+    client = TestClient(app)
+    resp = client.get("/api/trainer/scenarios/position-bb-ace-high")
+    assert resp.status_code == 200
+    table = resp.json()["table"]
+    assert table["to_call"] == 15
+    assert table["pot"] == 40
+    assert table["player_seat"] == 1  # hero is the big blind
