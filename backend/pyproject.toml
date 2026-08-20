@@ -20,6 +20,12 @@ dev = [
     "httpx>=0.28",
 ]
 
+[tool.setuptools.packages.find]
+# Only `sekhmet` is a distribution package.  `data/` holds the generated
+# scenario YAMLs and `tests/` is not shipped, so pin the discovery to
+# avoid the flat-layout "multiple top-level packages" build error.
+include = ["sekhmet*"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
