@@ -1,0 +1,3911 @@
+- id: gen-0601
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: &id001
+  - 强牌在河牌必须价值下注
+  - 对手过牌通常意味着较弱范围
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - J♥
+    board:
+    - Q♦
+    - J♣
+    - 5♠
+    - 7♠
+    - 3♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0602
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 3♦
+    - 6♥
+    - 4♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0604
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - J♥
+    board:
+    - K♦
+    - J♣
+    - 8♠
+    - 2♥
+    - 4♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0605
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 90
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 3♠
+    - 5♣
+    - J♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0606
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - 5♥
+    - 8♣
+    - Q♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0607
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 5♣
+    - 3♦
+    - 7♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0608
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - J♥
+    board:
+    - Q♦
+    - J♣
+    - K♦
+    - 7♠
+    - 3♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0609
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - J♥
+    board:
+    - K♦
+    - J♣
+    - 10♠
+    - 3♥
+    - 4♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0610
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - Q♣
+    - 3♠
+    - 4♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0611
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 8♣
+    - 6♦
+    - 10♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0612
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 2♦
+    - Q♦
+    - 5♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0613
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 90
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 4♠
+    - Q♣
+    - 5♣
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0614
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 90
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 10♣
+    - 4♥
+    - 7♣
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0615
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 4♥
+    - 10♦
+    - 2♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0616
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 90
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 7♥
+    - 3♦
+    - 4♣
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0617
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - J♥
+    board:
+    - K♦
+    - J♣
+    - 4♥
+    - 2♦
+    - 6♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0618
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - J♥
+    board:
+    - Q♦
+    - J♣
+    - 6♠
+    - 7♣
+    - 5♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0619
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 5♥
+    - J♦
+    - 3♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0620
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - J♥
+    board:
+    - Q♦
+    - J♣
+    - 3♥
+    - K♥
+    - 4♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0621
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - J♥
+    board:
+    - Q♦
+    - J♣
+    - 10♠
+    - 7♦
+    - 3♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0622
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - J♥
+    board:
+    - K♦
+    - J♣
+    - 3♥
+    - 7♦
+    - 9♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0623
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 10♣
+    - K♥
+    - 4♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0624
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 90
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 6♣
+    - 5♥
+    - K♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0625
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - J♥
+    board:
+    - K♦
+    - J♣
+    - 8♥
+    - 6♥
+    - 9♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0626
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 90
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - J♣
+    - 2♥
+    - 3♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0627
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - J♥
+    board:
+    - Q♦
+    - J♣
+    - 4♥
+    - 9♠
+    - K♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0628
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 90
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 9♠
+    - 5♥
+    - 4♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0631
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 4♥
+    - 3♠
+    - J♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0632
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - J♣
+    - 3♥
+    - 4♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0633
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 7♠
+    - 10♥
+    - 4♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0635
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: &id002
+  - 没有摊牌价值只能靠下注取胜
+  - 选择对手弃牌率高的牌面诈唬
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♦
+    - 8♦
+    board:
+    - K♥
+    - 4♠
+    - A♦
+    - 10♠
+    - 3♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0636
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♠
+    - 9♠
+    board:
+    - 4♥
+    - J♣
+    - 3♠
+    - Q♦
+    - A♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0639
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 80
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♥
+    - 9♥
+    board:
+    - A♠
+    - 5♦
+    - Q♦
+    - 6♥
+    - K♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0642
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♠
+    board:
+    - K♥
+    - 2♦
+    - 4♦
+    - 10♥
+    - 5♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0645
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 80
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♦
+    - 9♦
+    board:
+    - J♥
+    - Q♦
+    - 5♠
+    - 4♥
+    - A♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0646
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♥
+    - 9♥
+    board:
+    - A♦
+    - 2♣
+    - 6♥
+    - K♦
+    - J♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0652
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 80
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - 8♣
+    board:
+    - Q♥
+    - K♥
+    - 5♣
+    - 10♥
+    - 2♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0653
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - 8♣
+    board:
+    - 10♥
+    - J♥
+    - Q♠
+    - A♣
+    - 4♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0654
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♦
+    - 9♦
+    board:
+    - 3♣
+    - Q♦
+    - J♦
+    - K♠
+    - A♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0658
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♠
+    board:
+    - A♦
+    - 4♠
+    - J♥
+    - 3♠
+    - 10♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0660
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - 8♣
+    board:
+    - 5♠
+    - 10♠
+    - 4♣
+    - Q♠
+    - K♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0661
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 80
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♥
+    - 9♥
+    board:
+    - K♦
+    - J♦
+    - 6♠
+    - 5♦
+    - 4♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0664
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♥
+    - 9♥
+    board:
+    - 2♠
+    - 3♣
+    - Q♦
+    - K♥
+    - J♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0666
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♦
+    - 8♦
+    board:
+    - 2♦
+    - J♦
+    - 5♠
+    - 10♠
+    - K♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0672
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - 8♣
+    board:
+    - 4♥
+    - K♠
+    - 2♠
+    - 10♥
+    - 3♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0673
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♥
+    - 8♥
+    board:
+    - A♣
+    - 2♠
+    - Q♦
+    - 4♣
+    - 5♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0674
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♠
+    board:
+    - A♣
+    - K♦
+    - J♠
+    - 4♠
+    - 5♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0679
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♥
+    - 9♥
+    board:
+    - 5♦
+    - J♥
+    - A♠
+    - 3♦
+    - K♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0680
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 80
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - 8♣
+    board:
+    - 4♦
+    - 2♦
+    - 10♥
+    - K♠
+    - 3♣
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0690
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 80
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♠
+    - 9♠
+    board:
+    - 3♥
+    - J♥
+    - 5♠
+    - A♣
+    - Q♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0692
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 80
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.18
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - 8♣
+    board:
+    - 10♥
+    - 2♣
+    - J♠
+    - 5♥
+    - 4♣
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0696
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - 8♣
+    board:
+    - J♣
+    - 3♠
+    - A♦
+    - 5♦
+    - 4♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0697
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 80
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♥
+    - 9♥
+    board:
+    - 4♥
+    - J♠
+    - K♠
+    - A♥
+    - 3♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0698
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♥
+    - 8♥
+    board:
+    - 10♦
+    - 3♠
+    - 2♠
+    - Q♠
+    - 5♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0701
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♦
+    - 9♦
+    board:
+    - 5♠
+    - Q♠
+    - A♠
+    - 6♠
+    - 4♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0702
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♠
+    - 9♠
+    board:
+    - 5♦
+    - 2♦
+    - 3♣
+    - A♠
+    - 6♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0703
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♠
+    board:
+    - J♥
+    - 10♠
+    - A♠
+    - 5♥
+    - 4♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0709
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♦
+    - 9♦
+    board:
+    - 4♣
+    - A♦
+    - J♠
+    - 5♠
+    - 2♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0712
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♦
+    - 9♦
+    board:
+    - K♥
+    - J♥
+    - 5♣
+    - 4♠
+    - 6♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0715
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♠
+    board:
+    - 5♠
+    - 4♥
+    - K♥
+    - 3♥
+    - 2♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0716
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♦
+    - 9♦
+    board:
+    - 3♠
+    - 2♥
+    - K♣
+    - A♠
+    - J♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0717
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♦
+    - 8♦
+    board:
+    - 10♣
+    - K♥
+    - 2♦
+    - 3♥
+    - 5♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0718
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 80
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♦
+    - 8♦
+    board:
+    - 10♠
+    - J♣
+    - A♣
+    - 2♥
+    - 4♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0722
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 53
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♠
+    - 9♠
+    board:
+    - J♦
+    - 3♠
+    - 2♣
+    - 4♥
+    - Q♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0724
+  title: 河牌诈唬
+  description: 你在河牌没有摊牌价值，对手过牌
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: BET
+    amount: 66
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♠
+    board:
+    - 10♥
+    - J♥
+    - 2♦
+    - A♦
+    - Q♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0725
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: &id003
+  - 中等牌力面对下注：要么抓诈唬跟注，要么弃牌
+  - 加注只会被更强牌跟注
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 10♣
+    - A♦
+    board:
+    - 10♠
+    - A♠
+    - 7♣
+    - 7♠
+    - 4♣
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 72
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0726
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 10♥
+    - A♠
+    board:
+    - 10♦
+    - A♦
+    - 3♣
+    - 4♥
+    - 9♣
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 90
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0727
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - A♦
+    board:
+    - 7♠
+    - A♠
+    - 5♦
+    - 2♦
+    - 6♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 48
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0728
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 10♥
+    - A♣
+    board:
+    - 10♦
+    - A♦
+    - 6♠
+    - 4♣
+    - 8♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 48
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0732
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♦
+    - A♠
+    board:
+    - 9♣
+    - A♣
+    - 2♣
+    - 5♣
+    - 3♥
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0734
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♠
+    - A♥
+    board:
+    - 9♦
+    - A♦
+    - 8♥
+    - 3♣
+    - 5♠
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0735
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♥
+    - A♠
+    board:
+    - 8♣
+    - A♣
+    - 7♠
+    - 6♣
+    - 9♠
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0737
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 10♠
+    - A♦
+    board:
+    - 10♥
+    - A♥
+    - 2♥
+    - 3♣
+    - 6♦
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 90
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0738
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♣
+    - A♦
+    board:
+    - 9♠
+    - A♠
+    - 2♥
+    - 6♠
+    - 6♥
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 90
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0739
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♠
+    - A♦
+    board:
+    - 9♣
+    - A♣
+    - 7♦
+    - 3♠
+    - 4♠
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 72
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0741
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♦
+    - A♠
+    board:
+    - 9♣
+    - A♣
+    - 8♦
+    - 7♦
+    - 7♠
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0742
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♥
+    - A♦
+    board:
+    - 8♣
+    - A♣
+    - 4♠
+    - 10♣
+    - 2♥
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0743
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 10♣
+    - A♥
+    board:
+    - 10♠
+    - A♠
+    - 4♠
+    - 5♠
+    - 8♦
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 72
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0745
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - A♠
+    board:
+    - 7♦
+    - A♦
+    - 10♣
+    - 4♥
+    - 8♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0746
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 10♣
+    - A♦
+    board:
+    - 10♠
+    - A♠
+    - 4♦
+    - 6♠
+    - 3♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 48
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0747
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♥
+    - A♦
+    board:
+    - 9♠
+    - A♠
+    - 4♣
+    - 8♥
+    - 5♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 48
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0748
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♥
+    - A♠
+    board:
+    - 9♣
+    - A♣
+    - 2♠
+    - 6♣
+    - 5♣
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 90
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0749
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♥
+    - A♦
+    board:
+    - 9♠
+    - A♠
+    - 8♥
+    - 6♦
+    - 8♣
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0750
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 10♥
+    - A♦
+    board:
+    - 10♠
+    - A♠
+    - 4♦
+    - 6♥
+    - 8♠
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 72
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0752
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.92
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♠
+    - A♣
+    board:
+    - 8♦
+    - A♦
+    - 2♦
+    - 7♦
+    - 9♦
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 72
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0753
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♥
+    - A♠
+    board:
+    - 7♣
+    - A♣
+    - 9♦
+    - 3♦
+    - 5♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0754
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♦
+    - A♠
+    board:
+    - 8♣
+    - A♣
+    - 9♥
+    - 9♠
+    - 3♥
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0756
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♣
+    - A♦
+    board:
+    - 8♥
+    - A♥
+    - 2♣
+    - 7♥
+    - 4♥
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 72
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0758
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♦
+    - A♣
+    board:
+    - 8♠
+    - A♠
+    - 3♣
+    - 4♦
+    - 4♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0759
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♣
+    - A♥
+    board:
+    - 8♦
+    - A♦
+    - 5♠
+    - 10♠
+    - 5♣
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0762
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - A♥
+    board:
+    - 7♠
+    - A♠
+    - 4♦
+    - 3♣
+    - 2♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0763
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♥
+    - A♣
+    board:
+    - 7♦
+    - A♦
+    - 4♥
+    - 9♥
+    - 6♠
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 72
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0764
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 7♣
+    - A♠
+    board:
+    - 7♦
+    - A♦
+    - 4♣
+    - 8♣
+    - 5♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 48
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0771
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♠
+    - A♥
+    board:
+    - 9♦
+    - A♦
+    - 5♥
+    - 4♥
+    - 4♣
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0773
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♥
+    - A♦
+    board:
+    - 9♣
+    - A♣
+    - 3♣
+    - 7♦
+    - 10♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0774
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 8♣
+    - A♥
+    board:
+    - 8♠
+    - A♠
+    - 6♥
+    - 7♠
+    - 3♣
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 90
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0775
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 10♦
+    - A♣
+    board:
+    - 10♠
+    - A♠
+    - 8♠
+    - 4♠
+    - 9♦
+    pot: 180
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 72
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0776
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♦
+    - A♠
+    board:
+    - 9♥
+    - A♥
+    - 5♦
+    - 2♣
+    - 7♣
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0777
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♦
+    - A♥
+    board:
+    - 9♠
+    - A♠
+    - 2♠
+    - 5♦
+    - 5♠
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0
+- id: gen-0778
+  title: 河牌抓诈唬
+  description: 你在河牌是中等牌力，面对对手下注
+  category: river_decision
+  difficulty: 4
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - 9♣
+    - A♠
+    board:
+    - 9♥
+    - A♥
+    - 5♦
+    - 10♥
+    - 10♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 400
+    hero_current_bet: 0

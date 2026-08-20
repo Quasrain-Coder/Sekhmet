@@ -1,0 +1,3554 @@
+- id: gen-0017
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 K♠J♣，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: &id001
+  - 边缘手牌在早期位置是负 EV
+  - 紧的范围是赢钱的关键
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - K♠
+    - J♣
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0019
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 K♦10♣，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - K♦
+    - 10♣
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0023
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 J♣10♥，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - J♣
+    - 10♥
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0026
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 K♠9♥，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - K♠
+    - 9♥
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0027
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 K♣10♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - K♣
+    - 10♦
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0028
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 Q♥9♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - Q♥
+    - 9♦
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0029
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 K♠10♥，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - K♠
+    - 10♥
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0030
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 J♠9♥，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - J♠
+    - 9♥
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0031
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 K♦J♣，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - K♦
+    - J♣
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0033
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 10♥8♠，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - 10♥
+    - 8♠
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0035
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 10♥9♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - 10♥
+    - 9♦
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0036
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 Q♠9♣，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - Q♠
+    - 9♣
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0037
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 K♣8♠，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - K♣
+    - 8♠
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0039
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 K♥10♣，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - K♥
+    - 10♣
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0040
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 K♦10♠，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - K♦
+    - 10♠
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0041
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 K♥8♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - K♥
+    - 8♦
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0043
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 Q♦10♥，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - Q♦
+    - 10♥
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0045
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 J♥10♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - J♥
+    - 10♦
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0047
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 Q♣J♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - Q♣
+    - J♦
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0048
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 10♠9♣，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - 10♠
+    - 9♣
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0050
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 Q♥10♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - Q♥
+    - 10♦
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0052
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 10♣8♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - 10♣
+    - 8♦
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0053
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 J♦J♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: &id002
+  - 顶级手牌在位置应该加注
+  - 加注建立底池并隔离弱手
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - J♦
+    - J♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0054
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 J♣J♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - J♣
+    - J♥
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0055
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 A♠J♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - A♠
+    - J♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0056
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 A♠Q♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - A♠
+    - Q♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0057
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 A♦Q♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - A♦
+    - Q♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0058
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 K♣K♠，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - K♣
+    - K♠
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0059
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 A♠A♦，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - A♠
+    - A♦
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0060
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 A♠K♦，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - A♠
+    - K♦
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0061
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 A♣A♦，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - A♣
+    - A♦
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0063
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 K♦Q♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - K♦
+    - Q♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0064
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 K♥K♠，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - K♥
+    - K♠
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0065
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 A♠Q♣，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - A♠
+    - Q♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0066
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 A♦Q♣，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - A♦
+    - Q♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0068
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 K♦J♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - K♦
+    - J♥
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0070
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 Q♦Q♠，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - Q♦
+    - Q♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0072
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 K♣K♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - K♣
+    - K♥
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0073
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 K♠K♣，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - K♠
+    - K♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0075
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 A♦Q♠，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - A♦
+    - Q♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0076
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 K♠K♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - K♠
+    - K♥
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0077
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 Q♣Q♦，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - Q♣
+    - Q♦
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0078
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 Q♠Q♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - Q♠
+    - Q♥
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0079
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 A♥A♠，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - A♥
+    - A♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0080
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 K♣Q♦，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - K♣
+    - Q♦
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0081
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 K♠K♦，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - K♠
+    - K♦
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0082
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 J♥J♣，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - J♥
+    - J♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0084
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 K♦K♠，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - K♦
+    - K♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0085
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 A♠K♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - A♠
+    - K♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0086
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 A♣Q♦，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - A♣
+    - Q♦
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0087
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 J♠J♣，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - J♠
+    - J♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0089
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 Q♦Q♥，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - Q♦
+    - Q♥
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0090
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 K♣J♠，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - K♣
+    - J♠
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0092
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 K♦Q♣，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - K♦
+    - Q♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0093
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 A♣K♦，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - A♣
+    - K♦
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0095
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 K♣K♦，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - K♣
+    - K♦
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0098
+  title: 翻前 CO 强牌
+  description: 你在 CO 位置拿到 Q♠Q♣，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 6
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 6
+    hole:
+    - Q♠
+    - Q♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0099
+  title: 翻前 BTN 强牌
+  description: 你在 BTN 位置拿到 K♠J♣，前序弃牌到你
+  category: preflop_range
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - K♠
+    - J♣
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0100
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 5♦6♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: &id003
+  - 大盲位置可以放宽防守范围
+  - suited 牌比 offsuit 更适合防御
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 5♦
+    - 6♦
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0101
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 A♠3♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - A♠
+    - 3♠
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0103
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 6♠7♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 6♠
+    - 7♠
+    board: []
+    pot: 25
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0104
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 A♦2♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - A♦
+    - 2♦
+    board: []
+    pot: 25
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0106
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 5♥6♥
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 5♥
+    - 6♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0107
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 8♣8♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 8♣
+    - 8♦
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0109
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 8♥8♣
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 8♥
+    - 8♣
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0110
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 9♦9♣
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 9♦
+    - 9♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0111
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 6♦7♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 6♦
+    - 7♦
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0112
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 7♥7♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 7♥
+    - 7♦
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0113
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 5♠6♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 5♠
+    - 6♠
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0116
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 9♠9♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 9♠
+    - 9♦
+    board: []
+    pot: 25
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0117
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 6♠6♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 6♠
+    - 6♦
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0118
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 9♣9♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 9♣
+    - 9♠
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0119
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 5♥5♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 5♥
+    - 5♦
+    board: []
+    pot: 25
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0124
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 5♥5♣
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 5♥
+    - 5♣
+    board: []
+    pot: 25
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0126
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 9♥9♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 9♥
+    - 9♦
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0131
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 6♥6♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 6♥
+    - 6♠
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0132
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 8♣8♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 8♣
+    - 8♠
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0133
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 A♣4♣
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 4♣
+    board: []
+    pot: 25
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0143
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 7♥7♣
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 7♥
+    - 7♣
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0144
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 7♠7♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 7♠
+    - 7♦
+    board: []
+    pot: 25
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0146
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 A♥3♥
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - A♥
+    - 3♥
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0147
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 A♠6♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - A♠
+    - 6♠
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0149
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 7♦7♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 7♦
+    - 7♠
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0151
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 5♣5♥
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 5♣
+    - 5♥
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0153
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 A♣6♣
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 6♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0155
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 8♦8♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 8♦
+    - 8♠
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0157
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 5♣5♦
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 5♣
+    - 5♦
+    board: []
+    pot: 25
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0161
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 6♣7♣
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 6♣
+    - 7♣
+    board: []
+    pot: 25
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0163
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 6♦6♣
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 6♦
+    - 6♣
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0164
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 9♥9♣
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 9♥
+    - 9♣
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0167
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 A♥6♥
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - A♥
+    - 6♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0170
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 A♠2♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - A♠
+    - 2♠
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0171
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 A♣3♣
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - A♣
+    - 3♣
+    board: []
+    pot: 25
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0173
+  title: 翻前 BB 防御
+  description: 你在 BB 面对 BTN 加注，手里是 6♦6♠
+  category: preflop_range
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 1
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 1
+    hole:
+    - 6♦
+    - 6♠
+    board: []
+    pot: 30
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 190
+    hero_current_bet: 10
+- id: gen-0595
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: &id004
+  - 强牌在河牌必须价值下注
+  - 对手过牌通常意味着较弱范围
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 5♠
+    - 3♠
+    - 9♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0596
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 8♥
+    - 6♥
+    - 2♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0597
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 90
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - 5♠
+    - 7♠
+    - 3♣
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0598
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 3♣
+    - 10♦
+    - Q♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0599
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - K♠
+    - J♥
+    board:
+    - K♦
+    - J♣
+    - 2♦
+    - 3♣
+    - 6♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0600
+  title: 河牌价值下注
+  description: 你在河牌拿到两对以上，对手过牌
+  category: river_decision
+  difficulty: 2
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: RIVER
+    player_seat: 0
+    hole:
+    - Q♠
+    - J♥
+    board:
+    - Q♦
+    - J♣
+    - 5♣
+    - 4♣
+    - 9♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0

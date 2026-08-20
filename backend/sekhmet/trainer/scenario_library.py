@@ -28,6 +28,20 @@ def _state(phase, player_seat, hole, board, pot, dealer, sb, bb,
            current_bet, stack, *, hero_current_bet: int | None = None) -> GameState:
     """Build a frozen 2-handed state for a builtin scenario.
 
+    See :func:`state_from_spec` for the canonical version — this thin
+    wrapper keeps the builtin dicts' call sites unchanged.
+    """
+    return state_from_spec(dict(
+        phase=phase, player_seat=player_seat, hole=list(hole),
+        board=list(board), pot=pot, dealer=dealer, sb=sb, bb=bb,
+        current_bet=current_bet, stack=stack,
+        hero_current_bet=hero_current_bet,
+    ))
+
+
+def state_from_spec(spec: dict[str, Any]) -> GameState:
+    """Build a frozen 2-handed state from a plain-data spec (YAML-safe).
+
     The player's seat is *player_seat* (0 or 1); the other seat holds
     generic cards (never shown).  *pot* is the pot so far, *current_bet*
     is the bet the hero faces: the villain (the other seat) holds it as
@@ -35,8 +49,17 @@ def _state(phase, player_seat, hole, board, pot, dealer, sb, bb,
     has not yet matched it (``to_call = current_bet``).  A hero who is
     the big blind may set *hero_current_bet* to the blind to model "big
     blind checks" — then ``to_call = current_bet - bb``.
+
+    Used both by the builtin scenarios and to rebuild frozen states
+    stored as plain dicts in the generated YAML library.
     """
-    cards = [_card(c) for c in hole]
+    phase = spec["phase"]
+    player_seat = spec["player_seat"]
+    current_bet = spec["current_bet"]
+    stack = spec["stack"]
+    bb = spec["bb"]
+    hero_current_bet = spec.get("hero_current_bet")
+    cards = [_card(c) for c in spec["hole"]]
     if hero_current_bet is None:
         hero_current_bet = current_bet if player_seat == bb else 0
     villain = Player(
@@ -52,19 +75,25 @@ def _state(phase, player_seat, hole, board, pot, dealer, sb, bb,
     return GameState(
         phase=_PHASE[phase],
         players=(you, villain),
-        community_cards=tuple(_card(c) for c in board),
-        pot=PotState(main_pot=pot),
-        dealer_idx=dealer,
+        community_cards=tuple(_card(c) for c in spec["board"]),
+        pot=PotState(main_pot=spec["pot"]),
+        dealer_idx=spec["dealer"],
         current_player_idx=player_seat,
         current_bet=current_bet,
         min_raise=10,
         small_blind=5,
         big_blind=10,
-        sb_seat=sb,
+        sb_seat=spec["sb"],
         bb_seat=bb,
     )
 
 logger = logging.getLogger(__name__)
+
+
+# Directory the bulk generator writes generated scenarios to.  Resolved
+# from this file so it works regardless of the process CWD (uvicorn runs
+# from backend/, pytest from backend/tests/, scripts from anywhere).
+GENERATED_DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "scenarios"
 
 
 # ---------------------------------------------------------------------------
@@ -101,6 +130,11 @@ class Scenario:
 
     @classmethod
     def from_yaml(cls, data: dict[str, Any]) -> "Scenario":
+        frozen = data.get("frozen_state")
+        # Generated scenarios store the state as a plain-data spec dict;
+        # rebuild the frozen GameState so the table preview works.
+        if isinstance(frozen, dict) and "phase" in frozen:
+            frozen = state_from_spec(frozen)
         return cls(
             id=data["id"],
             title=data["title"],
@@ -111,7 +145,7 @@ class Scenario:
             acceptable_range=data.get("acceptable_range", {}),
             hints=data.get("hints", []),
             analysis=data.get("analysis", {}),
-            frozen_state=data.get("frozen_state"),
+            frozen_state=frozen,
             player_seat=data.get("player_seat"),
         )
 

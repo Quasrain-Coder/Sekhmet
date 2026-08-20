@@ -1,0 +1,3608 @@
+- id: gen-1069
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♣9♥
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: &id001
+  - BTN 是全场最好位置，施加最大压力
+  - 偷盲加注通常 2.5BB
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♣
+    - 9♥
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-1072
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♦9♥
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♦
+    - 9♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-1119
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 7♣7♥
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 7♣
+    - 7♥
+    board: []
+    pot: 20
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-1141
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 9♠9♦
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 9♠
+    - 9♦
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-1187
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♥8♦
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♥
+    - 8♦
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-1236
+  title: BTN 偷盲
+  description: 你在 BTN，前面弃牌到你，手牌 8♠8♥
+  category: position
+  difficulty: 1
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 5
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 5
+    hole:
+    - 8♠
+    - 8♥
+    board: []
+    pot: 15
+    dealer: 5
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0174
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: &id002
+  - 顶对顶踢有很好的摊牌价值
+  - 跟注控制底池，保留对手诈唬空间
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - J♠
+    board:
+    - A♠
+    - 10♣
+    - 8♥
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0175
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - Q♥
+    board:
+    - A♥
+    - 7♥
+    - 7♦
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0176
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - K♣
+    board:
+    - A♣
+    - 2♦
+    - 7♠
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0177
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - Q♣
+    board:
+    - A♣
+    - 5♥
+    - 9♦
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0178
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - Q♠
+    board:
+    - A♠
+    - 2♠
+    - 6♥
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0179
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - K♠
+    board:
+    - A♠
+    - 4♥
+    - 3♥
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0180
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 117
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♦
+    - Q♥
+    board:
+    - A♥
+    - 6♥
+    - 10♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0181
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - J♦
+    board:
+    - A♦
+    - 6♣
+    - 10♥
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0182
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♦
+    - Q♠
+    board:
+    - A♠
+    - 6♠
+    - 8♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 30
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0183
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - J♣
+    board:
+    - A♣
+    - 7♦
+    - 3♦
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 28
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0184
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♦
+    - J♣
+    board:
+    - A♣
+    - 3♦
+    - 10♠
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 46
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0185
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - K♥
+    board:
+    - A♥
+    - 2♦
+    - 4♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 24
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0186
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - Q♣
+    board:
+    - A♣
+    - 4♠
+    - 3♣
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 28
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0187
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - Q♥
+    board:
+    - A♥
+    - 3♥
+    - 4♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 32
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0188
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - K♥
+    board:
+    - A♥
+    - 5♦
+    - 7♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 40
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0189
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - K♥
+    board:
+    - A♥
+    - 9♥
+    - 3♣
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0190
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - K♥
+    board:
+    - A♥
+    - 3♥
+    - 10♣
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 46
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0191
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 96
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - Q♦
+    board:
+    - A♦
+    - 10♣
+    - 9♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 32
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0192
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 75
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - J♠
+    board:
+    - A♠
+    - 7♥
+    - 10♥
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0193
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♦
+    - J♣
+    board:
+    - A♣
+    - 10♣
+    - 6♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 30
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0194
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 60
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - K♣
+    board:
+    - A♣
+    - 8♦
+    - 8♠
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0195
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 84
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - J♥
+    board:
+    - A♥
+    - 9♠
+    - 5♥
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 28
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0196
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - K♥
+    board:
+    - A♥
+    - 2♥
+    - 5♦
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0197
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 72
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - K♠
+    board:
+    - A♠
+    - 7♠
+    - 9♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 24
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0198
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 84
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - Q♣
+    board:
+    - A♣
+    - 2♣
+    - 9♦
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 28
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0199
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - J♣
+    board:
+    - A♣
+    - 5♣
+    - 9♣
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 46
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0200
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - J♦
+    board:
+    - A♦
+    - 10♣
+    - 4♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 32
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0201
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 60
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - K♥
+    board:
+    - A♥
+    - 6♥
+    - 3♦
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 20
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0202
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 72
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - K♠
+    board:
+    - A♠
+    - 3♣
+    - 10♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 24
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0203
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 84
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♦
+    - J♣
+    board:
+    - A♣
+    - 6♣
+    - 2♣
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 28
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0204
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 84
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - Q♠
+    board:
+    - A♠
+    - 8♥
+    - 3♠
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 28
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0205
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♦
+    - K♠
+    board:
+    - A♠
+    - 2♦
+    - 10♥
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 24
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0206
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - K♦
+    board:
+    - A♦
+    - 2♣
+    - 5♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0207
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 84
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - K♥
+    board:
+    - A♥
+    - 9♦
+    - 4♠
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 28
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0208
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: RAISE
+    amount: 138
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - Q♦
+    board:
+    - A♦
+    - 6♥
+    - 9♠
+    pot: 70
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 46
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0209
+  title: 翻后顶对面对下注
+  description: 你击中顶对顶踢，对手下注
+  category: postflop_value
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - K♣
+    board:
+    - A♣
+    - 3♥
+    - 10♠
+    pot: 50
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 25
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0210
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 J♠J♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 40
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: &id003
+  - 超对在翻牌是价值牌，必须主动下注
+  - 持续下注约 1/2 底池
+  analysis:
+    equity_vs_range: 0.95
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♠
+    - J♥
+    board:
+    - 2♥
+    - 2♠
+    - 2♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0211
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 10♥
+    - 2♥
+    - 5♥
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0212
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 J♠J♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♠
+    - J♥
+    board:
+    - 4♦
+    - 3♥
+    - 3♠
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0213
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 J♠J♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 30
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♠
+    - J♥
+    board:
+    - 4♦
+    - 4♠
+    - 8♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0214
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 J♠J♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.6
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♠
+    - J♥
+    board:
+    - 10♦
+    - 5♦
+    - 9♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0215
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 8♣
+    - 10♥
+    - 5♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0216
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 5♠
+    - 4♦
+    - 7♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0217
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 8♥
+    - 7♥
+    - 7♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0218
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 J♠J♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♠
+    - J♥
+    board:
+    - 7♦
+    - 5♠
+    - 5♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0219
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 5♥
+    - 9♣
+    - 6♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0220
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 J♠J♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.6
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♠
+    - J♥
+    board:
+    - 8♦
+    - 2♦
+    - 10♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0221
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 2♠
+    - 4♥
+    - 7♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0222
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 5♦
+    - 9♣
+    - 6♠
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0223
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.6
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 6♦
+    - 3♣
+    - 4♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0224
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 10♠
+    - 2♠
+    - 8♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0225
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.6
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 8♦
+    - 7♣
+    - 6♠
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0226
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 9♦
+    - 5♣
+    - 8♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0227
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 J♠J♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.6
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♠
+    - J♥
+    board:
+    - 3♥
+    - 10♦
+    - 4♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0228
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 10♦
+    - 7♠
+    - 6♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0229
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 6♣
+    - 7♦
+    - 6♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0230
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 6♦
+    - 7♥
+    - 7♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0231
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 J♠J♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.59
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♠
+    - J♥
+    board:
+    - 5♣
+    - 9♠
+    - 6♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0232
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 4♠
+    - 5♥
+    - 5♠
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0233
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.6
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 3♥
+    - 4♥
+    - 6♠
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0234
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 5♥
+    - 9♠
+    - 6♠
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0235
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 3♦
+    - 7♥
+    - 10♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0236
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 5♥
+    - 6♣
+    - 6♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0237
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.59
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 5♠
+    - 3♥
+    - 4♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0238
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 3♦
+    - 8♠
+    - 4♥
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0239
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 J♠J♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♠
+    - J♥
+    board:
+    - 3♠
+    - 2♥
+    - 3♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0240
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 10♠
+    - 6♠
+    - 3♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0241
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 60
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.6
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 6♥
+    - 3♠
+    - 2♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0242
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 4♣
+    - 7♥
+    - 9♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0243
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 9♣
+    - 4♣
+    - 7♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0244
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 Q♠Q♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 45
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - Q♥
+    board:
+    - 2♥
+    - 4♥
+    - 4♣
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0245
+  title: 翻牌超对价值下注
+  description: 你翻前加注，翻牌拿着超对 K♠K♥
+  category: postflop_value
+  difficulty: 1
+  optimal_action:
+    type: BET
+    amount: 75
+  acceptable_range:
+    BET:
+    - 0.6
+    - 1.0
+    CHECK:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - K♥
+    board:
+    - 9♥
+    - 8♣
+    - 2♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 0
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0247
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 117
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: &id004
+  - 两对在翻牌是强牌，应尽快建立底池
+  - 价值加注从被反超的范围赚取
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 5♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0249
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 117
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 5♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0250
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 10♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0252
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - 8♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0253
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - J♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0255
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - Q♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0256
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 10♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0257
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - K♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0261
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 117
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - J♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0262
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 3♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0263
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 10♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0264
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 8♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0265
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 117
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 7♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0266
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 117
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - 4♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0267
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 10♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0268
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - J♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0272
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - 6♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0273
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 5♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0274
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 4♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0278
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - 2♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0279
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 4♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0280
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 117
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - J♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 180
+    hero_current_bet: 0

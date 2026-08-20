@@ -2,18 +2,27 @@
 
 from fastapi import APIRouter
 
-from ..trainer.scenario_library import ScenarioCategory, ScenarioLibrary, BUILTIN_SCENARIOS
+from ..trainer.scenario_library import (
+    BUILTIN_SCENARIOS,
+    GENERATED_DATA_DIR,
+    Scenario,
+    ScenarioCategory,
+    ScenarioLibrary,
+)
 from ..trainer.scenario_runner import ScenarioRunner
 
 router = APIRouter(prefix="/api/trainer", tags=["trainer"])
 
 # Global trainer state (will be DB-backed later)
-_library = ScenarioLibrary()
+_library = ScenarioLibrary(GENERATED_DATA_DIR)
 _runner = ScenarioRunner(_library)
 
-# Load built-in scenarios
+# Load the bulk-generated library from disk, then layer the hand-crafted
+# built-ins on top (the curated scenarios carry richer hints/analysis).
+# When no generated files exist (fresh clone, no generator run) the
+# built-ins alone still give a usable library.
+_library.load_all()
 for data in BUILTIN_SCENARIOS:
-    from ..trainer.scenario_library import Scenario
     _library.add(Scenario.from_yaml(data))
 
 

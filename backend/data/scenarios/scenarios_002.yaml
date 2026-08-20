@@ -1,0 +1,3710 @@
+- id: gen-0281
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: &id001
+  - 两对在翻牌是强牌，应尽快建立底池
+  - 价值加注从被反超的范围赚取
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 9♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0282
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - 9♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0285
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 5♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0288
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 3♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0289
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 5♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0290
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 10♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0297
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - 4♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0298
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 4♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0299
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 10♥
+    board:
+    - K♦
+    - 10♣
+    - 5♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0300
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 8♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0302
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 78
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - K♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 26
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0304
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 9♥
+    board:
+    - Q♦
+    - 9♣
+    - 3♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0305
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 99
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 9♥
+    board:
+    - K♦
+    - 9♣
+    - 6♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 33
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0306
+  title: 翻牌两对加注打价值
+  description: 你击中两对，底池已有下注
+  category: postflop_value
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 117
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id001
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 10♥
+    board:
+    - Q♦
+    - 10♣
+    - 9♣
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0307
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: &id002
+  - 计算底池赔率决定跟注
+  - 同花听牌约 36% 胜率，顺子听牌约 32%
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♦
+    - 2♦
+    board:
+    - 8♦
+    - 9♦
+    - 2♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 40
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0308
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♦
+    - 2♦
+    board:
+    - 7♦
+    - 6♦
+    - 10♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 40
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0315
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 5♠
+    board:
+    - A♠
+    - 3♠
+    - J♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0317
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - 2♣
+    board:
+    - 7♣
+    - Q♣
+    - 8♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0320
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - 4♥
+    board:
+    - Q♥
+    - 9♥
+    - 7♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 52
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0321
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 3♠
+    board:
+    - 8♠
+    - 4♠
+    - 10♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 66
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0331
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.51
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♥
+    - 4♥
+    board:
+    - 5♥
+    - 3♥
+    - 4♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 40
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0332
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.53
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♦
+    - 5♦
+    board:
+    - 8♦
+    - 7♦
+    - 5♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 52
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0336
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♦
+    - 2♦
+    board:
+    - K♦
+    - 3♦
+    - 2♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 52
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0337
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.65
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♣
+    - 2♣
+    board:
+    - J♣
+    - A♣
+    - A♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 52
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0339
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.54
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♥
+    board:
+    - 5♦
+    - 6♣
+    - 7♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0342
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - 2♣
+    board:
+    - K♣
+    - J♣
+    - J♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0351
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.56
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - 5♥
+    board:
+    - 6♥
+    - 7♥
+    - 7♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0354
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♦
+    - 3♦
+    board:
+    - 7♦
+    - 8♦
+    - 2♥
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 45
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0355
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♦
+    - 2♦
+    board:
+    - 10♦
+    - 8♦
+    - Q♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 52
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0357
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♦
+    - 5♦
+    board:
+    - A♦
+    - 4♦
+    - 6♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0360
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♣
+    - 5♣
+    board:
+    - 6♣
+    - 9♣
+    - A♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 52
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0361
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.54
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♥
+    board:
+    - 5♦
+    - 6♣
+    - 7♠
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 45
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0366
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.53
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - J♠
+    - 5♠
+    board:
+    - 8♠
+    - Q♠
+    - 5♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0368
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♣
+    - 2♣
+    board:
+    - 9♣
+    - J♣
+    - 5♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 30
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0371
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.6
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - 5♣
+    board:
+    - 10♣
+    - 2♣
+    - 10♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 52
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0375
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♦
+    - 5♦
+    board:
+    - 7♦
+    - 6♦
+    - 8♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 66
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0379
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.53
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - 4♣
+    board:
+    - 3♣
+    - Q♣
+    - 4♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 39
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0383
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.51
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♦
+    - 3♦
+    board:
+    - 5♦
+    - 9♦
+    - 3♣
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0385
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.54
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♥
+    board:
+    - 5♦
+    - 6♣
+    - 7♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0386
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.54
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♥
+    board:
+    - 5♦
+    - 6♣
+    - 7♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0387
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.6
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♦
+    - 4♦
+    board:
+    - 10♦
+    - 2♦
+    - 10♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0389
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - 3♣
+    board:
+    - 4♣
+    - 2♣
+    - J♥
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 45
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0391
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♥
+    - 3♥
+    board:
+    - 6♥
+    - 7♥
+    - Q♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0393
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.54
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - 7♠
+    - 8♥
+    board:
+    - 5♦
+    - 6♣
+    - 7♠
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 52
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0400
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - Q♠
+    - 3♠
+    board:
+    - A♠
+    - J♠
+    - Q♦
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 52
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0401
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♦
+    - 4♦
+    board:
+    - 7♦
+    - 9♦
+    - 3♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 66
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0410
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - K♠
+    - 4♠
+    board:
+    - 5♠
+    - 10♠
+    - 2♦
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 30
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0411
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.51
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♠
+    - 3♠
+    board:
+    - 6♠
+    - 2♠
+    - 3♥
+    pot: 80
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 40
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0412
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - 3♣
+    board:
+    - 6♣
+    - 8♣
+    - 4♥
+    pot: 60
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 45
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0413
+  title: 翻牌听牌跟注
+  description: 你在翻牌有听牌，对手下注
+  category: pot_odds
+  difficulty: 2
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+    RAISE:
+    - 0.15
+    - 0.35
+  hints: *id002
+  analysis:
+    equity_vs_range: 0.53
+  player_seat: 0
+  frozen_state:
+    phase: FLOP
+    player_seat: 0
+    hole:
+    - A♣
+    - 4♣
+    board:
+    - K♣
+    - 2♣
+    - 4♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0414
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: &id003
+  - 转牌只剩一张牌，听牌胜率减半
+  - 赔率不足时弃牌是正确选择
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♠
+    - 3♠
+    board:
+    - 2♠
+    - 8♠
+    - 5♣
+    - 10♦
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0415
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - Q♥
+    - 4♥
+    board:
+    - 10♥
+    - 3♥
+    - Q♣
+    - 9♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0416
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♠
+    - 4♠
+    board:
+    - 8♠
+    - 5♠
+    - 6♥
+    - J♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 48
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0418
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♠
+    - 2♠
+    board:
+    - 6♠
+    - Q♠
+    - 5♥
+    - 4♥
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0421
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.53
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♥
+    - 4♥
+    board:
+    - A♥
+    - 5♥
+    - 9♦
+    - 4♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0422
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.52
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♥
+    - 3♥
+    board:
+    - 4♥
+    - 7♥
+    - J♠
+    - 4♠
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0423
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.64
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♣
+    - 3♣
+    board:
+    - J♣
+    - 2♣
+    - 4♥
+    - A♥
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0426
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♣
+    - 2♣
+    board:
+    - 7♣
+    - 4♣
+    - 5♠
+    - K♦
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0427
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - Q♠
+    - 4♠
+    board:
+    - 3♠
+    - 10♠
+    - J♥
+    - Q♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 40
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0428
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♦
+    - 4♦
+    board:
+    - K♦
+    - Q♦
+    - 5♠
+    - 9♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0429
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♠
+    - 4♠
+    board:
+    - 8♠
+    - 3♠
+    - 6♣
+    - 5♣
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0431
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♥
+    - 2♥
+    board:
+    - A♥
+    - J♥
+    - 3♣
+    - J♣
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0432
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.59
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♥
+    - 3♥
+    board:
+    - 9♥
+    - 4♥
+    - K♣
+    - 9♣
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0435
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.62
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♥
+    - 2♥
+    board:
+    - 7♥
+    - Q♥
+    - K♠
+    - Q♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0436
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.53
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♥
+    - 4♥
+    board:
+    - J♥
+    - 2♥
+    - 4♠
+    - 8♠
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0437
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.74
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - Q♠
+    - 2♠
+    board:
+    - 8♠
+    - 5♠
+    - 5♣
+    - Q♥
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0438
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.51
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♠
+    - 3♠
+    board:
+    - Q♠
+    - 8♠
+    - 5♦
+    - 3♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0439
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.51
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♦
+    - 3♦
+    board:
+    - Q♦
+    - 5♦
+    - 3♥
+    - A♣
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 40
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0440
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.53
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♣
+    - 3♣
+    board:
+    - 5♣
+    - 6♣
+    - 8♥
+    - 5♠
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0442
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♠
+    - 4♠
+    board:
+    - 7♠
+    - 2♠
+    - 5♥
+    - 10♣
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0443
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.6
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - Q♣
+    - 5♣
+    board:
+    - 7♣
+    - 6♣
+    - 8♥
+    - Q♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 40
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0446
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.19
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♥
+    - 3♥
+    board:
+    - 7♥
+    - 10♥
+    - 4♠
+    - 2♦
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0448
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.53
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - Q♥
+    - 4♥
+    board:
+    - A♥
+    - 10♥
+    - 4♠
+    - 7♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0449
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.75
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♠
+    - 4♠
+    board:
+    - A♠
+    - 6♠
+    - A♦
+    - 6♦
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0450
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.61
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♣
+    - 2♣
+    board:
+    - 3♣
+    - J♣
+    - Q♦
+    - J♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0452
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.52
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♦
+    - 4♦
+    board:
+    - 6♦
+    - 9♦
+    - 4♥
+    - 2♥
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 40
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0453
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♦
+    - 4♦
+    board:
+    - Q♦
+    - 3♦
+    - K♣
+    - 2♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 48
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0454
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.49
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - Q♣
+    - 5♣
+    board:
+    - 9♣
+    - 2♣
+    - 4♦
+    - 2♥
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0456
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.56
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♣
+    - 5♣
+    board:
+    - 7♣
+    - 4♣
+    - 7♥
+    - 6♠
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 40
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0458
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♥
+    - 4♥
+    board:
+    - Q♥
+    - 3♥
+    - 5♠
+    - K♦
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0461
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.53
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♠
+    - 2♠
+    board:
+    - 4♠
+    - 9♠
+    - 6♥
+    - 4♦
+    pot: 100
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 50
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0462
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.9
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - Q♣
+    - 4♣
+    board:
+    - A♣
+    - 5♣
+    - A♥
+    - A♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 48
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0463
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.51
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - Q♦
+    - 3♦
+    board:
+    - 8♦
+    - 5♦
+    - A♠
+    - 3♣
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0464
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - K♥
+    - 4♥
+    board:
+    - Q♥
+    - 6♥
+    - 7♦
+    - A♦
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 48
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0465
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.2
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - A♥
+    - 3♥
+    board:
+    - 2♥
+    - J♥
+    - 10♠
+    - 8♣
+    pot: 150
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 75
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0467
+  title: 转牌听牌跟注
+  description: 你在转牌有同花听牌，对手下注
+  category: pot_odds
+  difficulty: 3
+  optimal_action:
+    type: CALL
+    amount: 0
+  acceptable_range:
+    CALL:
+    - 0.6
+    - 1.0
+    FOLD:
+    - 0.15
+    - 0.35
+  hints: *id003
+  analysis:
+    equity_vs_range: 0.51
+  player_seat: 0
+  frozen_state:
+    phase: TURN
+    player_seat: 0
+    hole:
+    - Q♦
+    - 3♦
+    board:
+    - 7♦
+    - A♦
+    - 10♠
+    - 3♥
+    pot: 120
+    dealer: 0
+    sb: 0
+    bb: 1
+    current_bet: 60
+    stack: 180
+    hero_current_bet: 0
+- id: gen-0002
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 10♥8♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: &id004
+  - 边缘手牌在早期位置是负 EV
+  - 紧的范围是赢钱的关键
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - 10♥
+    - 8♦
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0003
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 Q♠8♥，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - Q♠
+    - 8♥
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0004
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 Q♦9♠，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - Q♦
+    - 9♠
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0005
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 Q♠9♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - Q♠
+    - 9♦
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0006
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 K♦J♥，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - K♦
+    - J♥
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0007
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 J♦10♥，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - J♦
+    - 10♥
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0008
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 Q♦9♥，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - Q♦
+    - 9♥
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0009
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 K♦J♠，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - K♦
+    - J♠
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0010
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 J♣9♦，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - J♣
+    - 9♦
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0012
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 10♦8♠，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - 10♦
+    - 8♠
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0013
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 K♣J♠，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - K♣
+    - J♠
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0014
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 Q♦8♠，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - Q♦
+    - 8♠
+    board: []
+    pot: 20
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0015
+  title: 翻前 UTG 边缘手牌
+  description: 你在 UTG 位置拿到 K♠8♣，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: FOLD
+    amount: 0
+  acceptable_range:
+    FOLD:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 3
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 3
+    hole:
+    - K♠
+    - 8♣
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
+- id: gen-0016
+  title: 翻前 MP 边缘手牌
+  description: 你在 MP 位置拿到 K♠10♣，前序无人行动，你该怎么办？
+  category: preflop_range
+  difficulty: 2
+  optimal_action:
+    type: RAISE
+    amount: 25
+  acceptable_range:
+    RAISE:
+    - 0.6
+    - 1.0
+    CALL:
+    - 0.15
+    - 0.35
+  hints: *id004
+  analysis:
+    equity_vs_range: 0.5
+  player_seat: 4
+  frozen_state:
+    phase: PREFLOP
+    player_seat: 4
+    hole:
+    - K♠
+    - 10♣
+    board: []
+    pot: 15
+    dealer: 8
+    sb: 0
+    bb: 1
+    current_bet: 10
+    stack: 200
+    hero_current_bet: 0
