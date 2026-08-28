@@ -402,3 +402,31 @@ async def test_showdown_delta_carries_vpip_pfr_and_blinds():
     assert st.vpip_hands == 1 and st.pfr_hands == 1
     assert st.total_buyin == 200
     assert st.showdowns == 1  # 双方 CALL 到底必然摊牌
+
+
+async def test_drain_pending_waits_for_inflight_recordings():
+    """Fire-and-forget 落库任务必须能被排空——teardown 不再 cancel 到
+    shield 段（2026-08-28 CI 60s 挂起的根因）。"""
+    recorder.schedule_recording(recorder.record_hand(
+        table_id="tblDRAIN",
+        players_meta=[{"seat_idx": 0, "name": "Hero", "is_human": True,
+                       "stack_before": 100, "stack_after": 110}],
+        board=[], actions=[], awards=[{"seat_idx": 0, "amount": 10, "hand": "x"}],
+    ))
+    assert recorder._pending, "task should be in-flight right after scheduling"
+    await recorder.drain_pending()
+    assert not recorder._pending
+    async with db.SessionLocal() as s:
+        rows = (await s.execute(
+            select(records.HandRecord).where(records.HandRecord.table_id == "tblDRAIN")
+        )).scalars().all()
+    assert len(rows) == 1
+
+
+async def test_drain_pending_cancels_stuck_recordings():
+    """超时未完成的落库任务被取消，drain 自身不挂。"""
+    async def stuck():
+        await asyncio.sleep(60)
+    recorder.schedule_recording(stuck())
+    await recorder.drain_pending(timeout=0.05)
+    assert not recorder._pending

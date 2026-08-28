@@ -22,12 +22,15 @@ from .api import table_manager as tm
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from .models.db import init_db
+    from .models import recorder
     await init_db()
     sweeper = asyncio.create_task(tm.sweeper_loop())
     try:
         yield
     finally:
         sweeper.cancel()
+        # 优雅关停：让在飞的落库任务写完再退，避免 shield 段被 cancel
+        await recorder.drain_pending()
 
 
 app = FastAPI(

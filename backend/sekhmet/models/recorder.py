@@ -114,6 +114,28 @@ async def upsert_user_stats(deltas: list[dict]) -> None:
         logger.exception("failed to upsert user stats")
 
 
+_pending: set[asyncio.Task] = set()
+
+
 def schedule_recording(coro) -> None:
-    """Fire-and-forget a recording coroutine (errors logged inside)."""
-    asyncio.create_task(coro)
+    """Fire-and-forget a recording coroutine (errors logged inside).
+
+    Tasks are tracked so tests and graceful shutdown can drain them:
+    killing a recording mid-write leaves SQLAlchemy's async connector
+    stuck inside a shielded connection terminate (observed as 60s
+    teardown hangs on loaded CI runners).
+    """
+    task = asyncio.create_task(coro)
+    _pending.add(task)
+    task.add_done_callback(_pending.discard)
+
+
+async def drain_pending(timeout: float = 10.0) -> None:
+    """Await in-flight recordings; cancel only what outlives *timeout*."""
+    if not _pending:
+        return
+    _, stuck = await asyncio.wait(list(_pending), timeout=timeout)
+    for t in stuck:
+        t.cancel()
+    if stuck:
+        await asyncio.gather(*stuck, return_exceptions=True)
