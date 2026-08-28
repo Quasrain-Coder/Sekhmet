@@ -1,0 +1,17 @@
+# Sekhmet 一键部署：docker compose up --build
+# 浏览器访问 http://localhost:8000（后端 + 前端同端口）
+services:
+  sekhmet:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # 登录 token 的 HMAC 签名密钥——生产部署务必修改
+      SEKHMET_AUTH_SECRET: ${SEKHMET_AUTH_SECRET:-sekhmet-dev-secret}
+    volumes:
+      # SQLite 持久化（对局历史 / 账号 / 战绩）
+      - sekhmet-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  sekhmet-data:
