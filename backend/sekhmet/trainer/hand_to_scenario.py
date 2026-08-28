@@ -34,14 +34,16 @@ def parse_card(text: str) -> Card:
     return Card(Rank(_RANK[rank_str]), _SUIT[text[-1]])
 
 
-def rebuild_states(
+def _replay(
     players_meta: list[dict], board: list[str], actions: list[dict],
     small_blind: int, big_blind: int,
-) -> list[tuple[GameState, int]]:
-    """Replay the action log and return every (state, actor) decision point.
+) -> tuple[list[tuple[GameState, int]], GameState, int]:
+    """Replay the action log; return (decision points, final state, executed).
 
     The engine is a pure state machine, so executing the same actions
     from the deal reproduces the exact states of the original hand.
+    ``executed`` counts the actions that applied cleanly — on divergence
+    the replay stops and the offending action is dropped from the points.
     """
     seats = [p["seat_idx"] for p in players_meta]
     dealer = seats[-1]  # last seat dealt acts as button in our deal order
@@ -105,6 +107,7 @@ def rebuild_states(
     )
 
     points: list[tuple[GameState, int]] = []
+    executed = 0
     for a in actions:
         seat = a["seat"]
         at = ActionType[a["action"]]
@@ -113,9 +116,32 @@ def rebuild_states(
         try:
             gs = execute(gs, action)
         except Exception:
+            points.pop()
             logger.exception("replay diverged at %s — stopping", a)
             break
+        executed += 1
+    return points, gs, executed
+
+
+def rebuild_states(
+    players_meta: list[dict], board: list[str], actions: list[dict],
+    small_blind: int, big_blind: int,
+) -> list[tuple[GameState, int]]:
+    """Replay the action log and return every (state, actor) decision point."""
+    points, _, _ = _replay(players_meta, board, actions, small_blind, big_blind)
     return points
+
+
+def replay_full(
+    players_meta: list[dict], board: list[str], actions: list[dict],
+    small_blind: int, big_blind: int,
+) -> tuple[list[tuple[GameState, int]], GameState, int]:
+    """Replay the action log; return (decision points, final state, executed).
+
+    Used by the hand-replay endpoint, which needs the terminal state
+    (after the last executed action) in addition to the pre-action points.
+    """
+    return _replay(players_meta, board, actions, small_blind, big_blind)
 
 
 def build_scenario_from_hand(

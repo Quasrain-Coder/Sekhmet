@@ -861,12 +861,54 @@ select.input { width: auto; }
   display: flex; gap: 14px; flex-wrap: wrap;
   margin-top: 8px; font-size: 0.85rem;
 }
-.hand-actions {
-  margin-top: 10px; padding-left: 22px;
-  color: var(--text-dim); font-size: 0.82rem; font-family: monospace;
-  columns: 2; column-gap: 32px;
+/* ---- HandReplay 逐手回放页 ---- */
+.replay-page { padding: 18px; }
+.replay-board {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin: 18px 0;
 }
+.replay-pot { color: var(--gold-text); font-weight: 700; }
+.replay-community { display: flex; gap: 6px; align-items: center; }
+.replay-seats {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.replay-seat {
+  background: var(--surface); border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 10px; padding: 10px 14px; min-width: 130px;
+  transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+.replay-seat.acted {
+  border-color: var(--cyan); box-shadow: 0 0 12px rgba(34, 211, 238, 0.35);
+}
+.replay-seat.folded { opacity: 0.4; }
+.replay-seat.winner {
+  border-color: var(--gold); box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+}
+.replay-seat-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; }
+.replay-seat-cards { display: flex; gap: 4px; margin-bottom: 6px; min-height: 40px; }
+.replay-seat-stack { color: var(--text); font-family: monospace; }
+.replay-seat-bet {
+  color: var(--gold-text); font-size: 0.78rem; font-family: monospace;
+  margin-top: 2px;
+}
+.allin-pill {
+  color: var(--rose); font-size: 0.68rem; letter-spacing: 1px;
+  border: 1px solid var(--rose); border-radius: 4px;
+  padding: 1px 4px; margin-left: 6px;
+}
+.replay-ticker {
+  font-family: monospace; color: var(--cyan-text);
+  min-height: 1.4em; margin-bottom: 8px;
+}
+.replay-awards {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  color: var(--gold-text); font-weight: 600; margin-bottom: 12px;
+}
+.replay-controls {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  position: sticky; bottom: 10px;
+}
+.replay-slider { flex: 1; min-width: 140px; accent-color: var(--cyan); }
 @media (max-width: 640px) {
-  .hand-actions { columns: 1; }
   .hand-card-board { margin-left: 0; }
 }
