@@ -219,6 +219,9 @@ export default function Lobby() {
           <button className="btn gold" onClick={() => { window.location.href = '/trainer'; }}>
             🎯 进入训练场
           </button>
+          <button className="btn" onClick={() => navigate('/history')}>
+            📜 对局历史
+          </button>
         </div>
       </div>
 
