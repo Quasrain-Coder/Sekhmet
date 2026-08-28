@@ -10,9 +10,20 @@ async def _isolated_db(tmp_path):
     db.configure(f"sqlite+aiosqlite:///{tmp_path}/t.db")
     await db.init_db()
     yield
-    # dispose 加上界：慢 runner 上曾出现 teardown 挂 60s 触发 pytest-timeout
-    # （CI 抖动，2026-08-28）。测试隔离优先于优雅关闭——下一个测试用
-    # 全新 engine + 独立 sqlite 文件，丢弃残留连接无副作用。
+    # Teardown 三步走（2026-08-28 CI 抖动：teardown 挂 60s 触发 pytest-timeout）：
+    # 1. 落库任务自然排空——cancel 中途杀 DB 操作会死在 SQLAlchemy asyncio
+    #    connector 的 shield 段，孤儿任务永久悬挂，后续 await 全部卡死
+    from sekhmet.models import recorder
+    await recorder.drain_pending()
+    # 2. 其余残留任务（action/grace timer 等纯内存任务）取消
+    stray = [t for t in asyncio.all_tasks()
+             if t is not asyncio.current_task() and not t.done()]
+    for t in stray:
+        t.cancel()
+    if stray:
+        await asyncio.gather(*stray, return_exceptions=True)
+    # 3. dispose 加上界——测试隔离优先于优雅关闭；下一个测试用全新
+    #    engine + 独立 sqlite 文件，丢弃残留连接无副作用
     try:
         await asyncio.wait_for(db.engine.dispose(), timeout=10)
     except Exception:
@@ -32,15 +43,6 @@ async def _isolated_tables():
     tm._tables.clear()
     yield
     tm._tables.clear()
-    # 取消泄漏的后台任务（action timer / grace timer / fire-and-forget 落库
-    # 等）。它们属于本测试的 event loop，不取消就会在 loop 关闭时被强制
-    # 取消，与 dispose 竞争 aiosqlite 工作线程（慢 runner 上的 60s 挂起）。
-    stray = [t for t in asyncio.all_tasks()
-             if t is not asyncio.current_task() and not t.done()]
-    for t in stray:
-        t.cancel()
-    if stray:
-        await asyncio.gather(*stray, return_exceptions=True)
 
 
 @pytest.fixture(autouse=True)
