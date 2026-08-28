@@ -67,4 +67,4 @@ Sekhmet/
 - [x] P3 AI 引擎（rule_bot L1-3 + gto_bot L4 + stats_tracker + bot_registry；rl_bot 预留未实现）
 - [x] P4 前端（大厅 + React 牌桌界面）
 - [x] P5 训练器（场景库 / scorer / analyzer / generator）
-- [ ] P6 收尾（ORM 持久化, 回放, 部署）
+- [x] P6 收尾（ORM 持久化 #包D, History 页 #84, HandReplay 回放 #85, Docker 部署 #86）
