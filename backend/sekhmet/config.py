@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -37,7 +38,8 @@ class ScoringWeights:
 class AppConfig:
     game: GameConfig = field(default_factory=GameConfig)
     scoring: ScoringWeights = field(default_factory=ScoringWeights)
-    database_url: str = "sqlite+aiosqlite:///sekhmet.db"
+    database_url: str = field(default_factory=lambda: os.environ.get(
+        "SEKHMET_DATABASE_URL", "sqlite+aiosqlite:///sekhmet.db"))
     data_dir: Path = Path("data")
 
 

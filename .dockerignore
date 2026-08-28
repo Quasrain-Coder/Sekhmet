@@ -1,0 +1,18 @@
+.git
+.github
+docs
+.superpowers
+
+# 依赖与构建产物（镜像内重建）
+**/node_modules
+**/dist
+**/__pycache__
+**/.venv
+**/*.egg-info
+
+# 本地数据与测试（不进镜像）
+**/*.db
+backend/tests
+frontend/src/__tests__
+*.md
+!README.md

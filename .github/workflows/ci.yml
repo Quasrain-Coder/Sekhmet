@@ -61,3 +61,24 @@ jobs:
       - name: Build
         working-directory: frontend
         run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t sekhmet .
+      - name: Smoke test — 容器起服务、SPA 与 API 均可用
+        run: |
+          docker run -d --name sekhmet -p 8000:8000 sekhmet
+          ok=""
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null; then ok=1; break; fi
+            sleep 2
+          done
+          if [ -z "$ok" ]; then docker logs sekhmet; exit 1; fi
+          curl -sf http://localhost:8000/ | grep -qi "<html"
+          curl -sf http://localhost:8000/history/42 | grep -qi "<html"  # SPA 回落
+          curl -sf http://localhost:8000/api/trainer/scenarios | grep -q '"scenarios"'
+          curl -sf http://localhost:8000/api/history/hands | grep -q '"hands"'
+          docker rm -f sekhmet
