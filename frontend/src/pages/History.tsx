@@ -51,7 +51,6 @@ export default function History() {
   const [hands, setHands] = useState<HandSummary[]>([]);
   const [players, setPlayers] = useState<PlayerStats[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -109,12 +108,9 @@ export default function History() {
         <div className="history-hands">
           {hands.map(h => {
             const winners = new Set(h.awards.map(a => a.seat_idx));
-            const seatName = (idx: number) =>
-              h.players.find(pl => pl.seat_idx === idx)?.name ?? `#${idx}`;
-            const open = expanded === h.id;
             return (
-              <div key={h.id} className={`hand-card${open ? ' open' : ''}`}
-                   onClick={() => setExpanded(open ? null : h.id)}>
+              <div key={h.id} className="hand-card"
+                   onClick={() => navigate(`/history/${h.id}`)}>
                 <div className="hand-card-head">
                   <span className="hand-card-id">#{h.id}</span>
                   <span className="hand-card-meta">
@@ -141,16 +137,6 @@ export default function History() {
                     );
                   })}
                 </div>
-                {open && (
-                  <ol className="hand-actions">
-                    {h.actions.map((a, i) => (
-                      <li key={i}>
-                        {seatName(a.seat)} {a.action}
-                        {a.amount > 0 && ` ${a.amount}`}
-                      </li>
-                    ))}
-                  </ol>
-                )}
               </div>
             );
           })}

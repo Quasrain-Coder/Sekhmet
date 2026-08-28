@@ -4,6 +4,7 @@ import GameTablePage from './pages/GameTable';
 import Trainer from './pages/Trainer';
 import ScenarioDetail from './pages/ScenarioDetail';
 import History from './pages/History';
+import HandReplay from './pages/HandReplay';
 import './styles/game.css';
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/trainer" element={<Trainer />} />
           <Route path="/trainer/:scenarioId" element={<ScenarioDetail />} />
           <Route path="/history" element={<History />} />
+          <Route path="/history/:handId" element={<HandReplay />} />
         </Routes>
       </div>
     </BrowserRouter>

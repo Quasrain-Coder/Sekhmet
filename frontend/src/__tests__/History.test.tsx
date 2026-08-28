@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import History from '../pages/History';
 
 const HAND = {
@@ -60,17 +60,19 @@ test('renders hand card: board cards, winner trophy, colored nets', async () => 
   expect(players[1].querySelector('.net-pos')).toHaveTextContent('+60');
 });
 
-test('click expands the action list with seat names', async () => {
+test('click navigates to the hand replay page', async () => {
   stubFetch();
-  const { container } = renderPage();
+  render(
+    <MemoryRouter initialEntries={['/history']}>
+      <Routes>
+        <Route path="/history" element={<History />} />
+        <Route path="/history/:handId" element={<div>replay-42</div>} />
+      </Routes>
+    </MemoryRouter>,
+  );
   await waitFor(() => screen.getByText('#42'));
-  expect(container.querySelector('.hand-actions')).toBeNull();
   fireEvent.click(screen.getByText('#42'));
-  const items = container.querySelectorAll('.hand-actions li');
-  expect(items).toHaveLength(3);
-  expect(items[1]).toHaveTextContent('Bot L3 BET 25');
-  fireEvent.click(screen.getByText('#42')); // collapse again
-  expect(container.querySelector('.hand-actions')).toBeNull();
+  await waitFor(() => expect(screen.getByText('replay-42')).toBeInTheDocument());
 });
 
 test('shows empty states when nothing is recorded', async () => {
