@@ -829,3 +829,44 @@ select.input { width: auto; }
 .scenario-cards { display: flex; align-items: center; gap: 12px; margin: 6px 0; }
 .scenario-hole, .scenario-community { display: flex; gap: 8px; }
 .scenario-meta { color: var(--text-dim); font-size: 0.82rem; margin-top: 10px; }
+
+/* ---- History 对局历史页 ---- */
+.history-page { padding: 18px; }
+.history-group { margin-bottom: 22px; }
+.history-table { width: 100%; max-width: 720px; border-collapse: collapse; }
+.history-table th, .history-table td {
+  padding: 8px 12px; text-align: left; font-size: 0.9rem;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.15);
+}
+.history-table th {
+  color: var(--cyan-text); letter-spacing: 1px; font-weight: 600;
+  border-bottom-color: rgba(34, 211, 238, 0.4);
+}
+.net-pos { color: var(--gold-text); }
+.net-neg { color: var(--rose); }
+.history-hands { display: flex; flex-direction: column; gap: 10px; max-width: 860px; }
+.hand-card {
+  background: var(--surface); border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 10px; padding: 12px 14px; cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.hand-card:hover, .hand-card.open {
+  border-color: var(--cyan); box-shadow: 0 0 12px rgba(34, 211, 238, 0.25);
+}
+.hand-card-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hand-card-id { color: var(--cyan-text); font-weight: 700; font-family: monospace; }
+.hand-card-meta { color: var(--text-dim); font-size: 0.8rem; font-family: monospace; }
+.hand-card-board { display: flex; gap: 4px; align-items: center; margin-left: auto; }
+.hand-card-players {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin-top: 8px; font-size: 0.85rem;
+}
+.hand-actions {
+  margin-top: 10px; padding-left: 22px;
+  color: var(--text-dim); font-size: 0.82rem; font-family: monospace;
+  columns: 2; column-gap: 32px;
+}
+@media (max-width: 640px) {
+  .hand-actions { columns: 1; }
+  .hand-card-board { margin-left: 0; }
+}
