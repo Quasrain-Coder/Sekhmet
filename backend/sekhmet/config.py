@@ -32,6 +32,12 @@ class ScoringWeights:
     action_match: float = 0.60
     sizing_precision: float = 0.25
     timing_judgment: float = 0.15
+    # Time budget scales with scenario difficulty — a three-street river
+    # read deserves more ponder time than a mechanical preflop open.
+    # Full marks within (base + difficulty × per_difficulty) seconds,
+    # then linear decay down to zero at 2× that budget.
+    time_budget_base_s: float = 20.0
+    time_budget_per_difficulty_s: float = 10.0
 
 
 @dataclass

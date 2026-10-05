@@ -24,6 +24,8 @@ interface ScenarioDetailData {
   category: string;
   difficulty: number;
   hints: string[];
+  /** Difficulty-scaled scoring budget (ms) — full timing credit inside. */
+  time_budget_ms?: number;
   table?: TablePreview | null;
 }
 
@@ -45,7 +47,10 @@ interface SubmitResult {
     is_gto_deviation: boolean;
     suggestion: string;
     details: string[];
+    equity_source?: string;
   };
+  /** Milliseconds since the scenario detail was fetched. */
+  elapsed_ms?: number;
 }
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -133,6 +138,10 @@ export default function ScenarioDetail() {
           </div>
         )}
 
+        {scenario.time_budget_ms != null && (
+          <p className="time-budget-hint">⏱ 建议用时 ≤ {Math.round(scenario.time_budget_ms / 1000)}s（超出逐步扣除时机分）</p>
+        )}
+
         {!result ? (
           <>
             <div className="action-row scenario-actions">
@@ -157,7 +166,9 @@ export default function ScenarioDetail() {
             </div>
           </>
         ) : (
-          <FeedbackPanel result={result} onRetry={() => setResult(null)} />
+          <FeedbackPanel result={result}
+                         timeBudgetMs={scenario.time_budget_ms}
+                         onRetry={() => setResult(null)} />
         )}
       </div>
     </div>

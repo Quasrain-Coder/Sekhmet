@@ -2,6 +2,11 @@
 
 Scoring formula (configurable via ScoringWeights in config.py):
     total = action_match * 0.60 + sizing_precision * 0.25 + timing * 0.15
+
+Timing is scored against a difficulty-scaled budget (iteration #3,
+design: 2026-10-05-trainer-timing-score-design.md): full marks within
+``(base + difficulty × per_difficulty)`` seconds, linear decay to zero
+at 2× that.
 """
 
 from __future__ import annotations
@@ -12,6 +17,17 @@ from typing import Any
 from ..config import app_config
 from ..game_engine.game_state import ActionType
 from .scenario_library import Scenario
+
+# Faster than this reads as a reflex click, not a decision — flagged in
+# the feedback (no deduction: fast correct answers deserve the timing
+# points, we just nudge the player to double-check).
+QUICK_ANSWER_MS = 1500.0
+
+
+def time_budget_ms(difficulty: int) -> float:
+    """Decision time budget for a scenario of *difficulty* (1–5), in ms."""
+    w = app_config.scoring
+    return (w.time_budget_base_s + w.time_budget_per_difficulty_s * difficulty) * 1000
 
 
 # ---------------------------------------------------------------------------
@@ -88,22 +104,28 @@ def score_decision(
     elif ptype in ("CHECK", "FOLD", "CALL") and ptype == otype:
         sizing_score = weights.sizing_precision * 100  # no sizing needed
 
-    # --- 3.  Timing (15%) — simple version: full credit if under 30s ---
-    if time_taken_ms <= 30_000:
+    # --- 3.  Timing (15%) — difficulty-scaled budget (see module docstring)
+    budget = time_budget_ms(scenario.difficulty)
+    if time_taken_ms <= budget:
         timing_score = weights.timing_judgment * 100
     else:
-        timing_score = max(0, weights.timing_judgment * 100 * (1 - (time_taken_ms - 30_000) / 60_000))
+        overshoot = min(time_taken_ms - budget, budget)  # zero at 2× budget
+        timing_score = weights.timing_judgment * 100 * (1 - overshoot / budget)
 
     total = action_score + sizing_score + timing_score
 
     # --- Feedback ---
     is_optimal = ptype == otype and (oamount == 0 or abs(pamount - oamount) / max(oamount, 1) < 0.2)
 
+    quick_note = ""
+    if 0 < time_taken_ms < QUICK_ANSWER_MS:
+        quick_note = " (That was quick — make sure you actually read the spot!)"
+
     if total >= 90:
-        fb = "Excellent! Perfect decision."
+        fb = "Excellent! Perfect decision." + quick_note
         detail = f"You chose {ptype}" + (f" {pamount}" if pamount > 0 else "") + ", which matches the optimal play."
     elif total >= 70:
-        fb = "Good decision, close to optimal."
+        fb = "Good decision, close to optimal." + quick_note
         detail = _detail_near_miss(ptype, pamount, otype, oamount, scenario)
     elif total >= 40:
         fb = "Decent, but there's a better option."
