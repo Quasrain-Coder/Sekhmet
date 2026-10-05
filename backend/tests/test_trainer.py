@@ -109,20 +109,56 @@ def test_scorer_timing_bonus():
 # ---------------------------------------------------------------------------
 
 
-def test_analyzer_good_score():
+def test_analyzer_optimal_action_no_deviation():
+    """Real EV path: playing the optimal action ≈ zero EV loss."""
     s = Scenario.from_yaml(BUILTIN_SCENARIOS[1])
-    a = analyze(s, score_total=95)
+    opt = s.optimal_action
+    a = analyze(s, score_total=95, player_action={**opt})
+    assert a.equity_source == "monte_carlo"
     assert not a.is_gto_deviation
-    assert a.ev_loss < 0.5
+    assert a.ev_loss <= 0.25
+    assert a.player_ev == pytest.approx(a.optimal_ev, abs=0.01)
+
+
+def test_analyzer_fold_has_zero_ev():
+    """Folding is worth exactly 0 — EV loss equals the best line's EV."""
+    s = Scenario.from_yaml(BUILTIN_SCENARIOS[1])
+    a = analyze(s, score_total=25, player_action={"type": "FOLD", "amount": 0})
+    assert a.player_ev == 0.0
+    assert a.ev_loss == a.optimal_ev
+    assert a.ev_loss > 0            # folding a premium is expensive here
+    assert a.is_gto_deviation
+    assert a.equity_player > 0.5    # premium hand vs inferred range
+
+
+def test_analyzer_call_ev_matches_formula():
+    """ev_call must equal equity×(pot+to_call)−to_call on the MC path."""
+    s = Scenario.from_yaml(BUILTIN_SCENARIOS[0])
+    hero = s.frozen_state.player(s.player_seat)
+    to_call = max(0, s.frozen_state.current_bet - hero.current_bet)
+    pot = s.frozen_state.pot.main_pot
+    a = analyze(s, score_total=50, player_action={"type": "CALL", "amount": to_call})
+    expected = a.equity_player * (pot + to_call) - to_call
+    assert a.player_ev == pytest.approx(expected, abs=0.02)
+
+
+def test_analyzer_fallback_without_frozen_state():
+    """No frozen state → authored equity, still a usable analysis."""
+    s = Scenario.from_yaml(BUILTIN_SCENARIOS[0])
+    s.frozen_state = None
+    s.player_seat = None
+    a = analyze(s, score_total=80, player_action={"type": "CHECK", "amount": 0})
+    assert a.equity_source == "authored"
+    assert a.suggestion
 
 
 def test_analyzer_poor_score():
     s = Scenario.from_yaml(BUILTIN_SCENARIOS[0])
-    a = analyze(s, score_total=25)
+    a = analyze(s, score_total=25, player_action={"type": "FOLD", "amount": 0})
     assert len(a.suggestion) > 0
     assert a.equity_player > 0
-    # With score 25, EV loss should be significant
-    assert a.player_ev < a.optimal_ev or a.player_ev <= 0
+    assert a.details                                 # modelled assumptions surfaced
+    assert a.assumptions
 
 
 # ---------------------------------------------------------------------------
@@ -235,6 +271,14 @@ def test_trainer_submit_decision(client):
     data = resp.json()
     assert data["score"]["total"] > 90
     assert data["score"]["is_optimal"]
+    # Real-EV analysis (iteration #2): MC-equity source, actionable detail
+    # lines, and the played action's EV on the optimal path.
+    a = data["analysis"]
+    assert a["equity_source"] == "monte_carlo"
+    assert a["details"]
+    assert a["assumptions"]
+    assert a["player_ev"] == pytest.approx(a["optimal_ev"], abs=0.01)
+    assert a["equity_player"] > 0.5       # premium hand vs inferred range
 
 
 def test_trainer_get_hint(client):
