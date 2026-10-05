@@ -1,13 +1,45 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
-/** Score trend — history lives in localStorage (no backend persistence yet). */
+/**
+ * Score trend chart.  Logged-in accounts read the server-side attempt
+ * history (`/api/trainer/stats`, cross-device, full history); guests and
+ * failed requests fall back to the localStorage log the submit page keeps.
+ */
 export default function ScoreChart() {
-  const history = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem('trainerScores') ?? '[]') as number[];
-    } catch { return []; }
+  const [serverScores, setServerScores] = useState<number[] | null>(null);
+
+  const token = localStorage.getItem('authToken');
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    fetch(`/api/trainer/stats?token=${encodeURIComponent(token)}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (!cancelled && d?.recent?.length) {
+          setServerScores(d.recent.map((x: { score: number }) => x.score));
+        }
+      })
+      .catch(() => { /* server may not be running */ });
+    return () => { cancelled = true; };
+  }, [token]);
+
+  const [localScores, setLocalScores] = useState<number[]>(() => {
+    try { return JSON.parse(localStorage.getItem('trainerScores') ?? '[]') as number[]; }
+    catch { return []; }
+  });
+
+  // Re-read localStorage when the tab regains focus — the submit page
+  // appends there and the trainer stays mounted in between.
+  useEffect(() => {
+    const reread = () => {
+      try { setLocalScores(JSON.parse(localStorage.getItem('trainerScores') ?? '[]') as number[]); }
+      catch { /* ignore */ }
+    };
+    window.addEventListener('focus', reread);
+    return () => window.removeEventListener('focus', reread);
   }, []);
 
+  const history = serverScores ?? localScores;
   const recent = history.slice(-20);
   if (recent.length === 0) return null;
 

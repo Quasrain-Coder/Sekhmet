@@ -769,6 +769,20 @@ select.input { width: auto; }
 .trainer-card-desc { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 8px; }
 .diff-pill { font-size: 0.75rem; letter-spacing: 1px; color: var(--gold-text); }
 
+/* Training stats + wrong-answer book (server-backed, logged-in only) */
+.trainer-stat-overview {
+  display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px;
+  color: var(--text-dim); font-size: 0.85rem;
+}
+.trainer-stat-overview b { color: var(--gold-text); font-size: 1rem; }
+.trainer-weak-list { display: flex; flex-direction: column; gap: 8px; }
+.trainer-weak-list .fb-bar-track { flex: 1; max-width: 340px; }
+.trainer-weak-count { width: 40px; text-align: right; color: var(--text-dim); font-size: 0.8rem; }
+.trainer-card.mistake { border-color: rgba(244, 63, 94, 0.35); }
+.trainer-card.mistake:hover {
+  border-color: var(--rose); box-shadow: 0 0 12px rgba(244, 63, 94, 0.25);
+}
+
 .scenario-card {
   background: var(--surface); border: 1px solid rgba(34, 211, 238, 0.3);
   border-radius: 12px; padding: 22px; max-width: 720px; margin: 18px auto;

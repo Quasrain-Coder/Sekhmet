@@ -5,7 +5,7 @@ from __future__ import annotations
 import json as _json
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Integer, String, Text, select
+from sqlalchemy import Boolean, DateTime, Float, Integer, String, Text, select
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -110,6 +110,103 @@ class UserRecord(Base):
     password_hash: Mapped[str] = mapped_column(String(128))
     salt: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class TrainingAttemptRecord(Base):
+    """One scored training decision by a logged-in account.
+
+    Guests are never recorded — same policy as game hands.  One row per
+    submit (retries included), so "latest attempt per scenario" is a
+    group-by rather than an update-in-place; full history doubles as the
+    progress-curve data source.
+    """
+
+    __tablename__ = "training_attempts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, index=True)
+    username: Mapped[str] = mapped_column(String(64))
+    scenario_id: Mapped[str] = mapped_column(String(128), index=True)
+    category: Mapped[str] = mapped_column(String(32))
+    difficulty: Mapped[int] = mapped_column(Integer)
+    action: Mapped[str] = mapped_column(Text)          # JSON {"type", "amount"}
+    score_total: Mapped[float] = mapped_column(Float)
+    action_match: Mapped[float] = mapped_column(Float)
+    sizing_precision: Mapped[float] = mapped_column(Float)
+    timing_judgment: Mapped[float] = mapped_column(Float)
+    is_optimal: Mapped[bool] = mapped_column(Boolean, default=False)
+    hints_used: Mapped[int] = mapped_column(Integer, default=0)
+    time_taken_ms: Mapped[float] = mapped_column(Float, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+async def attempts_recent(session, user_id: int, limit: int = 50) -> list[dict]:
+    """Most recent *limit* attempts, oldest first (chart x-axis order)."""
+    q = (select(TrainingAttemptRecord)
+         .where(TrainingAttemptRecord.user_id == user_id)
+         .order_by(TrainingAttemptRecord.id.desc())
+         .limit(max(1, min(limit, 200))))
+    rows = (await session.execute(q)).scalars().all()
+    return [
+        {
+            "scenario_id": r.scenario_id,
+            "category": r.category,
+            "score": r.score_total,
+            "is_optimal": r.is_optimal,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in reversed(rows)
+    ]
+
+
+async def category_breakdown(session, user_id: int) -> list[dict]:
+    """Per-category aggregate: attempt count, mean score, optimal rate."""
+    q = select(TrainingAttemptRecord).where(TrainingAttemptRecord.user_id == user_id)
+    rows = (await session.execute(q)).scalars().all()
+    groups: dict[str, dict] = {}
+    for r in rows:
+        g = groups.setdefault(
+            r.category, {"attempts": 0, "score_sum": 0.0, "optimal": 0})
+        g["attempts"] += 1
+        g["score_sum"] += r.score_total
+        if r.is_optimal:
+            g["optimal"] += 1
+    return [
+        {
+            "category": cat,
+            "attempts": g["attempts"],
+            "avg_score": round(g["score_sum"] / g["attempts"], 1),
+            "optimal_rate": round(g["optimal"] / g["attempts"], 3),
+        }
+        for cat, g in sorted(groups.items(), key=lambda kv: kv[1]["score_sum"] / kv[1]["attempts"])
+    ]
+
+
+async def mistake_scenarios(session, user_id: int, limit: int = 50) -> list[dict]:
+    """Wrong-answer book: latest attempt per scenario, keep the ones
+    whose *latest* try is still non-optimal (fixed ones drop out).
+    Ordered most-recently-wrong first."""
+    q = (select(TrainingAttemptRecord)
+         .where(TrainingAttemptRecord.user_id == user_id)
+         .order_by(TrainingAttemptRecord.id.desc()))
+    rows = (await session.execute(q)).scalars().all()
+    latest: dict[str, TrainingAttemptRecord] = {}
+    counts: dict[str, int] = {}
+    for r in rows:  # newest → oldest, so first sight of a scenario is its latest
+        counts[r.scenario_id] = counts.get(r.scenario_id, 0) + 1
+        latest.setdefault(r.scenario_id, r)
+    out = [
+        {
+            "scenario_id": r.scenario_id,
+            "category": r.category,
+            "difficulty": r.difficulty,
+            "last_score": r.score_total,
+            "attempts": counts[r.scenario_id],
+            "last_tried_at": r.created_at.isoformat(),
+        }
+        for r in latest.values() if not r.is_optimal
+    ]
+    return out[:max(1, min(limit, 100))]
 
 
 class UserStatsRecord(Base):

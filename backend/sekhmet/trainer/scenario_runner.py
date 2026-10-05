@@ -72,6 +72,7 @@ class ScenarioRunner:
         analysis = analyze(scenario, score.total)
 
         return {
+            "elapsed_ms": round(elapsed),
             "score": {
                 "total": score.total,
                 "action_match": score.action_match,

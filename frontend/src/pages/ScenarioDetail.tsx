@@ -81,10 +81,13 @@ export default function ScenarioDetail() {
   }, [scenarioId]);
 
   const submit = useCallback(async () => {
+    const token = localStorage.getItem('authToken');
     const resp = await fetch(`/api/trainer/scenarios/${scenarioId}/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: action, amount }),
+      // token + hints_used: logged-in attempts land in the server-side
+      // stats/mistake-book; guests just score locally as before.
+      body: JSON.stringify({ type: action, amount, token, hints_used: hintLevel + 1 }),
     });
     if (!resp.ok) return;
     const data = await resp.json();
@@ -95,7 +98,7 @@ export default function ScenarioDetail() {
       history.push(data.score.total);
       localStorage.setItem('trainerScores', JSON.stringify(history.slice(-100)));
     } catch { /* ignore */ }
-  }, [scenarioId, action, amount]);
+  }, [scenarioId, action, amount, hintLevel]);
 
   const askHint = useCallback(async () => {
     const next = hintLevel + 1;
