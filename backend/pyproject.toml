@@ -6,7 +6,9 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.34",
     "websockets>=13",
-    "sqlalchemy>=2.0",
+    # [asyncio] extra: greenlet.  SQLAlchemy 2.0.51 stopped auto-installing
+    # it — fresh CI/Docker builds then died on "No module named 'greenlet'".
+    "sqlalchemy[asyncio]>=2.0",
     "aiosqlite>=0.20",
     "pyyaml>=6.0",
     "pydantic>=2.0",
