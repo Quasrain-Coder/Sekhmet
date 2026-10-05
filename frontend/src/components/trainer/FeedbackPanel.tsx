@@ -20,6 +20,8 @@ interface SubmitResult {
      * backward compatibility with cached/old responses. */
     equity_source?: string;
   };
+  /** Milliseconds since the scenario detail was fetched. */
+  elapsed_ms?: number;
 }
 
 interface Props {
