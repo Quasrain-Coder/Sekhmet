@@ -16,6 +16,9 @@ interface SubmitResult {
     is_gto_deviation: boolean;
     suggestion: string;
     details: string[];
+    /** "monte_carlo" | "authored" — set by iteration #2; optional for
+     * backward compatibility with cached/old responses. */
+    equity_source?: string;
   };
 }
 
@@ -55,14 +58,27 @@ export default function FeedbackPanel({ result, onRetry }: Props) {
 
       <div className="analysis-box">
         <div className="analysis-rows">
-          <div className="profile-row"><span>你的 equity 估计</span><b>{Math.round(a.equity_player * 100)}%</b></div>
+          <div className="profile-row">
+            <span>你的 equity 估计{a.equity_source === 'monte_carlo' ? '（蒙特卡洛模拟）' : ''}</span>
+            <b>{Math.round(a.equity_player * 100)}%</b>
+          </div>
           <div className="profile-row"><span>最优 EV</span><b>{a.optimal_ev}</b></div>
           <div className="profile-row"><span>你的 EV</span><b>{a.player_ev}</b></div>
-          <div className="profile-row"><span>EV 损失</span><b className="lb-neg">{a.ev_loss}</b></div>
+          <div className="profile-row">
+            <span>EV 损失</span>
+            <b className={a.ev_loss > 0.25 ? 'lb-neg' : 'lb-pos'}>
+              {a.ev_loss > 0 ? `-${a.ev_loss}` : `+${Math.abs(a.ev_loss)}`}
+            </b>
+          </div>
           {a.is_gto_deviation && (
             <div className="profile-row"><span>GTO 偏差</span><b className="lb-neg">是</b></div>
           )}
         </div>
+        {a.details.length > 0 && (
+          <ul className="analysis-details">
+            {a.details.map((d, i) => <li key={i}>{d}</li>)}
+          </ul>
+        )}
         {a.suggestion && <p className="analysis-suggestion">📌 {a.suggestion}</p>}
       </div>
 

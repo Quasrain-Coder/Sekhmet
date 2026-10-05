@@ -69,7 +69,7 @@ class ScenarioRunner:
         elapsed = (time.time() - self._start_times.get(scenario_id, time.time())) * 1000
 
         score = score_decision(scenario, action, time_taken_ms=elapsed)
-        analysis = analyze(scenario, score.total)
+        analysis = analyze(scenario, score.total, player_action=action)
 
         return {
             "elapsed_ms": round(elapsed),
@@ -90,6 +90,8 @@ class ScenarioRunner:
                 "is_gto_deviation": analysis.is_gto_deviation,
                 "suggestion": analysis.suggestion,
                 "details": analysis.details,
+                "equity_source": analysis.equity_source,
+                "assumptions": analysis.assumptions,
             },
             "scenario": {
                 "id": scenario.id,

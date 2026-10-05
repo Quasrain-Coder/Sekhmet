@@ -24,7 +24,6 @@ from typing import TYPE_CHECKING
 from .base_bot import BaseBot
 from ..game_engine import Action, ActionType, GamePhase, GameState
 from ..game_engine.deck import Card, Rank, Suit
-from ..game_engine.hand_evaluator import evaluate_7_cards
 from .gto_ranges import (
     BB_DEFEND_3BET,
     BB_DEFEND_CALL,
@@ -38,6 +37,13 @@ from .gto_ranges import (
     range_frequency,
 )
 from .rule_bot import _draw_outs, _made_hand_strength, _postflop_equity
+from .equity import (
+    equity_vs_combos,
+    infer_opponent_range,
+    position_bucket,
+    range_combos,
+    seats_after,
+)
 
 if TYPE_CHECKING:
     from .stats_tracker import OpponentStatsTracker
@@ -208,88 +214,17 @@ class GTOBot(BaseBot):
         known = {(c.rank.value, c.suit.value) for c in hole + board}
         deck = [Card(r, s) for r in Rank for s in Suit
                 if (r.value, s.value) not in known]
-        combos = self._range_combos(opp_range, deck)
+        combos = range_combos(opp_range, deck)
         if not combos:
             return None
         rng = self._rng(hole, state)
-        wins = ties = 0
-        total_weight = sum(freq for _, _, freq in combos)
-        our_score = evaluate_7_cards(hole + board)
-        for _ in range(self.N_SAMPLES):
-            c1, c2 = self._weighted_sample(combos, total_weight, rng)
-            opp_score = evaluate_7_cards([c1, c2] + board)
-            if our_score > opp_score:
-                wins += 1
-            elif our_score == opp_score:
-                ties += 1
-        return (wins + ties / 2) / self.N_SAMPLES
-
-    @staticmethod
-    def _range_combos(
-        rng_dict: Range, deck: list[Card],
-    ) -> list[tuple[Card, Card, float]]:
-        """All remaining hole-card pairs inside *rng_dict*, with weights."""
-        combos: list[tuple[Card, Card, float]] = []
-        for i, c1 in enumerate(deck):
-            for c2 in deck[i + 1:]:
-                freq = range_frequency(rng_dict, c1, c2)
-                if freq > 0:
-                    combos.append((c1, c2, freq))
-        return combos
-
-    @staticmethod
-    def _weighted_sample(
-        combos: list[tuple[Card, Card, float]],
-        total_weight: float,
-        rng: random.Random,
-    ) -> tuple[Card, Card]:
-        target = rng.random() * total_weight
-        acc = 0.0
-        for c1, c2, freq in combos:
-            acc += freq
-            if target <= acc:
-                return c1, c2
-        return combos[-1][0], combos[-1][1]
+        return equity_vs_combos(hole, board, combos, self.N_SAMPLES, rng)
 
     def _opponent_range(
         self, state: GameState, player_idx: int,
     ) -> Range | None:
-        """Estimate the relevant opponent's preflop range.
-
-        Preflop: the current bet level says raise vs 3-bet vs limp.
-        Postflop: pot size hints at the preflop story (raised vs limped
-        pot) — the opponent's postflop actions do not narrow the range.
-        """
-        opps = [p.seat_idx for p in state.players
-                if p.seat_idx != player_idx and (p.is_active or p.is_all_in)]
-        if not opps:
-            return None
-        aggressor = state.last_aggressor_idx
-        if aggressor is None or aggressor == player_idx or aggressor not in opps:
-            aggressor = opps[0]
-        bucket = self._position_bucket(aggressor, state)
-        # A big blind who *raised* preflop is strong (model as UTG, the
-        # tightest chart); a big blind who only defended and then bet
-        # postflop is wide — the defend range.  We cannot tell the two
-        # apart from the flat action log, so postflop uses the wide
-        # defend range (the far more common case) and preflop the tight
-        # one (where a BB bet means they raised).
-        if state.phase == GamePhase.PREFLOP:
-            if bucket == "bb":
-                bucket = "utg"
-            if state.current_bet >= state.big_blind * 7:
-                return THREE_BET[bucket]
-            if state.current_bet > state.big_blind:
-                return RFI[bucket]
-            return LIMP_RANGE
-        if bucket == "bb":
-            return BB_DEFEND_CALL
-        # Raised pot (a 2.5bb+ open HU already yields 60+ chips): model
-        # the aggressor with their RFI chart.  A 4-way limped pot stays
-        # below this cutoff and keeps the wide limp range.
-        if state.pot.main_pot >= (state.small_blind + state.big_blind) * 4:
-            return RFI[bucket]
-        return LIMP_RANGE
+        """Relevant opponent's range — shared impl in equity.py."""
+        return infer_opponent_range(state, player_idx)
 
     # ------------------------------------------------------------------
     # Helpers
@@ -317,42 +252,13 @@ class GTOBot(BaseBot):
         return self._position_bucket(opener, state)
 
     def _position_bucket(self, seat: int, state: GameState) -> str:
-        """Named position bucket for *seat* (blinds first, then by seats
-        acting after it, scaled to the table size so 6-max and 9-max
-        map onto the same five buckets)."""
-        if state.sb_seat == seat:
-            return "sb"
-        if state.bb_seat == seat:
-            return "bb"
-        after = self._seats_after(seat, state)
-        if after == 0:
-            return "btn"
-        live = len([p for p in state.players
-                    if p.is_active or p.is_all_in])
-        frac = after / max(live - 1, 1)
-        if frac < 0.35:
-            return "co"
-        if frac < 0.6:
-            return "mp"
-        return "utg"
+        """Named position bucket — shared implementation in equity.py."""
+        return position_bucket(seat, state)
 
     @staticmethod
     def _seats_after(seat: int, state: GameState) -> int:
-        """How many live seats act after *seat* in postflop order."""
-        seats = sorted(p.seat_idx for p in state.players
-                       if p.is_active or p.is_all_in)
-        if len(seats) <= 1:
-            return 0
-        anchor = state.dealer_idx
-        anchor_pos = len(seats) - 1
-        for i, s in enumerate(seats):
-            if s > anchor:
-                break
-            anchor_pos = i
-        order = seats[anchor_pos + 1:] + seats[:anchor_pos + 1]
-        if seat not in order:
-            return 0
-        return len(order) - 1 - order.index(seat)
+        """Live seats acting after *seat* — shared impl in equity.py."""
+        return seats_after(seat, state)
 
     @staticmethod
     def _raise_action(state: GameState, player_idx: int, sizing: float) -> Action:
