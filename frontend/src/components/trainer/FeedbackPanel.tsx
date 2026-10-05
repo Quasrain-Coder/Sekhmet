@@ -20,10 +20,13 @@ interface SubmitResult {
      * backward compatibility with cached/old responses. */
     equity_source?: string;
   };
+  /** Milliseconds since the scenario detail was fetched. */
+  elapsed_ms?: number;
 }
 
 interface Props {
   result: SubmitResult;
+  timeBudgetMs?: number;
   onRetry: () => void;
 }
 
@@ -31,10 +34,12 @@ function scoreTone(total: number): 'good' | 'mid' | 'bad' {
   return total >= 80 ? 'good' : total >= 60 ? 'mid' : 'bad';
 }
 
-export default function FeedbackPanel({ result, onRetry }: Props) {
+export default function FeedbackPanel({ result, timeBudgetMs, onRetry }: Props) {
   const s = result.score;
   const a = result.analysis;
   const tone = scoreTone(s.total);
+  const elapsedS = result.elapsed_ms != null ? result.elapsed_ms / 1000 : null;
+  const timingFull = s.timing_judgment >= 15 - 1e-6;
 
   return (
     <div className={`feedback-panel fb-${tone}`}>
@@ -45,6 +50,16 @@ export default function FeedbackPanel({ result, onRetry }: Props) {
             {s.is_optimal ? '✓ 最优决策' : '✗ 有更优解'}
           </b>
           <p>{s.feedback}</p>
+          {elapsedS != null && (
+            <p className="time-used">
+              ⏱ 用时 {elapsedS.toFixed(1)}s
+              {timeBudgetMs != null && (
+                <> / 预算 {Math.round(timeBudgetMs / 1000)}s
+                  {' '}（时机 {timingFull ? '满分' : `扣至 ${Math.round(s.timing_judgment)}/15`}）
+                </>
+              )}
+            </p>
+          )}
         </div>
       </div>
 

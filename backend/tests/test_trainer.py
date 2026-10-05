@@ -104,6 +104,38 @@ def test_scorer_timing_bonus():
     assert slow.timing_judgment < 15.0
 
 
+def test_scorer_time_budget_scales_with_difficulty():
+    """Difficulty-scaled budget: a hard scenario gets more ponder time.
+    (Old behaviour: everything decayed after a flat 30s.)"""
+    s = Scenario.from_yaml(BUILTIN_SCENARIOS[1])       # difficulty 1 → 30s
+    hard = Scenario.from_yaml(BUILTIN_SCENARIOS[3])    # river-bluff-spot, d4 → 60s
+    at_55s = score_decision(hard, {"type": "FOLD", "amount": 0}, time_taken_ms=55_000)
+    assert at_55s.timing_judgment == 15.0              # within the d4 budget
+
+    # Same 45s on a d1 scenario: 15s overshoot of the 30s budget →
+    # timing halved (decay is linear over the budget, zero at 2×).
+    at_45s_easy = score_decision(s, {"type": "RAISE", "amount": 30}, time_taken_ms=45_000)
+    assert at_45s_easy.timing_judgment == pytest.approx(7.5)
+
+
+def test_scorer_timing_decays_to_zero_at_double_budget():
+    s = Scenario.from_yaml(BUILTIN_SCENARIOS[1])       # d1 → 30s budget
+    dead = score_decision(s, {"type": "RAISE", "amount": 30}, time_taken_ms=60_000)
+    assert dead.timing_judgment == 0.0                 # 2× budget → fully decayed
+    past = score_decision(s, {"type": "RAISE", "amount": 30}, time_taken_ms=120_000)
+    assert past.timing_judgment == 0.0                 # clamped, never negative
+
+
+def test_scorer_quick_answer_flagged_but_not_penalized():
+    """Reflex-speed answers keep full timing credit, with a nudge."""
+    s = Scenario.from_yaml(BUILTIN_SCENARIOS[1])
+    r = score_decision(s, {"type": "RAISE", "amount": 30}, time_taken_ms=800)
+    assert r.timing_judgment == 15.0
+    assert "quick" in r.feedback.lower()
+    r2 = score_decision(s, {"type": "RAISE", "amount": 30}, time_taken_ms=8000)
+    assert "quick" not in r2.feedback.lower()
+
+
 # ---------------------------------------------------------------------------
 # Analyzer
 # ---------------------------------------------------------------------------
@@ -254,7 +286,12 @@ def test_trainer_list_scenarios(client):
 def test_trainer_get_scenario(client):
     resp = client.get("/api/trainer/scenarios/preflop-btn-premium")
     assert resp.status_code == 200
+    body = resp.json()
     assert resp.json()["title"] == "翻前 BTN 强牌"
+    # Iteration #3: difficulty-scaled time budget exposed to the UI.
+    assert body["time_budget_ms"] == 30_000       # difficulty 1 → 30s
+    river = client.get("/api/trainer/scenarios/river-bluff-spot").json()
+    assert river["time_budget_ms"] == 60_000      # difficulty 4 → 60s
 
 
 def test_trainer_get_scenario_not_found(client):

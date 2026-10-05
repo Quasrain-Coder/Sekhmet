@@ -11,6 +11,7 @@ from ..trainer.scenario_library import (
     ScenarioLibrary,
 )
 from ..trainer.scenario_runner import ScenarioRunner
+from ..trainer.scorer import time_budget_ms
 
 router = APIRouter(prefix="/api/trainer", tags=["trainer"])
 
@@ -72,6 +73,9 @@ async def get_scenario(scenario_id: str):
         "category": s.category.value,
         "difficulty": s.difficulty,
         "hints": s.hints,
+        # Difficulty-scaled time budget — the scorer's timing component
+        # is full marks within this window, decaying to zero at 2×.
+        "time_budget_ms": time_budget_ms(s.difficulty),
         # Concrete table preview when the scenario carries a frozen state.
         "table": _table_preview(s),
     }
