@@ -30,9 +30,22 @@ WRONG = {"type": "FOLD", "amount": 0}
 POT_ODDS = "pot-odds-draw"
 
 
+def _reset_timer(scenario: str) -> None:
+    """Fresh decision-timer start.  ``_start_times`` is a module-level
+    singleton shared with earlier tests that GET the same scenario — a
+    stale start bleeds 30s+ into our elapsed time on slow runners and
+    shaves the timing score off exact-score assertions."""
+    trainer_api._runner.start(scenario)
+
+
 async def _register(username: str) -> str:
     out = await auth_api.register({"username": username, "password": "secret1"})
     return out["token"]
+
+
+async def _scored_submit(scenario_id: str, action: dict):
+    _reset_timer(scenario_id)
+    return await trainer_api.submit_decision(scenario_id, action)
 
 
 async def _all_attempts() -> list[TrainingAttemptRecord]:
@@ -50,7 +63,7 @@ async def _all_attempts() -> list[TrainingAttemptRecord]:
 async def test_submit_with_token_persists_attempt():
     token = await _register("trainer1")
 
-    resp = await trainer_api.submit_decision(
+    resp = await _scored_submit(
         SCENARIO, {**OPTIMAL, "token": token, "hints_used": 2})
     assert resp["score"]["is_optimal"] is True
 
@@ -69,13 +82,13 @@ async def test_submit_with_token_persists_attempt():
 
 
 async def test_guest_submit_scores_but_not_persisted():
-    resp = await trainer_api.submit_decision(SCENARIO, {**OPTIMAL})
+    resp = await _scored_submit(SCENARIO, {**OPTIMAL})
     assert resp["score"]["is_optimal"] is True          # guests still train
     assert await _all_attempts() == []
 
 
 async def test_submit_with_garbage_token_scores_but_not_persisted():
-    resp = await trainer_api.submit_decision(
+    resp = await _scored_submit(
         SCENARIO, {**OPTIMAL, "token": "garbage.token"})
     assert resp["score"]["is_optimal"] is True
     assert await _all_attempts() == []
@@ -88,9 +101,9 @@ async def test_submit_with_garbage_token_scores_but_not_persisted():
 
 async def test_stats_aggregates_totals_and_categories():
     token = await _register("statuser")
-    await trainer_api.submit_decision(SCENARIO, {**OPTIMAL, "token": token})
-    await trainer_api.submit_decision(SCENARIO, {**WRONG, "token": token})
-    await trainer_api.submit_decision(POT_ODDS, {**WRONG, "token": token})
+    await _scored_submit(SCENARIO, {**OPTIMAL, "token": token})
+    await _scored_submit(SCENARIO, {**WRONG, "token": token})
+    await _scored_submit(POT_ODDS, {**WRONG, "token": token})
 
     stats = await trainer_api.training_stats(token=token)
     assert stats["total_attempts"] == 3
@@ -126,7 +139,7 @@ async def test_stats_empty_account():
 
 async def test_mistake_appears_then_fixed_by_optimal_retry():
     token = await _register("mistaker")
-    await trainer_api.submit_decision(SCENARIO, {**WRONG, "token": token})
+    await _scored_submit(SCENARIO, {**WRONG, "token": token})
 
     out = await trainer_api.training_mistakes(token=token)
     assert len(out["mistakes"]) == 1
@@ -137,7 +150,7 @@ async def test_mistake_appears_then_fixed_by_optimal_retry():
     assert m["attempts"] == 1
 
     # Retry with the optimal action → latest attempt optimal → drops out
-    await trainer_api.submit_decision(SCENARIO, {**OPTIMAL, "token": token})
+    await _scored_submit(SCENARIO, {**OPTIMAL, "token": token})
     out = await trainer_api.training_mistakes(token=token)
     assert out["mistakes"] == []
 
@@ -148,8 +161,8 @@ async def test_mistake_appears_then_fixed_by_optimal_retry():
 
 async def test_mistake_keeps_only_latest_per_scenario():
     token = await _register("mistaker2")
-    await trainer_api.submit_decision(SCENARIO, {**WRONG, "token": token})
-    await trainer_api.submit_decision(POT_ODDS, {**WRONG, "token": token})
+    await _scored_submit(SCENARIO, {**WRONG, "token": token})
+    await _scored_submit(POT_ODDS, {**WRONG, "token": token})
 
     out = await trainer_api.training_mistakes(token=token)
     assert {m["scenario_id"] for m in out["mistakes"]} == {SCENARIO, POT_ODDS}
