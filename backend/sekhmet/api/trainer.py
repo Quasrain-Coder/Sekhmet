@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter
 
+from . import auth
 from ..trainer.scenario_library import (
     BUILTIN_SCENARIOS,
     GENERATED_DATA_DIR,
@@ -99,13 +100,62 @@ def _table_preview(scenario) -> dict | None:
 
 @router.post("/scenarios/{scenario_id}/submit")
 async def submit_decision(scenario_id: str, action: dict):
-    """Submit a training decision and get scored feedback."""
+    """Submit a training decision and get scored feedback.
+
+    Optional ``token`` in the body: when it resolves to a live account the
+    attempt is persisted (powering stats / mistake-book views).  Invalid
+    or missing tokens still score normally — guests can train, they just
+    leave no trace.
+    """
     from fastapi.responses import JSONResponse
 
     result = _runner.submit(scenario_id, action)
     if result is None:
         return JSONResponse(status_code=404, content={"error": "Scenario not found"})
+
+    token = action.get("token")
+    user_id = auth.resolve_token(token) if token else None
+    if user_id is not None:
+        await _persist_attempt(user_id, scenario_id, action, result)
     return result
+
+
+async def _persist_attempt(user_id: int, scenario_id: str, action: dict, result: dict) -> None:
+    """Store one scored attempt.  Failure to record never fails the reply."""
+    from ..models import db
+    from ..models.records import TrainingAttemptRecord, UserRecord
+    from sqlalchemy import select
+    import json as _json
+
+    score = result["score"]
+    scenario = result["scenario"]
+    try:
+        async with db.SessionLocal() as s:
+            username = (await s.execute(
+                select(UserRecord.username).where(UserRecord.id == user_id)
+            )).scalar()
+            if username is None:
+                return  # stale token for a deleted account
+            s.add(TrainingAttemptRecord(
+                user_id=user_id,
+                username=username,
+                scenario_id=scenario_id,
+                category=scenario["category"],
+                difficulty=scenario["difficulty"],
+                action=_json.dumps({"type": action.get("type"), "amount": action.get("amount", 0)}),
+                score_total=score["total"],
+                action_match=score["action_match"],
+                sizing_precision=score["sizing_precision"],
+                timing_judgment=score["timing_judgment"],
+                is_optimal=score["is_optimal"],
+                hints_used=max(0, int(action.get("hints_used", 0))),
+                time_taken_ms=result.get("elapsed_ms", 0),
+            ))
+            await s.commit()
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception(
+            "failed to record training attempt user=%s scenario=%s", user_id, scenario_id)
 
 
 @router.get("/scenarios/{scenario_id}/hint")
@@ -117,6 +167,56 @@ async def get_hint(scenario_id: str, level: int = 0):
     if hint is None:
         return JSONResponse(status_code=404, content={"error": "No hints available"})
     return {"hint": hint, "level": level}
+
+
+@router.get("/stats")
+async def training_stats(token: str):
+    """Per-account training overview: totals, per-category weak points,
+    recent attempts (progress-curve source)."""
+    from fastapi.responses import JSONResponse
+
+    user_id = auth.resolve_token(token)
+    if user_id is None:
+        return JSONResponse(status_code=401, content={"error": "Not logged in"})
+
+    from ..models import db
+    from ..models import records
+
+    async with db.SessionLocal() as s:
+        recent = await records.attempts_recent(s, user_id)
+        categories = await records.category_breakdown(s, user_id)
+
+    total = sum(c["attempts"] for c in categories)
+    score_sum = sum(c["avg_score"] * c["attempts"] for c in categories)
+    optimal = sum(round(c["optimal_rate"] * c["attempts"]) for c in categories)
+    return {
+        "total_attempts": total,
+        "avg_score": round(score_sum / total, 1) if total else None,
+        "optimal_rate": round(optimal / total, 3) if total else None,
+        "categories": categories,
+        "recent": recent,
+    }
+
+
+@router.get("/mistakes")
+async def training_mistakes(token: str):
+    """Wrong-answer book: scenarios whose latest attempt is non-optimal."""
+    from fastapi.responses import JSONResponse
+
+    user_id = auth.resolve_token(token)
+    if user_id is None:
+        return JSONResponse(status_code=401, content={"error": "Not logged in"})
+
+    from ..models import db
+    from ..models import records
+
+    async with db.SessionLocal() as s:
+        rows = await records.mistake_scenarios(s, user_id)
+    return {"mistakes": [
+        {**r, "title": _library.get(r["scenario_id"]).title
+             if _library.get(r["scenario_id"]) is not None else r["scenario_id"]}
+        for r in rows
+    ]}
 
 
 @router.get("/categories")

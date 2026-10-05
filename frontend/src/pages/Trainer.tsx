@@ -17,6 +17,30 @@ export interface ImportableHand {
   board: string[];
 }
 
+interface CategoryStat {
+  category: string;
+  attempts: number;
+  avg_score: number;
+  optimal_rate: number;
+}
+
+interface TrainerStats {
+  total_attempts: number;
+  avg_score: number | null;
+  optimal_rate: number | null;
+  categories: CategoryStat[];
+}
+
+interface Mistake {
+  scenario_id: string;
+  title: string;
+  category: string;
+  difficulty: number;
+  last_score: number;
+  attempts: number;
+  last_tried_at: string;
+}
+
 const CATEGORY_LABEL: Record<string, string> = {
   preflop_range: '翻前范围',
   postflop_value: '翻后价值',
@@ -34,6 +58,8 @@ export default function Trainer() {
   const [username] = useState(() => localStorage.getItem('authUser') ?? '');
   const [importable, setImportable] = useState<ImportableHand[]>([]);
   const [importing, setImporting] = useState<number | null>(null);
+  const [stats, setStats] = useState<TrainerStats | null>(null);
+  const [mistakes, setMistakes] = useState<Mistake[]>([]);
 
   const refresh = useCallback(async () => {
     try {
@@ -55,6 +81,22 @@ export default function Trainer() {
       .then(d => setImportable(d?.hands ?? []))
       .catch(() => {});
   }, [username]);
+
+  // Server-side stats + wrong-answer book (logged-in only; guests train
+  // without a trail so neither section renders).
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    const qs = `?token=${encodeURIComponent(token)}`;
+    fetch(`/api/trainer/stats${qs}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setStats(d))
+      .catch(() => {});
+    fetch(`/api/trainer/mistakes${qs}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setMistakes(d?.mistakes ?? []))
+      .catch(() => {});
+  }, []);
 
   const importHand = async (handId: number) => {
     setImporting(handId);
@@ -90,6 +132,50 @@ export default function Trainer() {
       <div className="trainer-progress">
         <ScoreChart />
       </div>
+
+      {stats && stats.total_attempts > 0 && (
+        <div className="trainer-group trainer-stats">
+          <h3 className="trainer-group-title">训练统计</h3>
+          <div className="trainer-stat-overview">
+            <span>总题数 <b>{stats.total_attempts}</b></span>
+            <span>均分 <b>{stats.avg_score ?? '—'}</b></span>
+            <span>最优率 <b>{stats.optimal_rate != null ? `${Math.round(stats.optimal_rate * 100)}%` : '—'}</b></span>
+          </div>
+          <div className="trainer-weak-list">
+            {stats.categories.map(c => (
+              <div key={c.category} className="fb-bar-row">
+                <span className="fb-bar-label">{CATEGORY_LABEL[c.category] ?? c.category}</span>
+                <div className="fb-bar-track">
+                  <div className="fb-bar-fill" style={{ width: `${c.avg_score}%` }} />
+                </div>
+                <span className="fb-bar-value">{c.avg_score}分</span>
+                <span className="trainer-weak-count">{c.attempts}题</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {mistakes.length > 0 && (
+        <div className="trainer-group">
+          <h3 className="trainer-group-title">错题本（最近一次仍非最优，点击重训）</h3>
+          <div className="trainer-cards">
+            {mistakes.map(m => (
+              <div key={m.scenario_id} className="trainer-card mistake"
+                   onClick={() => navigate(`/trainer/${m.scenario_id}`)}>
+                <div className="trainer-card-title">{m.title}</div>
+                <div className="trainer-card-desc">
+                  {CATEGORY_LABEL[m.category] ?? m.category} · 上次 {m.last_score} 分
+                  {m.attempts > 1 ? ` · 已练 ${m.attempts} 次` : ''}
+                </div>
+                <span className={`diff-pill diff-${m.difficulty}`}>
+                  {'★'.repeat(m.difficulty)}{'☆'.repeat(5 - m.difficulty)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {username && importable.length > 0 && (
         <div className="trainer-group">
