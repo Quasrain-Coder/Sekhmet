@@ -14,7 +14,7 @@
 - 分支命名：`feat/...`、`fix/...`、`docs/...`、`refactor/...`
 - PR 合并前 CI 必须通过
 - commit message 中英文均可；Claude 参与的提交带 `Co-Authored-By` 尾注
-- 向 `main` 合入代码必须通过 Pull Request，**由用户确认后才能合入**
+- 向 `main` 合入代码必须通过 Pull Request，CI 全绿后**由 Claude 直接合入，无需用户确认**（2026-10-05 用户授权；squash merge，merge commit 标注 PR 号）
 
 ## Build & Test
 

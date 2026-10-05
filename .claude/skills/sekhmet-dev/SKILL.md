@@ -23,7 +23,7 @@ Sekhmet 是一个**个人德州扑克学习平台**，核心由三个子系统�
 
 1. **禁止直接向 `main` 提交或推送代码，没有任何例外**（包括文档、配置、Claude 自己的提交）。所有改动必须：新建分支 → 提交 → push 分支 → 开 PR → 合并进 `main`。
 2. **新增或修改模块时，必须同步更新 CI 的 test/coverage 步骤**，不得遗漏。
-3. **PR 合并前 CI 必须通过**，由用户确认后才能合入，不允许自行 merge。
+3. **PR 合并前 CI 必须通过**；CI 全绿后 Claude **可直接合入，无需用户确认**（2026-10-05 用户授权，squash merge，commit 标注 PR 号）。
 
 ### 分支命名
 
@@ -52,18 +52,18 @@ Sekhmet 是一个**个人德州扑克学习平台**，核心由三个子系统�
 ```
 main ─── feat/xxx ─── commit ─── push ─── PR ──→ main
   │                                              │
-  └── 所有开发从此分支                              └── CI 绿 + 用户审批
+  └── 所有开发从此分支                              └── CI 绿 → Claude 自行合入
 ```
 
 1. 从 `main` 创建 feature 分支：`git checkout -b feat/xxx main`
 2. 在 feature 分支上开发和提交
 3. Push 分支并创建 PR
-4. CI 通过后，等用户审批合入
+4. CI 全绿后 Claude 自行 squash merge（无需用户确认）
 
 ### 禁止事项
 
 - ❌ 直接 push 到 `main`
-- ❌ 自行 merge PR（未经用户确认）
+- ❌ CI 未绿就 merge PR
 - ❌ 在 `main` 上直接 commit
 - ❌ 使用 `git push --force` 到共享分支
 
