@@ -54,6 +54,11 @@ class TableConfig:
     big_blind: int = 10
     default_buyin: int = 200
     max_seats: int = 9
+    # Tournament mode (iteration #7): blinds escalate every
+    # ``blind_up_every_hands`` hands, busted players are eliminated,
+    # last player standing wins.  Single-table SNG shape.
+    tournament: bool = False
+    blind_up_every_hands: int = 8
 
     def __post_init__(self):
         if not (0 < self.small_blind < self.big_blind):
@@ -71,11 +76,22 @@ class TableConfig:
 
     @classmethod
     def from_dict(cls, d: dict) -> "TableConfig":
-        known = {"small_blind", "big_blind", "default_buyin", "max_seats"}
+        known = {"small_blind", "big_blind", "default_buyin", "max_seats",
+                 "tournament", "blind_up_every_hands"}
         unknown = set(d) - known
         if unknown:
             raise ValueError(f"Unknown config keys: {sorted(unknown)}")
-        return cls(**{k: int(v) for k, v in d.items()})
+        kwargs = dict(d)
+        if "tournament" in kwargs:
+            kwargs["tournament"] = bool(kwargs["tournament"])
+        if "blind_up_every_hands" in kwargs:
+            if int(kwargs["blind_up_every_hands"]) < 1:
+                raise ValueError("blind_up_every_hands must be >= 1")
+            kwargs["blind_up_every_hands"] = int(kwargs["blind_up_every_hands"])
+        for k in ("small_blind", "big_blind", "default_buyin", "max_seats"):
+            if k in kwargs:
+                kwargs[k] = int(kwargs[k])
+        return cls(**kwargs)
 
 
 def _short_id() -> str:
@@ -119,6 +135,14 @@ class TableSession:
     grace_timers: dict[int, asyncio.Task] = field(default_factory=dict)
     reclaim_tokens: dict[int, str] = field(default_factory=dict)  # seat_idx → token
     action_timer: asyncio.Task | None = None
+    # Tournament progress (iteration #7) — meaningful only when
+    # config.tournament is set.
+    blind_level: int = 1
+    hands_played: int = 0
+    finished: bool = False
+    # Eliminated players' sockets: they no longer hold seats but must
+    # still receive the tournament_result broadcast before disconnect.
+    observers: list[WebSocket] = field(default_factory=list)
     # Sweeper: when the room first matched a zombie/stuck condition.
     # Reset whenever the condition clears — a room must be continuously
     # dead for the grace period before the sweeper acts on it.
@@ -665,6 +689,8 @@ async def rebuy(table_id: str, seat_idx: int, amount: int) -> dict[str, Any]:
     session = await get_table(table_id)
     if session is None:
         raise GameError(f"Table {table_id} not found")
+    if session.config.tournament:
+        raise GameError("No rebuys in a tournament — busted players are eliminated")
     if session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
         raise GameError("Table is mid-hand — rebuy between hands")
     player = session.game_state.player(seat_idx)
@@ -694,6 +720,118 @@ async def rebuy(table_id: str, seat_idx: int, amount: int) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
+def _advance_blind_level(session: TableSession) -> None:
+    """Count the hand and escalate the blind level on schedule.
+
+    First hand plays level 1; every ``blind_up_every_hands`` hands the
+    level moves up (capped at the structure's last level — 15).  Pure
+    bookkeeping: the SB/BB writeback happens in start_hand.
+    """
+    if not session.config.tournament or session.finished:
+        return
+    session.hands_played += 1
+    if (session.hands_played > 1
+            and (session.hands_played - 1) % session.config.blind_up_every_hands == 0):
+        session.blind_level = min(session.blind_level + 1, 15)
+
+
+async def _tournament_sweep_busted(session: TableSession) -> None:
+    """Eliminate zero-stack seats (caller holds the session lock).
+
+    Tournament play has no rebuys — a busted player is out.  Their
+    *seat* is torn down like a stand-up, but the websocket moves to
+    ``session.observers`` so the player still sees the final result
+    (an "eliminated" notice now, the result broadcast later, then a
+    disconnect).  When only one seat remains the tournament is marked
+    finished.
+    """
+    for p in list(session.game_state.players):
+        seat = p.seat_idx
+        if p.stack > 0 or seat not in session.player_names:
+            continue
+        ws = session.clients.pop(seat, None)
+        session.send_locks.pop(seat, None)
+        if ws is not None:
+            session.observers.append(ws)
+        session.player_names.pop(seat, None)
+        session.bot_levels.pop(seat, None)
+        session.stats.pop(seat, None)
+        session.tracker.stats.pop(seat, None)
+        session.total_buyin.pop(seat, None)
+        session.buyin_count.pop(seat, None)
+        session.reclaim_tokens.pop(seat, None)
+        session.consecutive_timeouts.pop(seat, None)
+        session.pending_seats.discard(seat)
+        session.user_ids.pop(seat, None)
+        players = tuple(q for q in session.game_state.players
+                        if q.seat_idx != seat)
+        session.game_state = session.game_state.with_players(players)
+        _reassign_owner(session)
+        # Tell them now so the UI can react (result broadcast comes later).
+        if ws is not None:
+            try:
+                await ws.send_json({"type": "eliminated", "seat_idx": seat})
+            except Exception:
+                pass
+    alive = [q for q in session.game_state.players if q.stack > 0]
+    if session.player_names and len(alive) <= 1:
+        session.finished = True
+
+
+def _tournament_result_broadcast(session: TableSession) -> dict[str, Any]:
+    gs = session.game_state
+    winner = next((p for p in gs.players if p.stack > 0), None)
+    return {
+        "type": "tournament_result",
+        "table_id": session.table_id,
+        "finished": True,
+        "winner_seat": winner.seat_idx if winner else None,
+        "winner_name": (session.player_names.get(winner.seat_idx)
+                        if winner is not None else None),
+        "players": [
+            {"seat_idx": p.seat_idx,
+             "name": session.player_names.get(p.seat_idx, ""),
+             "stack": p.stack}
+            for p in gs.players
+        ],
+    }
+
+
+async def _send_tournament_result(session: TableSession, msg: dict[str, Any]) -> None:
+    """Deliver the result to seats *and* eliminated observers, then
+    disconnect the observers — the tournament has nothing left for them."""
+    for ws in list(session.clients.values()) + list(session.observers):
+        try:
+            await ws.send_json(msg)
+        except Exception:
+            pass
+    for ws in session.observers:
+        try:
+            await ws.close()
+        except Exception:
+            pass
+    session.observers.clear()
+
+
+def _tournament_result_broadcast(session: TableSession) -> dict[str, Any]:
+    gs = session.game_state
+    winner = next((p for p in gs.players if p.stack > 0), None)
+    return {
+        "type": "tournament_result",
+        "table_id": session.table_id,
+        "finished": True,
+        "winner_seat": winner.seat_idx if winner else None,
+        "winner_name": (session.player_names.get(winner.seat_idx)
+                        if winner is not None else None),
+        "players": [
+            {"seat_idx": p.seat_idx,
+             "name": session.player_names.get(p.seat_idx, ""),
+             "stack": p.stack}
+            for p in gs.players
+        ],
+    }
+
+
 async def start_hand(table_id: str) -> dict[str, Any]:
     """Deal a new hand.  Requires ≥2 seated players."""
     session = await get_table(table_id)
@@ -709,6 +847,15 @@ async def start_hand(table_id: str) -> dict[str, Any]:
     async with session.lock:
         if session.game_state.phase not in (GamePhase.WAITING, GamePhase.SHOWDOWN):
             raise GameError(f"Cannot start hand during {session.game_state.phase.name}")
+
+        # Tournament lifecycle (iteration #7): busted seats are eliminated
+        # before the deal; one player left means the tournament is over.
+        if session.config.tournament:
+            await _tournament_sweep_busted(session)
+            if session.finished:
+                result_msg = _tournament_result_broadcast(session)
+                await _send_tournament_result(session, result_msg)
+                return result_msg
 
         if len(session.player_seats()) < 2:
             raise GameError("Need at least 2 players to start a hand")
@@ -753,6 +900,20 @@ async def start_hand(table_id: str) -> dict[str, Any]:
             dealer = seats[(idx + 1) % len(seats)]
         else:
             dealer = next((s for s in seats if s > dealer), seats[0])
+
+        # Tournament: escalate blinds on schedule before dealing —
+        # deal_new_hand reads SB/BB from the state, so a single
+        # dataclasses.replace makes the new level authoritative.
+        _advance_blind_level(session)
+        if session.config.tournament:
+            from ..game_engine.rules.blind_structure import get_mtt_blinds
+            bl = get_mtt_blinds(session.blind_level)
+            if bl is not None:
+                session.game_state = replace(
+                    session.game_state,
+                    small_blind=bl.small_blind,
+                    big_blind=bl.big_blind,
+                )
 
         session.game_state = deal_new_hand(
             session.game_state,
@@ -1136,8 +1297,20 @@ def table_info(session: TableSession) -> dict[str, Any]:
             "big_blind": session.config.big_blind,
             "default_buyin": session.config.default_buyin,
             "max_seats": session.config.max_seats,
+            "tournament": session.config.tournament,
         },
+        # Tournament progress (iteration #7) — zeros/nulls on cash tables.
+        "blind_level": session.blind_level if session.config.tournament else None,
+        "hands_to_next_level": (
+            session.config.blind_up_every_hands
+            - ((session.hands_played - 1) % session.config.blind_up_every_hands)
+            if session.config.tournament and not session.finished else None),
+        "finished": session.finished if session.config.tournament else False,
         "seats": seats,
+        # Blinds actually in effect (tournament escalation updates these;
+        # on cash tables they equal the config values).
+        "current_small_blind": gs.small_blind,
+        "current_big_blind": gs.big_blind,
         "community_cards": [str(c) for c in gs.community_cards],
         "pot": gs.pot.main_pot,
         "current_bet": gs.current_bet,

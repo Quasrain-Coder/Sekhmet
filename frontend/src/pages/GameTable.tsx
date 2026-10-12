@@ -80,6 +80,11 @@ export default function GameTablePage() {
   const needRebuy = shouldShowRebuy(state.phase, meStack, mySeatStack);
   const AUTO_NEXT_SECONDS = 5;
   const [autoNext, setAutoNext] = useState(0);
+  // Tournament HUD (iteration #7): blind level from table_state, end banner.
+  const [tourney, setTourney] = useState<{
+    level: number; toNext: number | null; sb: number; bb: number;
+  } | null>(null);
+  const [tourneyResult, setTourneyResult] = useState<{ winner: string | null } | null>(null);
   useEffect(() => {
     if (state.phase !== 'SHOWDOWN' || !isOwner || needRebuy) {
       setAutoNext(0);
@@ -194,11 +199,25 @@ export default function GameTablePage() {
           // and never revert mySeat, stranding us in the table view).
           // The definitive confirmation is the private reclaim_token.
           dispatch({ type: 'TABLE_STATE', data: m as any });
+          if ((m as any).tournament) {
+            setTourney({
+              level: (m as any).blind_level,
+              toNext: (m as any).hands_to_next_level,
+              sb: (m as any).current_small_blind,
+              bb: (m as any).current_big_blind,
+            });
+          }
           break;
         case 'hand_start': dispatch({ type: 'HAND_START', data: m as any }); break;
         case 'hole_cards': dispatch({ type: 'HOLE_CARDS', cards: m.cards }); break;
         case 'game_state_update': dispatch({ type: 'GAME_UPDATE', data: m as any }); break;
         case 'hand_result': dispatch({ type: 'HAND_RESULT', data: m as any }); break;
+        case 'eliminated':
+          pushToast('error', '你被淘汰了——观战至终局');
+          break;
+        case 'tournament_result':
+          setTourneyResult({ winner: (m as any).winner_name ?? null });
+          break;
         case 'reclaim_token':
           dispatch({ type: 'BUMP_TURN_EPOCH' });
           stopAutoReclaim();  // reclaim succeeded
@@ -455,6 +474,12 @@ export default function GameTablePage() {
             Next hand in {autoNext}s…
           </span>
         )}
+        {tourney && !tourneyResult && (
+          <span className="blind-level">
+            🏆 Lv.{tourney.level} · {tourney.sb}/{tourney.bb}
+            {tourney.toNext != null ? ` · ${tourney.toNext}手后升级` : ''}
+          </span>
+        )}
         <button className="btn btn-sm gold" onClick={() => send({ type: 'start_hand' })}
                 disabled={!isOwner || (state.phase !== 'WAITING' && state.phase !== 'SHOWDOWN')}
                 title={isOwner ? '' : 'Only the table owner can start the next hand'}>
@@ -463,6 +488,12 @@ export default function GameTablePage() {
       </div>
 
       <div className="table-area">
+        {tourneyResult && (
+          <div className="tournament-banner">
+            🏆 锦标赛结束 — 冠军 {tourneyResult.winner ?? '?'}！
+            <button className="btn btn-sm gold" onClick={() => navigate('/')}>回大厅</button>
+          </div>
+        )}
         <OvalTable
           seats={state.seats}
           players={state.players}
@@ -483,7 +514,7 @@ export default function GameTablePage() {
           onSeatClick={openProfile}
         />
 
-        {needRebuy && (() => {
+        {needRebuy && !tourney && (() => {
           const defaultAmount = state.config?.default_buyin ?? 200;
           const amount = rebuyAmount ?? defaultAmount;
           return (

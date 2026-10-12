@@ -16,7 +16,7 @@ interface TableInfo {
   table_id: string;
   phase: string;
   max_seats: number;
-  config: { small_blind: number; big_blind: number; default_buyin: number; max_seats: number };
+  config: { small_blind: number; big_blind: number; default_buyin: number; max_seats: number; tournament?: boolean };
   seats: SeatInfo[];
 }
 
@@ -33,6 +33,7 @@ export default function Lobby() {
   const [tier, setTier] = useState(BLIND_TIERS[1]);
   const [buyin, setBuyin] = useState(BLIND_TIERS[1].bb * 100);
   const [maxSeats, setMaxSeats] = useState(9);
+  const [tournament, setTournament] = useState(false);
   const navigate = useNavigate();
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const toastId = useRef(0);
@@ -139,6 +140,10 @@ export default function Lobby() {
           big_blind: tier.bb,
           default_buyin: buyin,
           max_seats: maxSeats,
+          tournament,
+          // Tournament blinds climb the standard MTT structure from the
+          // chosen tier; 8 hands ≈ one level at live pace.
+          ...(tournament ? { blind_up_every_hands: 8 } : {}),
         }),
       });
       if (!resp.ok) {
@@ -244,6 +249,11 @@ export default function Lobby() {
           <select className="input" value={maxSeats} onChange={e => setMaxSeats(Number(e.target.value))}>
             {[2, 3, 4, 5, 6, 7, 8, 9].map(n => <option key={n} value={n}>{n} seats</option>)}
           </select>
+          <label className="input tournament-toggle" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input type="checkbox" checked={tournament}
+                   onChange={e => setTournament(e.target.checked)} />
+            🏆 锦标赛
+          </label>
           <button className="btn gold" onClick={create} disabled={!authToken && !name}>+ New Table</button>
         </div>
       </div>
@@ -257,6 +267,7 @@ export default function Lobby() {
               <span className="id">{t.table_id}</span>
               <div className="info">
                 {t.config.small_blind}/{t.config.big_blind} · buy-in {t.config.default_buyin}
+                {t.config.tournament ? ' · 🏆' : ''}
               </div>
               <div className="seat-dots">
                 {t.seats.map(s => (
