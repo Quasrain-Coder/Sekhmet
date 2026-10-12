@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import random
 
-from ..game_engine import GamePhase, GameState
+from ..game_engine import ActionType, GamePhase, GameState
 from ..game_engine.deck import Card, Rank, Suit
 from ..game_engine.hand_evaluator import evaluate_7_cards
 from .gto_ranges import (
@@ -59,6 +59,67 @@ def weighted_sample(
         if target <= acc:
             return c1, c2
     return combos[-1][0], combos[-1][1]
+
+
+def postflop_aggression_count(state: GameState, opp_seat: int) -> int:
+    """How many aggressive actions (BET/RAISE/ALL_IN) the opponent has
+    taken this hand, minus the preflop raise(s) already baked into the
+    chart choice.
+
+    ``round_history`` carries no street markers, so the preflop raises
+    are *inferred* from the current bet level (documented
+    approximation): ≤ BB → none, ≤ 4 BB → one (single raise), more →
+    two or more.
+    """
+    aggr = sum(1 for a in state.round_history
+               if a.player_idx == opp_seat
+               and a.type in (ActionType.BET, ActionType.RAISE, ActionType.ALL_IN))
+    if state.current_bet <= state.big_blind:
+        preflop = 0
+    elif state.current_bet <= state.big_blind * 4:
+        preflop = 1
+    else:
+        preflop = 2
+    return max(0, aggr - preflop)
+
+
+def narrow_range(rng_dict: Range, level: int) -> Range:
+    """Keep only the core of a chart range: hands played at frequency
+    ≥ 0.3 (first narrowing) or ≥ 0.7 (any deeper).  A single aggressive
+    postflop action says "my hand is at least decent"; two say "strong".
+    Falls back to the original range when the core would be empty."""
+    if level <= 0:
+        return rng_dict
+    threshold = 0.3 if level == 1 else 0.7
+    core = {k: f for k, f in rng_dict.items() if f >= threshold}
+    return core or rng_dict
+
+
+def infer_range_for_opponent(
+    state: GameState, hero_seat: int, opp_seat: int,
+) -> Range | None:
+    """Estimated range of one specific opponent, narrowed by their
+    postflop aggression.  Same chart logic as ``infer_opponent_range``
+    but keyed to *opp_seat* instead of the last aggressor.
+    """
+    bucket = position_bucket(opp_seat, state)
+    if state.phase == GamePhase.PREFLOP:
+        if bucket == "bb":
+            bucket = "utg"
+        if state.current_bet >= state.big_blind * 7:
+            base = THREE_BET[bucket]
+        elif state.current_bet > state.big_blind:
+            base = RFI[bucket]
+        else:
+            base = LIMP_RANGE
+        return base                      # no narrowing preflop
+    if bucket == "bb":
+        base = BB_DEFEND_CALL
+    elif state.pot.main_pot >= (state.small_blind + state.big_blind) * 4:
+        base = RFI[bucket]
+    else:
+        base = LIMP_RANGE
+    return narrow_range(base, postflop_aggression_count(state, opp_seat))
 
 
 def infer_opponent_range(state: GameState, player_seat: int) -> Range | None:
