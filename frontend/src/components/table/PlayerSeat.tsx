@@ -1,6 +1,22 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import CardView from './CardView';
-import type { PlayerInfo } from '../../hooks/useGameState';
+import type { PlayerHud, PlayerInfo } from '../../hooks/useGameState';
+
+// Below this many recorded hands the Laplace-smoothed numbers are mostly
+// prior — still shown, but dimmed so players know not to trust them.
+const HUD_SAMPLE_MIN = 5;
+
+/** Opponent tendency line: "VPIP 45 · PFR 20 (32手)". */
+function SeatHud({ hud }: { hud: PlayerHud }) {
+  const thin = hud.hands < HUD_SAMPLE_MIN;
+  return (
+    <div className={`hud-line${thin ? ' hud-thin' : ''}`}
+         title={`VPIP ${hud.vpip_pct}% · PFR ${hud.pfr_pct}% · Fold对注 ${hud.fold_to_bet_pct}%`}>
+      VPIP {hud.vpip_pct} · PFR {hud.pfr_pct}
+      <span className="hud-hands"> · {hud.hands}手</span>
+    </div>
+  );
+}
 
 interface Props {
   player: PlayerInfo;
@@ -87,6 +103,7 @@ export default function PlayerSeat({ player, isCurrent, holeCards, avatarLabel, 
       )}
       <div className="name">{player.name}</div>
       <div className="stack">{player.stack}</div>
+      {!isMe && player.hud && <SeatHud hud={player.hud} />}
       {player.current_bet > 0 && <div className="bet">{player.current_bet}</div>}
       {folded && <span className="folded-tag">Fold</span>}
       {holeCards && (

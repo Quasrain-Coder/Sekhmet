@@ -1,5 +1,12 @@
 import { useReducer, type Dispatch } from 'react';
 
+export interface PlayerHud {
+  hands: number;
+  vpip_pct: number;
+  pfr_pct: number;
+  fold_to_bet_pct: number;
+}
+
 export interface PlayerInfo {
   seat_idx: number;
   name: string;
@@ -8,6 +15,9 @@ export interface PlayerInfo {
   is_active: boolean;
   is_all_in: boolean;
   is_human: boolean;
+  /** Public behaviour stats (VPIP/PFR) from the table tracker — null
+   * until the seat has played a hand.  Absent on old server payloads. */
+  hud?: PlayerHud | null;
 }
 
 export interface SeatInfo {

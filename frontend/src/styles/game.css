@@ -263,6 +263,12 @@ select.input { width: auto; }
 .player-seat .name { font-size: 0.62rem; color: #94a3b8; max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .player-seat .stack { font-size: 0.64rem; color: var(--cyan-text); font-weight: 600; }
 .player-seat.me .stack { color: var(--gold-text); }
+/* Opponent HUD line — dim by default, dimmer when the sample is thin */
+.player-seat .hud-line {
+  font-size: 0.55rem; color: #7dd3fc; opacity: 0.85; letter-spacing: 0.3px;
+}
+.player-seat .hud-line .hud-hands { opacity: 0.7; }
+.player-seat .hud-line.hud-thin { opacity: 0.45; }
 .player-seat.folded .name { color: #555; text-decoration: line-through; }
 .player-seat.folded .avatar { opacity: 0.4; box-shadow: none; }
 .player-seat .bet {

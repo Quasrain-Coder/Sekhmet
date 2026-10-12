@@ -1181,6 +1181,22 @@ def _hand_start_broadcast(session: TableSession) -> dict[str, Any]:
     }
 
 
+def _seat_hud(session: TableSession, seat_idx: int) -> dict[str, Any] | None:
+    """Public per-seat behaviour stats for the HUD, or None when the
+    seat has no recorded hands (just sat / left)."""
+    st = session.tracker.stats.get(seat_idx)
+    if st is None or st.hands < 1:
+        return None
+    return {
+        "hands": st.hands,
+        "vpip_pct": round(st.vpip_rate() * 100),
+        "pfr_pct": round(st.pfr_rate() * 100),
+        # Sent but not rendered by the UI for now — faced-bet samples are
+        # usually too small to be worth showing (design: 2026-10-05).
+        "fold_to_bet_pct": round(st.fold_to_bet_rate() * 100),
+    }
+
+
 def _state_broadcast(
     session: TableSession,
     showdown_result: dict[str, Any] | None = None,
@@ -1209,6 +1225,10 @@ def _state_broadcast(
                 "is_active": p.is_active,
                 "is_all_in": p.is_all_in,
                 "is_human": p.is_human,
+                # HUD (iteration #4): public behaviour stats for this seat,
+                # accumulated across hands by the session tracker.  null
+                # until the seat has played at least one hand.
+                "hud": _seat_hud(session, p.seat_idx),
             }
             for p in gs.players
         ],

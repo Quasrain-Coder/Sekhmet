@@ -1322,3 +1322,59 @@ async def test_owner_reassigned_to_parked_human():
     await tm.stand_up(tid, 0)  # owner leaves between hands
     session = await tm.get_table(tid)
     assert session.owner_seat == 2  # parked human inherits the crown
+
+
+# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# HUD — per-seat behaviour stats in game_state_update (iteration #4)
+# ---------------------------------------------------------------------------
+
+
+def _hud_table():
+    from sekhmet.api import table_manager as tm
+    return tm.create_table(tm.TableConfig(small_blind=5, big_blind=10))
+
+
+async def test_state_broadcast_hud_fields():
+    from sekhmet.api import table_manager as tm
+    from sekhmet.ai_engine.stats_tracker import OpponentStats
+    from sekhmet.game_engine import Action, ActionType
+
+    tid = await _hud_table()
+    session = await tm.get_table(tid)
+    from sekhmet.game_engine.game_state import Player
+    session.game_state = session.game_state.__class__(
+        players=(Player(name="Villain", seat_idx=0, stack=200),
+                 Player(name="Silent", seat_idx=1, stack=200)))
+    gs = session.game_state
+    # Seat 0 has a recorded history: 2 hands, VPIP once.  Seat 1: nothing.
+    session.tracker.stats[0] = OpponentStats(hands=2, vpip=1)
+    session.tracker.observe(gs, Action(0, ActionType.CALL, amount=10))
+
+    b = tm._state_broadcast(session)
+    p0 = next(p for p in b["players"] if p["seat_idx"] == 0)
+    p1 = next(p for p in b["players"] if p["seat_idx"] == 1)
+    assert p0["hud"] is not None
+    assert p0["hud"]["hands"] == 2
+    assert 0 < p0["hud"]["vpip_pct"] < 100
+    assert "pfr_pct" in p0["hud"] and "fold_to_bet_pct" in p0["hud"]
+    assert p1["hud"] is None            # seat 1 never recorded
+
+
+async def test_state_broadcast_hud_clears_when_tracker_empties():
+    from sekhmet.api import table_manager as tm
+    from sekhmet.ai_engine.stats_tracker import OpponentStats
+
+    tid = await _hud_table()
+    session = await tm.get_table(tid)
+    from sekhmet.game_engine.game_state import Player
+    session.game_state = session.game_state.__class__(
+        players=(Player(name="Villain", seat_idx=0, stack=200),
+                 Player(name="Silent", seat_idx=1, stack=200)))
+    session.tracker.stats[1] = OpponentStats(hands=3, vpip=2)
+    assert next(p for p in tm._state_broadcast(session)["players"]
+                if p["seat_idx"] == 1)["hud"] is not None
+    # Leaving clears the tracker entry (existing cleanup) → hud nulls out.
+    session.tracker.stats.pop(1, None)
+    assert next(p for p in tm._state_broadcast(session)["players"]
+                if p["seat_idx"] == 1)["hud"] is None
