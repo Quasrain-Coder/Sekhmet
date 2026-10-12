@@ -62,10 +62,13 @@ async def get_scenario(scenario_id: str):
     s = _library.get(scenario_id)
     if s is None:
         return JSONResponse(status_code=404, content={"error": "Scenario not found"})
-    # Fetching a scenario's detail marks the decision timer's start — the
-    # submit endpoint scores against this.  (next_scenario was never wired
-    # into the API, so timing used to read 0 and always score full marks.)
-    _runner.start(scenario_id)
+    return _scenario_payload(s)
+
+
+def _scenario_payload(s: Scenario) -> dict:
+    """Scenario detail for the decision UI; fetching it marks the
+    decision timer's start (the submit endpoint scores against this)."""
+    _runner.start(s.id)
     return {
         "id": s.id,
         "title": s.title,
@@ -79,6 +82,33 @@ async def get_scenario(scenario_id: str):
         # Concrete table preview when the scenario carries a frozen state.
         "table": _table_preview(s),
     }
+
+
+@router.get("/random")
+async def random_scenario(category: str | None = None):
+    """Generate a fresh random scenario on the fly (iteration #5).
+
+    The scenario lives in the in-process library only — meant for
+    streaming practice, not collection.  Stats/mistake-book still work:
+    category and difficulty are recorded per attempt as usual.
+    """
+    import uuid
+    from fastapi.responses import JSONResponse
+
+    if category is not None and category not in {c.value for c in ScenarioCategory}:
+        return JSONResponse(
+            status_code=400,
+            content={"error": f"Unknown category: {category}. Options: {[c.value for c in ScenarioCategory]}"})
+
+    from ..trainer.bulk_generator import generate_one
+
+    s = generate_one(category=category)
+    if s is None:
+        return JSONResponse(status_code=503,
+                            content={"error": "Could not generate a scenario, try again"})
+    s.id = f"rand-{uuid.uuid4().hex[:8]}"
+    _library.add(s)
+    return _scenario_payload(s)
 
 
 def _table_preview(scenario) -> dict | None:

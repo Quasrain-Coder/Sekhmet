@@ -725,6 +725,35 @@ def _hole_label(hole: list[str]) -> str:
 # ---------------------------------------------------------------------------
 
 
+def generate_one(
+    rng: random.Random | None = None,
+    category: str | None = None,
+    max_attempts: int = 800,
+) -> Scenario | None:
+    """Build one fresh random scenario at request time (iteration #5).
+
+    Picks a random template (optionally restricted to *category*),
+    loops build + quality-filter until a non-trivial scenario passes,
+    or ``None`` if the attempt budget runs out.  The caller owns the
+    scenario's identity — the API layer rewrites the id to ``rand-*``
+    so runtime questions never collide with the pre-generated library.
+    """
+    rng = rng if rng is not None else random.Random()
+    tpls = [t for t in _TEMPLATES
+            if category is None or t.category.value == category]
+    if not tpls:
+        return None
+    for _ in range(max_attempts):
+        tpl = rng.choice(tpls)
+        spec = tpl.build(rng)
+        if spec is None:
+            continue
+        scenario = _scenario_for(spec, tpl, idx=0)
+        if scenario is not None:
+            return scenario
+    return None
+
+
 def generate_library(
     target: int = DEFAULT_TARGET,
     seed: int = DEFAULT_SEED,

@@ -500,3 +500,61 @@ def test_api_serves_generated_and_builtin():
     ids = {s["id"] for s in resp.json()["scenarios"]}
     assert any(i.startswith("gen-") for i in ids)
     assert "preflop-btn-premium" in ids  # curated built-in still present
+
+
+# ---------------------------------------------------------------------------
+# Runtime random scenario generation (iteration #5)
+# ---------------------------------------------------------------------------
+
+
+def test_generate_one_returns_quality_scenario():
+    import random as _random
+    from sekhmet.trainer.bulk_generator import generate_one
+
+    s = generate_one(_random.Random(2026))
+    assert s is not None
+    assert s.frozen_state is not None
+    assert s.player_seat is not None
+    assert s.optimal_action["type"] in {"FOLD", "CHECK", "CALL", "BET", "RAISE", "ALL_IN"}
+    # The generated scenario is immediately scoreable to near-perfect
+    # by its own reference action (quality gate).
+    best = score_decision(s, {"type": s.optimal_action["type"],
+                              "amount": s.optimal_action["amount"]})
+    assert best.total >= 90
+
+
+def test_generate_one_category_filter():
+    import random as _random
+    from sekhmet.trainer.bulk_generator import generate_one
+
+    for _ in range(3):
+        s = generate_one(_random.Random(), category="river_decision")
+        assert s is not None
+        assert s.category.value == "river_decision"
+    assert generate_one(category="no-such-category") is None
+
+
+def test_trainer_random_endpoint(client):
+    resp = client.get("/api/trainer/random")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["id"].startswith("rand-")
+    assert data["table"] is not None
+    assert data["time_budget_ms"] > 0
+
+    # The generated scenario is fetchable and scoreable end to end.
+    got = client.get(f"/api/trainer/scenarios/{data['id']}")
+    assert got.status_code == 200
+    sub = client.post(f"/api/trainer/scenarios/{data['id']}/submit",
+                      json={"type": "FOLD", "amount": 0})
+    assert sub.status_code == 200
+    assert sub.json()["analysis"]["equity_source"] == "monte_carlo"
+
+
+def test_trainer_random_endpoint_category(client):
+    resp = client.get("/api/trainer/random", params={"category": "pot_odds"})
+    assert resp.status_code == 200
+    assert resp.json()["category"] == "pot_odds"
+
+    bad = client.get("/api/trainer/random", params={"category": "bogus"})
+    assert bad.status_code == 400

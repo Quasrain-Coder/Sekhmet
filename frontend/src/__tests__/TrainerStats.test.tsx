@@ -101,3 +101,27 @@ test('stats hidden when account has zero attempts', async () => {
   await waitFor(() => expect(screen.getByText('翻前 BTN 强牌')).toBeInTheDocument());
   expect(screen.queryByText('训练统计')).not.toBeInTheDocument();
 });
+
+
+test('random-scenario button navigates to the generated question', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (url: string) => ({
+    ok: true,
+    json: async () => {
+      if (url.includes('/random')) {
+        return { id: 'rand-abcd1234', title: '随机题', description: '',
+                 category: 'pot_odds', difficulty: 2, hints: [] };
+      }
+      if (url.includes('/stats')) return STATS;
+      if (url.includes('/mistakes')) return MISTAKES;
+      if (url.includes('/importable-hands')) return { hands: [] };
+      return SCENARIOS;
+    },
+  })));
+  renderPage();
+  await waitFor(() => expect(screen.getByText(/随机一题/)).toBeInTheDocument());
+  fireEvent.click(screen.getByText(/随机一题/));
+  expect(await screen.findByText('SCENARIO_PAGE')).toBeInTheDocument();
+  // The random endpoint was consulted with the active category filter.
+  const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls as [string][];
+  expect(calls.some(([u]) => u.includes('/api/trainer/random'))).toBe(true);
+});
