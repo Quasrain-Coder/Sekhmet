@@ -165,3 +165,102 @@ def test_facing_3bet_range_tighter_than_limp_range():
 def test_infer_opponent_range_no_opponents():
     st = _make_state([_player(0)], sb_seat=0, bb_seat=0)
     assert infer_opponent_range(st, player_seat=0) is None
+
+
+# ---------------------------------------------------------------------------
+# L4.5: range narrowing + multiway modelling (iteration #6)
+# ---------------------------------------------------------------------------
+
+
+def test_narrow_range_monotone_with_fallback():
+    from sekhmet.ai_engine.equity import narrow_range
+    from sekhmet.ai_engine.gto_ranges import RFI
+    full = RFI["co"]
+    l1 = narrow_range(full, 1)
+    l2 = narrow_range(full, 2)
+    assert len(l2) <= len(l1) <= len(full)
+    assert all(f >= 0.3 for f in l1.values())
+    assert all(f >= 0.7 for f in l2.values())
+    assert narrow_range(full, 0) is full
+    # A range with no strong core falls back instead of going empty.
+    uniform = {(14, 2, "s"): 0.2, (13, 3, "o"): 0.1}
+    assert narrow_range(uniform, 1) is uniform
+
+
+def test_postflop_aggression_count_dedups_preflop_raises():
+    from types import SimpleNamespace
+    from sekhmet.ai_engine.equity import postflop_aggression_count
+    from sekhmet.game_engine import Action, ActionType
+
+    def st(current_bet, history):
+        return SimpleNamespace(current_bet=current_bet, big_blind=10,
+                               round_history=tuple(history))
+
+    raise_ = Action(1, ActionType.RAISE, 30)
+    bet = Action(1, ActionType.BET, 50)
+    call = Action(1, ActionType.CALL, 10)
+    # Raised pot (30 BB): opponent raised preflop then bet once postflop
+    # → 1 deduped postflop aggression.
+    assert postflop_aggression_count(st(30, [call, raise_, bet]), 1) == 1
+    # Limped pot (10 BB): two bets are both postflop → 2.
+    assert postflop_aggression_count(st(10, [call, bet, bet]), 1) == 2
+    # Triple-barrel in a 3-bet pot (45+ BB open) → 2 bets + preflop raise
+    # (deduped as 2) → 2 postflop aggressions.
+    allin = Action(1, ActionType.ALL_IN, 200)
+    assert postflop_aggression_count(st(50, [raise_, raise_, bet, bet]), 1) == 2
+
+
+def test_infer_range_for_opponent_narrows_with_aggression():
+    from types import SimpleNamespace
+    from sekhmet.ai_engine.equity import (
+        infer_range_for_opponent, range_combos,
+    )
+    from sekhmet.game_engine import Action, ActionType, GamePhase
+    from sekhmet.ai_engine.gto_ranges import RFI
+
+    # Opponent on the button (seat 0): postflop base range is RFI[btn],
+    # which carries mixed frequencies — so narrowing has room to bite.
+    # (Known limitation, see design doc: charts without mixed freqs
+    # (BB defend / limp) narrow to themselves; data work, not logic.)
+    players = [SimpleNamespace(seat_idx=i, is_active=True, is_all_in=False)
+               for i in range(3)]
+    base_state = dict(phase=GamePhase.FLOP, sb_seat=1, bb_seat=2,
+                      dealer_idx=0, current_bet=30, big_blind=10,
+                      small_blind=5, last_aggressor_idx=0,
+                      pot=SimpleNamespace(main_pot=75),
+                      round_history=())
+    st = SimpleNamespace(players=players, **base_state)
+    calm = infer_range_for_opponent(st, hero_seat=1, opp_seat=0)
+    assert calm is RFI["btn"]            # no postflop aggression yet
+
+    # Opponent fired four aggressive actions across the hand: 4 − 2
+    # preflop credits = narrowing level 2 (≥ 0.7 core only), which
+    # strips the 0.5-frequency mixed hands from RFI[btn].
+    barrel_kw = {**base_state,
+                 "round_history": (Action(0, ActionType.RAISE, 30),
+                                   Action(0, ActionType.RAISE, 90),
+                                   Action(0, ActionType.BET, 60),
+                                   Action(0, ActionType.BET, 120),)}
+    barrel = SimpleNamespace(players=players, **barrel_kw)
+    fired = infer_range_for_opponent(barrel, hero_seat=1, opp_seat=0)
+    assert fired is not calm
+    assert len(fired) < len(calm)        # mixed hands stripped outright
+    assert all(f >= 0.7 for f in fired.values())
+    assert len(range_combos(fired, _fresh_deck([]))) < \
+        len(range_combos(calm, _fresh_deck([])))
+
+
+def test_multiway_equity_is_min_across_opponents():
+    """L4.5 core semantic: with two live opponents the hero must beat
+    both — the modelled equity is the worse of the two matchups."""
+    hole = _cards([(Rank.ACE, Suit.SPADES), (Rank.KING, Suit.HEARTS)])
+    board = _cards([(Rank.SEVEN, Suit.CLUBS), (Rank.TWO, Suit.DIAMONDS),
+                    (Rank.NINE, Suit.HEARTS)])
+    deck = _fresh_deck(hole + board)
+    weak = [(Card(Rank.SIX, Suit.CLUBS), Card(Rank.FIVE, Suit.DIAMONDS), 1.0)]
+    strong = _all_combos(deck)
+    eq_weak = equity_vs_combos(hole, board, weak, samples=400, rng=random.Random(5))
+    eq_strong = equity_vs_combos(hole, board, strong, samples=400, rng=random.Random(5))
+    assert eq_weak > eq_strong             # sanity: one range is much scarier
+    # min(weak, strong) ≈ strong — the multiway floor is the scary one.
+    assert min(eq_weak, eq_strong) == eq_strong

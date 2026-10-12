@@ -40,6 +40,7 @@ from .rule_bot import _draw_outs, _made_hand_strength, _postflop_equity
 from .equity import (
     equity_vs_combos,
     infer_opponent_range,
+    infer_range_for_opponent,
     position_bucket,
     range_combos,
     seats_after,
@@ -203,22 +204,42 @@ class GTOBot(BaseBot):
     def _equity_vs_opponent(
         self, state: GameState, player_idx: int, hole: list[Card],
     ) -> float | None:
-        """Monte Carlo equity of *hole* vs the opponent's estimated range.
+        """Monte Carlo equity of *hole* vs the modelled opposition.
 
-        Returns ``None`` when no opponent range can be estimated.
+        L4.5 (design: 2026-10-05-gto-l45-design.md): every live opponent
+        is modelled individually — each with their own position-bucket
+        chart range narrowed by their own postflop aggression — and the
+        result is the *minimum* equity (a multiway pot must be beaten
+        against everyone).  Modelling is capped at three opponents to
+        bound the sampling cost on full-ring tables.
         """
-        opp_range = self._opponent_range(state, player_idx)
-        if opp_range is None:
+        opps = [p.seat_idx for p in state.players
+                if p.seat_idx != player_idx and (p.is_active or p.is_all_in)]
+        if not opps:
             return None
         board = list(state.community_cards)
         known = {(c.rank.value, c.suit.value) for c in hole + board}
         deck = [Card(r, s) for r in Rank for s in Suit
                 if (r.value, s.value) not in known]
-        combos = range_combos(opp_range, deck)
-        if not combos:
-            return None
         rng = self._rng(hole, state)
-        return equity_vs_combos(hole, board, combos, self.N_SAMPLES, rng)
+
+        # Threat order: the last aggressor first (the likeliest danger),
+        # then the rest — so the cap drops the least relevant seats.
+        aggressor = state.last_aggressor_idx
+        opps.sort(key=lambda s: s != aggressor)
+
+        equities: list[float] = []
+        for opp_seat in opps[:3]:
+            opp_range = infer_range_for_opponent(state, player_idx, opp_seat)
+            if opp_range is None:
+                continue
+            combos = range_combos(opp_range, deck)
+            if not combos:
+                continue
+            eq = equity_vs_combos(hole, board, combos, self.N_SAMPLES, rng)
+            if eq is not None:
+                equities.append(eq)
+        return min(equities) if equities else None
 
     def _opponent_range(
         self, state: GameState, player_idx: int,
