@@ -121,6 +121,19 @@ export default function Trainer() {
     .map(c => ({ cat: c, label: CATEGORY_LABEL[c], items: scenarios.filter(s => s.category === c) }))
     .filter(g => g.items.length > 0);
 
+  const rollRandom = async () => {
+    const q = filter ? `?category=${encodeURIComponent(filter)}` : '';
+    try {
+      const resp = await fetch(`/api/trainer/random${q}`);
+      const data = await resp.json();
+      if (resp.ok && data.id) {
+        navigate(`/trainer/${data.id}`);
+        return;
+      }
+      alert(data.error ?? '生成失败，再试一次');
+    } catch { alert('无法连接服务器'); }
+  };
+
   return (
     <div className="trainer">
       <div className="table-head">
@@ -198,6 +211,9 @@ export default function Trainer() {
       )}
 
       <div className="trainer-filter">
+        <button className="btn btn-sm gold" onClick={rollRandom}>
+          🎲 随机一题{filter ? `（${CATEGORY_LABEL[filter]}）` : ''}
+        </button>
         {filter === null
           ? <button className="btn btn-sm gold">全部</button>
           : <button className="btn btn-sm" onClick={() => setFilter(null)}>全部</button>}
