@@ -45,6 +45,7 @@ def test_complete_game_journey():
     detail = client.get(f"/api/game/tables/{tid}").json()
     assert detail["config"] == {
         "small_blind": 10, "big_blind": 20, "default_buyin": 2000, "max_seats": 6,
+        "tournament": False,
     }
     assert detail["seats"] == []
     assert client.get("/api/game/tables/doesnotexist").status_code == 404

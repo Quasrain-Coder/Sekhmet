@@ -96,6 +96,8 @@ export type GameMsg =
   | { type: 'reclaim_token'; token: string; seat: number }
   | { type: 'room_closed'; table_id: string }
   | { type: 'kicked'; message?: string }
+  | { type: 'eliminated'; seat_idx: number }
+  | { type: 'tournament_result'; finished: boolean; winner_seat: number | null; winner_name: string | null }
   | { type: 'error'; message: string };
 
 interface AppState {

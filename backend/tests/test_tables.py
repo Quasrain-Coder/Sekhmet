@@ -1378,3 +1378,123 @@ async def test_state_broadcast_hud_clears_when_tracker_empties():
     session.tracker.stats.pop(1, None)
     assert next(p for p in tm._state_broadcast(session)["players"]
                 if p["seat_idx"] == 1)["hud"] is None
+
+
+# ---------------------------------------------------------------------------
+# MTT tournament mode (iteration #7)
+# ---------------------------------------------------------------------------
+
+
+def test_advance_blind_level_schedule():
+    from types import SimpleNamespace
+    from sekhmet.api.table_manager import _advance_blind_level
+
+    s = SimpleNamespace(config=SimpleNamespace(tournament=True,
+                                               blind_up_every_hands=2),
+                        hands_played=0, blind_level=1, finished=False)
+    _advance_blind_level(s)                     # hand 1 → level 1
+    assert (s.hands_played, s.blind_level) == (1, 1)
+    _advance_blind_level(s)                     # hand 2 → still level 1
+    assert (s.hands_played, s.blind_level) == (2, 1)
+    _advance_blind_level(s)                     # hand 3 → level 2
+    assert (s.hands_played, s.blind_level) == (3, 2)
+    s.blind_level = 15                          # capped at the last level
+    _advance_blind_level(s)
+    assert s.blind_level == 15
+
+    cash = SimpleNamespace(config=SimpleNamespace(tournament=False,
+                                                  blind_up_every_hands=2),
+                           hands_played=0, blind_level=1, finished=False)
+    _advance_blind_level(cash)
+    assert cash.hands_played == 0               # cash tables never count
+
+
+def test_tournament_config_roundtrip_and_rebuy_rejected():
+    client = TestClient(app)
+    tid = client.post("/api/game/tables", json={
+        "tournament": True, "blind_up_every_hands": 2,
+        "small_blind": 5, "big_blind": 10, "default_buyin": 200,
+        "max_seats": 2,
+    }).json()["table_id"]
+    info = client.get(f"/api/game/tables/{tid}").json()
+    assert info["config"]["tournament"] is True
+    assert info["blind_level"] == 1
+    assert info["finished"] is False
+
+    # Rebuy goes through the ws channel — must be refused outright.
+    with client.websocket_connect(f"/ws/{tid}") as ws:
+        ws.send_json({"type": "sit_down", "seat_idx": 0, "name": "A", "buyin": 200})
+        ws.receive_json()
+        ws.send_json({"type": "rebuy", "amount": 200})
+        for _ in range(10):
+            msg = ws.receive_json()
+            if msg["type"] == "error":
+                assert "rebuy" in msg["message"].lower()
+                break
+        else:
+            raise AssertionError(f"no error for tournament rebuy: {msg}")
+
+
+def test_tournament_blinds_escalate_and_finish(monkeypatch):
+    """End-to-end: interval=2 → hand 3 plays level-2 blinds; loop all-ins
+    until one player busts and the next start_hand declares the winner."""
+    import random
+    random.seed(11)
+    monkeypatch.setattr(tm.app_config.game, "runout_delay_seconds", 0)
+
+    client = TestClient(app)
+    tid = client.post("/api/game/tables", json={
+        "tournament": True, "blind_up_every_hands": 2,
+        "small_blind": 5, "big_blind": 10, "default_buyin": 200,
+        "max_seats": 2,
+    }).json()["table_id"]
+    with (
+        client.websocket_connect(f"/ws/{tid}") as ws1,
+        client.websocket_connect(f"/ws/{tid}") as ws2,
+    ):
+        ws1.send_json({"type": "sit_down", "seat_idx": 0, "name": "A", "buyin": 200})
+        ws1.receive_json()
+        ws2.send_json({"type": "sit_down", "seat_idx": 1, "name": "B", "buyin": 200})
+        ws2.receive_json(); ws1.receive_json()
+
+        result = None
+        for hand_no in range(1, 60):
+            assert hand_no < 59, "tournament never finished"
+            ws1.send_json({"type": "start_hand"})
+            # Drive both stacks all-in; whoever is asked shoves, other calls.
+            end_type = drive_all_hand(ws1, ws2)
+            # After the hand, check escalation happened by hand 3.
+            info = client.get(f"/api/game/tables/{tid}").json()
+            if hand_no >= 3:
+                assert info["blind_level"] >= 2
+                assert info["current_big_blind"] >= 20   # level-2 blinds live
+            # drive_all_hand already consumed the hand_result /
+            # tournament_result — no re-reading, or we block forever.
+            if end_type == "tournament_result":
+                result = {"finished": True}   # winner asserted below
+                break
+
+        assert result is not None, "tournament never finished"
+        info = client.get(f"/api/game/tables/{tid}").json()
+        assert info["finished"] is True
+        # Exactly one seat survived with the whole prize pool.
+        alive = [s for s in info["seats"] if s["stack"] > 0]
+        assert len(alive) == 1
+        assert alive[0]["name"] in ("A", "B")
+
+
+def drive_all_hand(ws1, ws2):
+    """Both players shove all-in (whoever is asked first shoves; the
+    other calls when asked).  Returns the terminating message type —
+    the caller must NOT re-read it ("tournament_result" means done)."""
+    sockets = {0: ws1, 1: ws2}
+    shoved = set()
+    for _ in range(40):
+        msg = ws1.receive_json()
+        if msg["type"] in ("hand_result", "tournament_result"):
+            return msg["type"]
+        cur = msg.get("current_player_idx")
+        if cur in (0, 1) and cur not in shoved:
+            shoved.add(cur)
+            sockets[cur].send_json({"type": "player_action", "action": "ALL_IN"})
+    return None
